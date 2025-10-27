@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 export const Route = createFileRoute("/_auth")({
@@ -6,6 +6,12 @@ export const Route = createFileRoute("/_auth")({
 });
 
 function AuthLayout(): JSX.Element {
+  const router = useRouterState();
+  const currentPath = router.location.pathname;
+  
+  const isLoginPage = currentPath === "/login";
+  const isRegisterPage = currentPath === "/register";
+
   return (
     <div 
       className="min-h-screen flex items-center justify-center"
@@ -16,8 +22,36 @@ function AuthLayout(): JSX.Element {
         backgroundRepeat: 'no-repeat'
       }}
     >
-      <div className="w-full max-w-sm ">
-        <Outlet />
+      <div className="w-full max-w-sm">
+        <div className="relative z-10">
+          {/* Top navigation tabs */}
+          <div className="flex justify-end mb-6">
+            <div className="inline-flex rounded-full p-1 bg-[#3A52A6]">
+              <Link 
+                to="/login"
+                className={`px-4 py-1.5 rounded-full text-xs text-[#F0F7FF] transition-all ${
+                  isLoginPage 
+                    ? 'bg-[#607EF2]' 
+                    : 'opacity-50'
+                }`}
+              >
+                Log In
+              </Link>
+              <Link 
+                to="/register"
+                className={`px-4 py-1.5 rounded-full text-xs text-[#F0F7FF] transition-all ${
+                  isRegisterPage 
+                    ? 'bg-[#607EF2]' 
+                    : 'opacity-50'
+                }`}
+              >
+                Sign Up
+              </Link>
+            </div>
+          </div>
+          
+          <Outlet />
+        </div>
       </div>
     </div>
   );
