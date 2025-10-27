@@ -20,20 +20,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RouteComponent(): JSX.Element {
 	return (
 		<>
-			<Header />
 			<Outlet />
-			<TanStackDevtools
-				config={{
-					position: "bottom-right",
-				}}
-				plugins={[
-					{
-						name: "Tanstack Router",
-						render: <TanStackRouterDevtoolsPanel />,
-					},
-					TanStackQueryDevtools,
-				]}
-			/>
 		</>
 	);
 }

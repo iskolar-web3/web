@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link  } from "@tanstack/react-router";
 import logo from "../logo.svg";
 import { Button } from "@/components/ui/button";
 
@@ -9,32 +9,12 @@ export const Route = createFileRoute("/")({
 function App() {
 	return (
 		<div className="text-center">
-			<header className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white text-[calc(10px+2vmin)]">
-				<img
-					src={logo}
-					className="h-[40vmin] pointer-events-none animate-[spin_20s_linear_infinite]"
-					alt="logo"
-				/>
-				<p>
-					Edit <code>src/routes/index.tsx</code> and save to reload.
-				</p>
-				<a
-					className="text-[#61dafb] hover:underline"
-					href="https://reactjs.org"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					Learn React
-				</a>
-				<a
-					className="text-[#61dafb] hover:underline"
-					href="https://tanstack.com"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					Learn TanStack
-				</a>
-                <Button>Shadcn Button</Button>
+			<header className="min-h-screen flex flex-col items-center justify-center bg-[#F0F7FF]">
+				<p className="text-2xl text-[#3A52A6]">Welcome to iSkolar</p>
+
+				<Link to="/login">
+					<Button className="mt-4 bg-[#EFA508] hover:bg-[#FACC15]">Get Started</Button>
+				</Link>
 			</header>
 		</div>
 	);
