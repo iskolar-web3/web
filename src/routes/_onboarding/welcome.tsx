@@ -147,15 +147,15 @@ function WelcomePage() {
 
       {/* Get Started Button */}
       <motion.div variants={buttonVariants}>
-        {/* <Link 
+        <Link 
           to="/role-selection"
-        > */}
+        >
           <button
             className="bg-[#EFA508] cursor-pointer text-xs sm:text-sm md:text-sm text-[#F0F7FF] py-2.5 px-16 sm:py-3 sm:px-22 md:py-3 md:px-28 lg:px-30 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             Get Started
           </button>
-        {/* </Link> */}
+        </Link>
       </motion.div>
     </motion.div>
   );

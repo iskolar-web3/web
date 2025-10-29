@@ -13,6 +13,7 @@ import { Route as OnboardingRouteImport } from './routes/_onboarding'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OnboardingWelcomeRouteImport } from './routes/_onboarding/welcome'
+import { Route as OnboardingRoleSelectionRouteImport } from './routes/_onboarding/role-selection'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 
@@ -34,6 +35,11 @@ const OnboardingWelcomeRoute = OnboardingWelcomeRouteImport.update({
   path: '/welcome',
   getParentRoute: () => OnboardingRoute,
 } as any)
+const OnboardingRoleSelectionRoute = OnboardingRoleSelectionRouteImport.update({
+  id: '/role-selection',
+  path: '/role-selection',
+  getParentRoute: () => OnboardingRoute,
+} as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -49,12 +55,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/role-selection': typeof OnboardingRoleSelectionRoute
   '/welcome': typeof OnboardingWelcomeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/role-selection': typeof OnboardingRoleSelectionRoute
   '/welcome': typeof OnboardingWelcomeRoute
 }
 export interface FileRoutesById {
@@ -64,13 +72,14 @@ export interface FileRoutesById {
   '/_onboarding': typeof OnboardingRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/_onboarding/role-selection': typeof OnboardingRoleSelectionRoute
   '/_onboarding/welcome': typeof OnboardingWelcomeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register' | '/welcome'
+  fullPaths: '/' | '/login' | '/register' | '/role-selection' | '/welcome'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/welcome'
+  to: '/' | '/login' | '/register' | '/role-selection' | '/welcome'
   id:
     | '__root__'
     | '/'
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/_onboarding'
     | '/_auth/login'
     | '/_auth/register'
+    | '/_onboarding/role-selection'
     | '/_onboarding/welcome'
   fileRoutesById: FileRoutesById
 }
@@ -117,6 +127,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingWelcomeRouteImport
       parentRoute: typeof OnboardingRoute
     }
+    '/_onboarding/role-selection': {
+      id: '/_onboarding/role-selection'
+      path: '/role-selection'
+      fullPath: '/role-selection'
+      preLoaderRoute: typeof OnboardingRoleSelectionRouteImport
+      parentRoute: typeof OnboardingRoute
+    }
     '/_auth/register': {
       id: '/_auth/register'
       path: '/register'
@@ -147,10 +164,12 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface OnboardingRouteChildren {
+  OnboardingRoleSelectionRoute: typeof OnboardingRoleSelectionRoute
   OnboardingWelcomeRoute: typeof OnboardingWelcomeRoute
 }
 
 const OnboardingRouteChildren: OnboardingRouteChildren = {
+  OnboardingRoleSelectionRoute: OnboardingRoleSelectionRoute,
   OnboardingWelcomeRoute: OnboardingWelcomeRoute,
 }
 
