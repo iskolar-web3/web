@@ -183,7 +183,7 @@ function RoleSelection() {
         className="text-center px-8 md:px-10 py-8 sm:py-10 md:py-12 relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.3 }}
       >
         {/* Back Button */}
         {showSponsorTypes && (
@@ -205,7 +205,7 @@ function RoleSelection() {
           className="mb-8 sm:mb-10 md:mb-12"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
         >
           <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl text-[#3A52A6] mb-1 sm:mb-2">
             Welcome to iSkolar
@@ -233,7 +233,7 @@ function RoleSelection() {
                     key={role.id}
                     initial={{ opacity: 0, scale: 0.8, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.4 + index * 0.15 }}
+                    transition={{ duration: 0.2, delay: 0.1 + index * 0.15 }}
                     onClick={() => handleRoleSelect(role.id as Role)}
                     className={`${selectedRole === role.id ? role.color.replace('border-', 'bg-') : role.bgColor} ${role.color} border-4 rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 transition-all duration-500 hover:shadow-xl ${
                       selectedRole === role.id ? 'shadow-2xl scale-105' : 'shadow-lg'
@@ -281,7 +281,7 @@ function RoleSelection() {
                     key={subRole.id}
                     initial={{ opacity: 0, scale: 0.8, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.2 + index * 0.15 }}
+                    transition={{ duration: 0.2, delay: 0.1 + index * 0.15 }}
                     onClick={() => setSubRole(subRole.id as SubRole)}
                     className={`${selectedSubRole === subRole.id ? subRole.selectedBgColor : subRole.bgColor} ${subRole.color} border-4 rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 transition-all duration-500 hover:shadow-xl ${
                       selectedSubRole === subRole.id ? 'shadow-2xl scale-105' : 'shadow-lg'
@@ -320,7 +320,7 @@ function RoleSelection() {
           className="flex justify-center gap-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
+          transition={{ duration: 0.2, delay: 0.6 }}
         >
           <motion.button
             onClick={handleSelect}
