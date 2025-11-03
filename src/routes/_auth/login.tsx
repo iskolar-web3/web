@@ -5,10 +5,28 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import Toast from "@/components/Toast";
 import { SiGoogle } from "react-icons/si";
 import type { JSX } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 export const Route = createFileRoute("/_auth/login")({
   component: LoginPage,
 });
+
+// Login Validation
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address'),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(8, "Password must be at least 8 characters"),
+  rememberMe: z.boolean().optional(),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 function LoginPage(): JSX.Element {
   usePageTitle("Log In");
@@ -21,9 +39,18 @@ function LoginPage(): JSX.Element {
     title: "",
     message: "",
   });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur", 
+  });
   
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (data: LoginFormData) => {
+    console.log("Form data:", data);
     
     setToastConfig({
       type: "success",
@@ -34,8 +61,8 @@ function LoginPage(): JSX.Element {
     
     setTimeout(() => {
       setShowToast(false);
-      // navigate({ to: "/welcome" });
-    }, 2500);
+      navigate({ to: "/welcome" });
+    }, 1000);
     
     // Handle login logic 
   };
@@ -50,7 +77,7 @@ function LoginPage(): JSX.Element {
     
     setTimeout(() => {
       setShowToast(false);
-    }, 2500);
+    }, 1000);
     
     // Handle Google sign in
   };
@@ -87,7 +114,7 @@ function LoginPage(): JSX.Element {
             </p>
           </div>
 
-          <div className="space-y-4 sm:space-y-3">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
             <div>
               <label htmlFor="email" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
                 Email
@@ -96,8 +123,18 @@ function LoginPage(): JSX.Element {
                 id="email"
                 type="email"
                 placeholder="Enter Email"
-                className="w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 focus:border-[#3A52A6] focus:ring-[#3A52A6] transition-all bg-transparent border border-[#C4CBD5] text-[#111827] placeholder:text-[#C4CBD5]" 
+                {...register("email")}
+                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  errors.email
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
+                }`}
               />
+              {errors.email && (
+                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -108,8 +145,18 @@ function LoginPage(): JSX.Element {
                 id="password"
                 type="password"
                 placeholder="Enter Password"
-                className="w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 focus:border-[#3A52A6] focus:ring-[#3A52A6] transition-all bg-transparent border border-[#C4CBD5] text-[#111827] placeholder:text-[#C4CBD5]"
+                {...register("password")}
+                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  errors.password
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
+                }`}
               />
+              {errors.password && (
+                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             {/* Remember Me & Forgot Password */}
@@ -117,6 +164,7 @@ function LoginPage(): JSX.Element {
               <label className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
+                  {...register("rememberMe")}
                   className="w-3 h-3 sm:w-2.5 sm:h-2.5 rounded border-[#C4CBD5] text-[#3A52A6] focus:ring-[#3A52A6] cursor-pointer"
                 />
                 <span className="ml-1 text-[#8C8C8C] text-xs sm:text-[11px]">Remember Me</span>
@@ -130,12 +178,12 @@ function LoginPage(): JSX.Element {
             </div>
 
             <button
-              onClick={handleLogin}
+              type="submit"
               className="w-full py-3 sm:py-2.5 mt-8 sm:mt-6 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer shadow-md hover:shadow-lg transition-all bg-[#3A52A6]"
             >
               Log In
             </button>
-          </div>
+          </form>
 
           {/* Divider */}
           <div className="flex items-center my-5 sm:my-4">
@@ -150,6 +198,7 @@ function LoginPage(): JSX.Element {
           <div className="flex justify-center">
             <button
               onClick={handleGoogleSignIn}
+              type="button"
               className="w-12 h-12 flex items-center justify-center rounded-full hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.25)] transition-all bg-[#F0F7FF] shadow-[0_2px_4px_0_rgba(0,0,0,0.25)] cursor-pointer"
             >
               <SiGoogle size={24} className="text-[#3A52A6] sm:w-6 sm:h-6" />

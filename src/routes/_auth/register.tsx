@@ -5,10 +5,37 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import Toast from "@/components/Toast";
 import { SiGoogle } from "react-icons/si";
 import type { JSX } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 export const Route = createFileRoute("/_auth/register")({
   component: RegisterPage,
 });
+
+// Registration Validation
+const registerSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address'),
+    password: z
+      .string()
+      .min(1, "Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+      ),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 function RegisterPage(): JSX.Element {
   usePageTitle("Sign Up");
@@ -21,9 +48,18 @@ function RegisterPage(): JSX.Element {
     title: "",
     message: "",
   });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: "onBlur", 
+  });
   
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (data: RegisterFormData) => {
+    console.log("Form data:", data);
     
     setToastConfig({
       type: "success",
@@ -34,8 +70,8 @@ function RegisterPage(): JSX.Element {
     
     setTimeout(() => {
       setShowToast(false);
-      // navigate({ to: "/login" });
-    }, 2500);
+      navigate({ to: "/login" });
+    }, 1000);
     
     // Handle register logic
   };
@@ -87,7 +123,7 @@ function RegisterPage(): JSX.Element {
             </p>
           </div>
 
-          <div className="space-y-4 sm:space-y-3">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
             <div>
               <label htmlFor="email" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
                 Email
@@ -96,8 +132,18 @@ function RegisterPage(): JSX.Element {
                 id="email"
                 type="email"
                 placeholder="Enter Email"
-                className="w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 focus:border-[#3A52A6] focus:ring-[#3A52A6] transition-all bg-transparent border border-[#C4CBD5] text-[#111827] placeholder:text-[#C4CBD5]" 
+                {...register("email")}
+                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  errors.email
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
+                }`}
               />
+              {errors.email && (
+                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -108,8 +154,18 @@ function RegisterPage(): JSX.Element {
                 id="password"
                 type="password"
                 placeholder="Enter Password"
-                className="w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 focus:border-[#3A52A6] focus:ring-[#3A52A6] transition-all bg-transparent border border-[#C4CBD5] text-[#111827] placeholder:text-[#C4CBD5]"
+                {...register("password")}
+                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  errors.password
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
+                }`}
               />
+              {errors.password && (
+                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -120,17 +176,27 @@ function RegisterPage(): JSX.Element {
                 id="confirmPassword"
                 type="password"
                 placeholder="Confirm Password"
-                className="w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 focus:border-[#3A52A6] focus:ring-[#3A52A6] transition-all bg-transparent border border-[#C4CBD5] text-[#111827] placeholder:text-[#C4CBD5]"
+                {...register("confirmPassword")}
+                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  errors.confirmPassword
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
+                }`}
               />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
             </div>
-          </div>
 
-          <button
-            onClick={handleRegister}
-            className="w-full py-3 sm:py-2.5 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer shadow-md hover:shadow-lg transition-all bg-[#3A52A6]"
-          >
-            Sign Up
-          </button>
+            <button
+              type="submit"
+              className="w-full py-3 sm:py-2.5 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer shadow-md hover:shadow-lg transition-all bg-[#3A52A6]"
+            >
+              Sign Up
+            </button>
+          </form>
 
           {/* Divider */}
           <div className="flex items-center my-5 sm:my-4">
@@ -145,6 +211,7 @@ function RegisterPage(): JSX.Element {
           <div className="flex justify-center">
             <button
               onClick={handleGoogleSignUp}
+              type="button"
               className="w-12 h-12 flex items-center justify-center rounded-full hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.25)] transition-all bg-[#F0F7FF] shadow-[0_2px_4px_0_rgba(0,0,0,0.25)] cursor-pointer"
             >
               <SiGoogle size={24} className="text-[#3A52A6] sm:w-6 sm:h-6" />
