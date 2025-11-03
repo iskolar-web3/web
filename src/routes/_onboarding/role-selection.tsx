@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { HiAcademicCap, HiHeart, HiBuildingOffice2, HiUser, HiUserGroup, HiBuildingLibrary, HiArrowLeft } from "react-icons/hi2";
 import Toast from "@/components/Toast";
+import { z } from 'zod';
 
 export const Route = createFileRoute('/_onboarding/role-selection')({
   component: RoleSelection,
@@ -11,6 +12,16 @@ export const Route = createFileRoute('/_onboarding/role-selection')({
 
 type Role = 'student' | 'sponsor' | 'school' | null;
 type SubRole = 'individual' | 'organization' | 'government' | null;
+
+// Role selection validation schemas
+const roleSchema = z.object({
+  selectedRole: z.enum(['student', 'sponsor', 'school'], { message: 'Please select a role' }),
+});
+
+const sponsorRoleSchema = z.object({
+  selectedRole: z.literal('sponsor'),
+  selectedSubRole: z.enum(['individual', 'organization', 'government'], { message: 'Please select a sub-role' })
+});
 
 function RoleSelection() {
   usePageTitle("Role Selection");
@@ -74,7 +85,7 @@ function RoleSelection() {
     {
       id: 'individual',
       title: 'Individual',
-      value: 'individual',
+      value: 'individual_sponsor',
       subtitle: 'Independent Sponsor',
       description: 'Personally support deserving students by funding their studies and helping them achieve academic success.',
       icon: HiUser,
@@ -88,7 +99,7 @@ function RoleSelection() {
     {
       id: 'organization',
       title: 'Organization',
-      value: 'organization',
+      value: 'organization_sponsor',
       subtitle: 'Scholarship Organization',
       description: 'Provide scholarships as an institution, foundation, or non-profit to empower students and strengthen educational opportunities.',
       icon: HiUserGroup,
@@ -102,7 +113,7 @@ function RoleSelection() {
     {
       id: 'government',
       title: 'Government',
-      value: 'government',
+      value: 'government_sponsor',
       subtitle: 'Government Agency',
       description: "Offer government-funded scholarships to promote equal access to education and invest in the nation's future workforce.",
       icon: HiBuildingLibrary,
@@ -132,24 +143,72 @@ function RoleSelection() {
     setSubRole(null);
   };
 
-  const handleSelect = () => {
-    if (!canContinue) return;
+  const validateSelection = (): { isValid: boolean; errorMessage?: string } => {
+    if (!selectedRole) {
+      return { isValid: false, errorMessage: 'Please select a role' };
+    }
 
-    let roleTitle = '';
+    try {
+      if (selectedRole === 'sponsor') {
+        if (!selectedSubRole) {
+          return { isValid: false, errorMessage: 'Please select a sub-role' };
+        }
+        sponsorRoleSchema.parse({
+          selectedRole,
+          selectedSubRole
+        });
+      } else {
+        roleSchema.parse({
+          selectedRole
+        });
+      }
+      return { isValid: true };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return { isValid: false, errorMessage: error.issues[0].message };
+      }
+      return { isValid: false, errorMessage: 'Invalid selection' };
+    }
+  };
+
+  const handleSelect = () => {
+    const validation = validateSelection();
+    
+    if (!validation.isValid) {
+      setToastConfig({
+        type: 'error',
+        title: 'Validation Error',
+        message: validation.errorMessage || 'Please make a valid selection',
+      });
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+      return;
+    }
+
+    let role: string;
     let roleMessage = '';
 
     if (selectedRole === 'student') {
-      roleMessage = 'Student Role Selected';
+      role = 'student';
+      roleMessage = 'You selected the Student role.';
     } else if (selectedRole === 'sponsor') {
       if (selectedSubRole === 'individual') {
-        roleMessage = 'Individual Sponsor Role Selected';
+        role = 'individual_sponsor';
+        roleMessage = 'You selected the Individual Sponsor role.';
       } else if (selectedSubRole === 'organization') {
-        roleMessage = 'Organization Sponsor Role Selected';
+        role = 'organization_sponsor';
+        roleMessage = 'You selected the Organization Sponsor role.';
       } else if (selectedSubRole === 'government') {
-        roleMessage = 'Government Agency Role Selected';
+        role = 'government_sponsor';
+        roleMessage = 'You selected the Government Agency role.';
+      } else {
+        return; 
       }
     } else if (selectedRole === 'school') {
-      roleMessage = 'School Role Selected';
+      role = 'school';
+      roleMessage = 'You selected the School role.';
+    } else {
+      return; 
     }
 
     setToastConfig({
@@ -161,11 +220,11 @@ function RoleSelection() {
 
     setTimeout(() => {
       setShowToast(false);
-    }, 2500);
-
-    // setTimeout(() => {
-    //   navigate({ to: '/profile-setup' });
-    // }, 250);
+      navigate({ 
+        to: '/profile-setup',
+        search: { role: role }
+      });
+    }, 1000);
   };
 
   const canContinue = selectedRole && (selectedRole !== 'sponsor' || selectedSubRole);
@@ -200,7 +259,7 @@ function RoleSelection() {
           </motion.button>
         )}
 
-        {/* Header */}
+        {/* Title and Subtitle */}
         <motion.div 
           className="mb-8 sm:mb-10 md:mb-12"
           initial={{ opacity: 0, y: -20 }}
@@ -217,7 +276,7 @@ function RoleSelection() {
 
         <AnimatePresence mode="wait">
           {!showSponsorTypes ? (
-            /* Role Selection */
+            /* Main Role Selection */
             <motion.div 
               key="main-roles"
               className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-4xl mx-auto mb-8 sm:mb-10 md:mb-12"
