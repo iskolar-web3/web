@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/use-page-title";
@@ -8,10 +8,9 @@ import type { JSX } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
-export const Route = createFileRoute("/_auth/register")({
-  component: RegisterPage,
-});
+import { Loader2 } from "lucide-react"; 
+// import { authService } from '@/services/auth.service';
+// import { profileService } from '@/services/profile.service';
 
 // Registration Validation
 const registerSchema = z
@@ -37,17 +36,46 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
+export const Route = createFileRoute("/_auth/register")({
+  component: RegisterPage,
+});
+
 function RegisterPage(): JSX.Element {
   usePageTitle("Sign Up");
 
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: "success" as "success" | "error",
     title: "",
     message: "",
   });
+
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const hasToken = await authService.hasValidToken();
+  //       if (hasToken) {
+  //         const result = await profileService.getProfileStatus();
+
+  //         if (result.user?.role === 'student') {
+  //           navigate({ to: '/home', replace: true });
+  //         } else if (result.user?.role === 'individual_sponsor' || result.user?.role === 'organization_sponsor' || result.user?.role === 'government_sponsor') {
+  //           navigate({ to: '/my-scholarships', replace: true });
+  //         }
+  //       }
+  //     } catch (e) {
+  //       // Ignore
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   checkAuth();
+  // }, []);
 
   const {
     register,
@@ -58,29 +86,53 @@ function RegisterPage(): JSX.Element {
     mode: "onBlur", 
   });
   
-  const onSubmit = (data: RegisterFormData) => {
-    console.log("Form data:", data);
-    
-    setToastConfig({
-      type: "success",
-      title: "Success",
-      message: "Account created successfully!",
-    });
-    setShowToast(true);
-    
-    setTimeout(() => {
-      setShowToast(false);
-      navigate({ to: "/login" });
-    }, 1000);
-    
-    // Handle register logic
+  const onSubmit = async (data: RegisterFormData) => {
+    // try {
+    //   setLoading(true);
+
+    //   const result = await authService.register({
+    //     email: data.email,
+    //     password: data.password,
+    //     confirm_password: data.confirmPassword,
+    //   })
+
+    //   if(result.success) {
+    //     setToastConfig({
+    //       type: "success",
+    //       title: "Success",
+    //       message: result.message,
+    //     });
+    //     setShowToast(true);
+
+    //     setTimeout(() => {
+    //       setShowToast(false);
+    //       navigate({ to: "/login" });
+    //     }, 1000);
+    //   } else {
+    //     setToastConfig({
+    //       type: "error",
+    //       title: "Error",
+    //       message: result.error,
+    //     });
+    //     setShowToast(true);
+    //   }
+    // } catch(error) {
+    //   setToastConfig({
+    //     type: "error",
+    //     title: "Error",
+    //     message: error.message,
+    //   });
+    //   setShowToast(true);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   const handleGoogleSignUp = () => {
     setToastConfig({
       type: "error",
       title: "Error",
-      message: "Unable to connect to Google services.",
+      message: "Google sign up is not available at the moment.",
     });
     setShowToast(true);
     
@@ -133,6 +185,7 @@ function RegisterPage(): JSX.Element {
                 type="email"
                 placeholder="Enter Email"
                 {...register("email")}
+                disabled={loading}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
                   errors.email
                     ? "border-red-500 focus:border-red-500 focus:ring-red-500"
@@ -155,6 +208,7 @@ function RegisterPage(): JSX.Element {
                 type="password"
                 placeholder="Enter Password"
                 {...register("password")}
+                disabled={loading}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
                   errors.password
                     ? "border-red-500 focus:border-red-500 focus:ring-red-500"
@@ -177,6 +231,7 @@ function RegisterPage(): JSX.Element {
                 type="password"
                 placeholder="Confirm Password"
                 {...register("confirmPassword")}
+                disabled={loading}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
                   errors.confirmPassword
                     ? "border-red-500 focus:border-red-500 focus:ring-red-500"
@@ -192,9 +247,18 @@ function RegisterPage(): JSX.Element {
 
             <button
               type="submit"
-              className="w-full py-3 sm:py-2.5 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer shadow-md hover:shadow-lg transition-all bg-[#3A52A6]"
+              className={`w-full py-3 sm:py-2.5 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer shadow-md hover:shadow-lg transition-all bg-[#3A52A6] ${
+                loading && "opacity-60 cursor-not-allowed"
+              }`}
+              disabled={loading}
             >
-              Sign Up
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </span>
+              ) : (
+                <span>Sign Up</span>
+              )}
             </button>
           </form>
 

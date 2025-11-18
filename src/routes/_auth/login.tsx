@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/use-page-title";
@@ -8,6 +8,9 @@ import type { JSX } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Loader2 } from "lucide-react";
+// import { authService } from '@/services/auth.service';
+// import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute("/_auth/login")({
   component: LoginPage,
@@ -23,7 +26,7 @@ const loginSchema = z.object({
     .string()
     .min(1, "Password is required")
     .min(8, "Password must be at least 8 characters"),
-  rememberMe: z.boolean().optional(),
+  rememberMe: z.boolean(),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -33,12 +36,37 @@ function LoginPage(): JSX.Element {
   
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: "success" as "success" | "error",
     title: "",
     message: "",
   });
+
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const hasToken = await authService.hasValidToken();
+  //       if (hasToken) {
+  //         const result = await profileService.getProfileStatus();
+
+  //         if (result.user?.role === 'student') {
+  //           navigate({ to: '/home', replace: true });
+  //         } else if (result.user?.role === 'individual_sponsor' || result.user?.role === 'organization_sponsor' || result.user?.role === 'government_sponsor') {
+  //           navigate({ to: '/my-scholarships', replace: true });
+  //         }
+  //       }
+  //     } catch (e) {
+  //       // Ignore
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   checkAuth();
+  // }, []);
 
   const {
     register,
@@ -47,24 +75,51 @@ function LoginPage(): JSX.Element {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     mode: "onBlur", 
+    defaultValues: {
+      rememberMe: false
+    },
   });
   
-  const onSubmit = (data: LoginFormData) => {
-    console.log("Form data:", data);
-    
-    setToastConfig({
-      type: "success",
-      title: "Success",
-      message: "Login Successful!",
-    });
-    setShowToast(true);
-    
-    setTimeout(() => {
-      setShowToast(false);
-      navigate({ to: "/welcome" });
-    }, 1000);
-    
-    // Handle login logic 
+  const onSubmit = async (data: LoginFormData) => {
+    // try {
+    //   setLoading(true);
+
+    //   const result = await authService.login({
+    //     email: data.email,
+    //     password: data.password,
+    //     remember_me: data.rememberMe
+    //   }
+
+    //   if(result.success) {
+    //     setToastConfig({
+    //       type: "success",
+    //       title: "Success",
+    //       message: result.message,
+    //     });
+    //     setShowToast(true);
+
+    //     setTimeout(() => {
+    //       setShowToast(false);
+    //       navigate({ to: "/welcome" });
+    //     }, 1000);
+    //   } else {
+    //     setToastConfig({
+    //       type: "error",
+    //       title: "Error",
+    //       message: result.error,
+    //     });
+    //     setShowToast(true);
+    //   }
+    // } catch(error) {
+    //   setToastConfig({
+    //     type: "error",
+    //     title: "Error",
+    //     message: error.message,
+    //   });
+    //   setShowToast(true);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   const handleGoogleSignIn = () => {
@@ -124,6 +179,7 @@ function LoginPage(): JSX.Element {
                 type="email"
                 placeholder="Enter Email"
                 {...register("email")}
+                disabled={loading}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
                   errors.email
                     ? "border-red-500 focus:border-red-500 focus:ring-red-500"
@@ -146,6 +202,7 @@ function LoginPage(): JSX.Element {
                 type="password"
                 placeholder="Enter Password"
                 {...register("password")}
+                disabled={loading}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
                   errors.password
                     ? "border-red-500 focus:border-red-500 focus:ring-red-500"
@@ -179,9 +236,18 @@ function LoginPage(): JSX.Element {
 
             <button
               type="submit"
-              className="w-full py-3 sm:py-2.5 mt-8 sm:mt-6 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer shadow-md hover:shadow-lg transition-all bg-[#3A52A6]"
+              className={`w-full py-3 sm:py-2.5 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer shadow-md hover:shadow-lg transition-all bg-[#3A52A6] ${
+                loading && "opacity-60 cursor-not-allowed"
+              }`}
+              disabled={loading}
             >
-              Log In
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </span>
+              ) : (
+                <span>Log In</span>
+              )}
             </button>
           </form>
 
