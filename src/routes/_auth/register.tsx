@@ -8,9 +8,13 @@ import type { JSX } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2 } from "lucide-react"; 
+import { Loader2, Eye, EyeOff } from "lucide-react"; 
 // import { authService } from '@/services/auth.service';
 // import { profileService } from '@/services/profile.service';
+
+export const Route = createFileRoute("/_auth/register")({
+  component: RegisterPage,
+});
 
 // Registration Validation
 const registerSchema = z
@@ -36,10 +40,6 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-export const Route = createFileRoute("/_auth/register")({
-  component: RegisterPage,
-});
-
 function RegisterPage(): JSX.Element {
   usePageTitle("Sign Up");
 
@@ -47,6 +47,7 @@ function RegisterPage(): JSX.Element {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: "success" as "success" | "error",
@@ -188,12 +189,12 @@ function RegisterPage(): JSX.Element {
                 disabled={loading}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
                   errors.email
-                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                     : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
                 }`}
               />
               {errors.email && (
-                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                   {errors.email.message}
                 </p>
               )}
@@ -203,20 +204,34 @@ function RegisterPage(): JSX.Element {
               <label htmlFor="password" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                placeholder="Enter Password"
-                {...register("password")}
-                disabled={loading}
-                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
-                  errors.password
-                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                    : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
-                }`}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter Password"
+                  {...register("password")}
+                  disabled={loading}
+                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                    errors.password
+                      ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
+                      : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-[#3A52A6] transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4 sm:w-3.5 sm:h-3.5 transition-transform duration-200" />
+                  ) : (
+                    <Eye className="w-4 h-4 sm:w-3.5 sm:h-3.5 transition-transform duration-200" />
+                  )}
+                </button>
+              </div>
               {errors.password && (
-                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                   {errors.password.message}
                 </p>
               )}
@@ -226,20 +241,34 @@ function RegisterPage(): JSX.Element {
               <label htmlFor="confirmPassword" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
                 Confirm Password
               </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirm Password"
-                {...register("confirmPassword")}
-                disabled={loading}
-                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
-                  errors.confirmPassword
-                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                    : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
-                }`}
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  {...register("confirmPassword")}
+                  disabled={loading}
+                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                    errors.confirmPassword
+                      ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
+                      : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-[#3A52A6] transition-colors"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-4 h-4 sm:w-3.5 sm:h-3.5 transition-transform duration-200" />
+                  ) : (
+                    <Eye className="w-4 h-4 sm:w-3.5 sm:h-3.5 transition-transform duration-200" />
+                  )}
+                </button>
+              </div>
               {errors.confirmPassword && (
-                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                   {errors.confirmPassword.message}
                 </p>
               )}

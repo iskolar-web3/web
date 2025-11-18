@@ -8,7 +8,7 @@ import type { JSX } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 // import { authService } from '@/services/auth.service';
 // import { profileService } from '@/services/profile.service';
 
@@ -182,12 +182,12 @@ function LoginPage(): JSX.Element {
                 disabled={loading}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
                   errors.email
-                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                     : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
                 }`}
               />
               {errors.email && (
-                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                   {errors.email.message}
                 </p>
               )}
@@ -197,20 +197,34 @@ function LoginPage(): JSX.Element {
               <label htmlFor="password" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                placeholder="Enter Password"
-                {...register("password")}
-                disabled={loading}
-                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
-                  errors.password
-                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                    : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
-                }`}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter Password"
+                  {...register("password")}
+                  disabled={loading}
+                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                    errors.password
+                      ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
+                      : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-[#3A52A6] transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4 sm:w-3.5 sm:h-3.5 transition-transform duration-200" />
+                  ) : (
+                    <Eye className="w-4 h-4 sm:w-3.5 sm:h-3.5 transition-transform duration-200" />
+                  )}
+                </button>
+              </div>
               {errors.password && (
-                <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                   {errors.password.message}
                 </p>
               )}
