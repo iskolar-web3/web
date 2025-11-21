@@ -125,14 +125,14 @@ function LoginPage(): JSX.Element {
   const handleGoogleSignIn = () => {
     setToastConfig({
       type: "error",
-      title: "Error",
-      message: "Unable to connect to Google services.",
+      title: "Not Available",
+      message: "Google Auth is not available at the moment.",
     });
     setShowToast(true);
     
     setTimeout(() => {
       setShowToast(false);
-    }, 1000);
+    }, 2000);
     
     // Handle Google sign in
   };

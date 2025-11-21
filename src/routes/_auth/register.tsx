@@ -132,14 +132,14 @@ function RegisterPage(): JSX.Element {
   const handleGoogleSignUp = () => {
     setToastConfig({
       type: "error",
-      title: "Error",
-      message: "Google sign up is not available at the moment.",
+      title: "Not Available",
+      message: "Google Auth is not available at the moment.",
     });
     setShowToast(true);
     
     setTimeout(() => {
       setShowToast(false);
-    }, 2500);
+    }, 2000);
     
     // Handle Google sign up
   };
