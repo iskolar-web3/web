@@ -13,6 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Loader2 } from "lucide-react"; 
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { CalendarIcon } from "lucide-react"
+// import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute('/_onboarding/profile-setup')({
   component: ProfileSetup,
@@ -27,57 +36,60 @@ type Role = 'student' | 'individual_sponsor' | 'organization_sponsor' | 'governm
 
 const VALID_ROLES: Role[] = ['student', 'individual_sponsor', 'organization_sponsor', 'government_sponsor', 'school']
 
-// Profile setup validation 
+// Student validation 
 const studentSchema = z.object({
-  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+  firstName: z.string().min(1, 'First name is required'),
+  middleName: z.string().optional(),
+  lastName: z.string().min(1, 'Last name is required'),
   gender: z.enum(['male', 'female'], { message: 'Please select a gender' }),
-  dateOfBirth: z.string().min(1, 'Date of birth is required'),
+  dateOfBirth: z.date().refine((date) => date <= new Date(), {
+    message: 'Date of birth cannot be in the future',
+  }),
   contactNumber: z.string()
     .min(1, 'Contact number is required')
     .regex(/^\d+$/, 'Contact number must contain only numbers')
     .min(11, 'Contact number must be at least 11 digits'),
 })
 
+// individual Sponsor validation
 const individualSponsorSchema = z.object({
-  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  employmentType: z.enum(['employed', 'self-employed', 'freelancer', 'overseas_filipino_worker', 'student'], { message: 'Please select employment type' }),
-  dateOfBirth: z.string().min(1, 'Date of birth is required'),
+  firstName: z.string().min(1, 'First name is required'),
+  middleName: z.string().optional(),
+  lastName: z.string().min(1, 'Last name is required'),
+  employmentType: z.enum(['employed', 'self_employed', 'freelancer', 'overseas_filipino_worker', 'student'], { message: 'Please select employment type' }),
+  dateOfBirth: z.date().refine((date) => date <= new Date(), {
+    message: 'Date of birth cannot be in the future',
+  }),
   contactNumber: z.string()
     .min(1, 'Contact number is required')
     .regex(/^\d+$/, 'Contact number must contain only numbers')
     .min(11, 'Contact number must be at least 11 digits'),
 })
 
+// Organization Sponsor validation
 const organizationSponsorSchema = z.object({
-  organizationName: z.string().min(2, 'Organization name must be at least 2 characters'),
+  organizationName: z.string().min(1, 'Organization name is required'),
   organizationType: z.enum(['private_company', 'non_governmental_organization', 'educational_institution'], { message: 'Please select organization type' }),
-  emailAddress: z.string()
-    .min(1, 'Email address is required')
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address'),
   contactNumber: z.string()
     .min(1, 'Contact number is required')
     .regex(/^\d+$/, 'Contact number must contain only numbers')
     .min(11, 'Contact number must be at least 11 digits'),
 })
 
+// Government Sponsor validation
 const governmentSponsorSchema = z.object({
-  agencyName: z.string().min(2, 'Agency name must be at least 2 characters'),
+  agencyName: z.string().min(1, 'Agency name is required'),
   agencyType: z.enum(['national_government_agency', 'local_government_unit', 'government_owned_and_controlled_corporation'], { message: 'Please select agency type' }),
-  emailAddress: z.string()
-    .min(1, 'Email address is required')
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address'),
   contactNumber: z.string()
     .min(1, 'Contact number is required')
     .regex(/^\d+$/, 'Contact number must contain only numbers')
     .min(11, 'Contact number must be at least 11 digits'),
 })
 
+// School validation
 const schoolSchema = z.object({
-  schoolName: z.string().min(2, 'School name must be at least 2 characters'),
+  schoolName: z.string().min(1, 'School name is required'),
   schoolType: z.enum(['public', 'private', 'international', 'vocational', 'religious'], { message: 'Please select school type' }),
-  emailAddress: z.string()
-    .min(1, 'Email address is required')
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address'),
   contactNumber: z.string()
     .min(1, 'Contact number is required')
     .regex(/^\d+$/, 'Contact number must contain only numbers')
@@ -99,6 +111,7 @@ function ProfileSetup() {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const [roleValidationError, setRoleValidationError] = useState(false)
   
+  const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false)
   const [toastConfig, setToastConfig] = useState({
     type: "success" as "success" | "error",
@@ -111,9 +124,11 @@ function ProfileSetup() {
     resolver: zodResolver(studentSchema),
     mode: "onBlur",
     defaultValues: {
-      fullName: '',
+      firstName: '',
+      middleName: '',
+      lastName: '',
       gender: undefined,
-      dateOfBirth: '',
+      dateOfBirth: undefined,
       contactNumber: '',
     }
   })
@@ -123,9 +138,11 @@ function ProfileSetup() {
     resolver: zodResolver(individualSponsorSchema),
     mode: "onBlur",
     defaultValues: {
-      fullName: '',
+      firstName: '',
+      middleName: '',
+      lastName: '',
       employmentType: undefined,
-      dateOfBirth: '',
+      dateOfBirth: undefined,
       contactNumber: '',
     }
   })
@@ -137,7 +154,6 @@ function ProfileSetup() {
     defaultValues: {
       organizationName: '',
       organizationType: undefined,
-      emailAddress: '',
       contactNumber: '',
     }
   })
@@ -149,7 +165,6 @@ function ProfileSetup() {
     defaultValues: {
       agencyName: '',
       agencyType: undefined,
-      emailAddress: '',
       contactNumber: '',
     }
   })
@@ -161,7 +176,6 @@ function ProfileSetup() {
     defaultValues: {
       schoolName: '',
       schoolType: undefined,
-      emailAddress: '',
       contactNumber: '',
     }
   })
@@ -186,22 +200,175 @@ function ProfileSetup() {
     setRoleValidationError(false)
   }, [role, navigate])
 
-  const onSubmit = <T,>(data: T) => {
-    if (selectedRole) {
-      console.log(`${selectedRole} data:`, data)
-    } else {
-      console.log('profile data:', data)
+  const onSubmit = async (data: StudentFormData | IndividualSponsorFormData | OrganizationSponsorFormData | GovernmentSponsorFormData | SchoolFormData) => {
+    try {
+      setLoading(true);
+
+      if (selectedRole === 'student') {
+        const studentData = data as StudentFormData;
+
+        const formattedDate = studentData.dateOfBirth.toISOString().split('T')[0];
+
+        // const result = await profileService.setupStudentProfile({
+        //   role: selectedRole
+        //   first_name: studentData.firstName,
+        //   middle_name: studentData.middleName,
+        //   last_name: studentData.lastName,
+        //   gender: studentData.gender,
+        //   date_of_birth: formattedDate,
+        //   contact_number: studentData.contactNumber,
+        // });
+
+        // if (result.success) {
+        //   setToastConfig({
+        //     type: 'success',
+        //     title: 'Profile Created',
+        //     message: 'Your profile has been set up successfully!',
+        //   })
+        //   setShowToast(true);
+        //   setTimeout(() => {
+        //     navigate({ to: '../_student/home' })
+        //   }, 1250);
+        // } else {
+        //   setToastConfig({
+        //     type: 'error',
+        //     title: 'Error',
+        //     message: result.message,
+        //   })
+        //   setShowToast(true);
+        // }
+      } else if (selectedRole === 'individual_sponsor') {
+        const individualSponsorData = data as IndividualSponsorFormData;
+
+        const formattedDate = individualSponsorData.dateOfBirth.toISOString().split('T')[0];
+
+        // const result = await profileService.setupIndividualSponsorProfile({
+        //   role: selectedRole
+        //   first_name: individualSponsorData.firstName,
+        //   middle_name: individualSponsorData.middleName,
+        //   last_name: individualSponsorData.lastName,
+        //   employment_type: individualSponsorData.employmentType,
+        //   date_of_birth: formattedDate,
+        //   contact_number: individualSponsorData.contactNumber,
+        // });
+
+        // if (result.success) {
+        //   setToastConfig({
+        //     type: 'success',
+        //     title: 'Profile Created',
+        //     message: 'Your profile has been set up successfully!',
+        //   })
+        //   setShowToast(true);
+        //   setTimeout(() => {
+        //     navigate({ to: '../_student/my-scholarship' })
+        //   }, 1250);
+        // } else {
+        //   setToastConfig({
+        //     type: 'error',
+        //     title: 'Error',
+        //     message: result.message,
+        //   })
+        //   setShowToast(true);
+        // }
+      } else if (selectedRole === 'organization_sponsor') {
+        const organizationSponsorData = data as OrganizationSponsorFormData;
+
+        // const result = await profileService.setupOrganizationSponsorProfile({
+        //   role: selectedRole
+        //   organization_name: organizationSponsorData.organizationName,
+        //   organization_type: organizationSponsorData.organizationType,
+        //   official_email: organizationSponsorData.emailAddress,
+        //   contact_number: organizationSponsorData.contactNumber,
+        // });
+
+        // if (result.success) {
+        //   setToastConfig({
+        //     type: 'success',
+        //     title: 'Profile Created',
+        //     message: 'Your profile has been set up successfully!',
+        //   })
+        //   setShowToast(true);
+        //   setTimeout(() => {
+        //     navigate({ to: '../_student/my-scholarship' })
+        //   }, 1250);
+        // } else {
+        //   setToastConfig({
+        //     type: 'error',
+        //     title: 'Error',
+        //     message: result.message,
+        //   })
+        //   setShowToast(true);
+        // }
+      } else if (selectedRole === 'government_sponsor') {
+        const governmentSponsorData = data as GovernmentSponsorFormData;
+
+        // const result = await profileService.setupGovernmentSponsorProfile({
+        //   role: selectedRole
+        //   agency_name: governmentSponsorData.agencyName,
+        //   agency_type: governmentSponsorData.agencyType,
+        //   official_email: governmentSponsorData.emailAddress,
+        //   contact_number: governmentSponsorData.contactNumber,
+        // });
+
+        // if (result.success) {
+        //   setToastConfig({
+        //     type: 'success',
+        //     title: 'Profile Created',
+        //     message: 'Your profile has been set up successfully!',
+        //   })
+        //   setShowToast(true);
+        //   setTimeout(() => {
+        //     navigate({ to: '../_student/my-scholarship' })
+        //   }, 1250);
+        // } else {
+        //   setToastConfig({
+        //     type: 'error',
+        //     title: 'Error',
+        //     message: result.message,
+        //   })
+        //   setShowToast(true);
+        // }
+      } else if (selectedRole === 'school') {
+        const schoolData = data as SchoolFormData;
+
+        // const result = await profileService.setupSchoolProfile({
+        //   role: selectedRole
+        //   school_name: schoolData.schoolName,
+        //   school_type: schoolData.schoolType,
+        //   official_email: schoolData.emailAddress,
+        //   contact_number: schoolData.contactNumber,
+        // });
+
+        // if (result.success) {
+        //   setToastConfig({
+        //     type: 'success',
+        //     title: 'Profile Created',
+        //     message: 'Your profile has been set up successfully!',
+        //   })
+        //   setShowToast(true);
+        //   setTimeout(() => {
+        //     navigate({ to: '../_student/dashboard' })
+        //   }, 1250);
+        // } else {
+        //   setToastConfig({
+        //     type: 'error',
+        //     title: 'Error',
+        //     message: result.message,
+        //   })
+        //   setShowToast(true);
+        // }
+      } 
+    } catch(error) {
+      console.error('Profile setup error:', error);
+      setToastConfig({
+        type: 'error',
+        title: 'Connection Error',
+        message: 'Failed to connect to server.',
+      })
+      setShowToast(true)
+    } finally {
+      setLoading(false);
     }
-    setToastConfig({
-      type: 'success',
-      title: 'Success',
-      message: 'Profile completed!',
-    })
-    setShowToast(true)
-    setTimeout(() => {
-      setShowToast(false)
-      // navigate({ to: '/' });
-    }, 1000)
   }
 
   if (roleValidationError || !selectedRole) {
@@ -287,22 +454,60 @@ function ProfileSetup() {
             {/* Student Form */}
             {selectedRole === 'student' && (
               <form onSubmit={studentForm.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
-                <div>
-                  <input
-                    type="text"
-                    {...studentForm.register('fullName')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      studentForm.formState.errors.fullName
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
-                    }`}
-                    placeholder="What's your full name?"
-                  />
-                  {studentForm.formState.errors.fullName && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
-                      {studentForm.formState.errors.fullName.message}
-                    </p>
-                  )}
+                <div className="flex space-x-2">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      {...studentForm.register('firstName')}
+                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+                        studentForm.formState.errors.firstName
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                      }`}
+                      placeholder="First name"
+                    />
+                    {studentForm.formState.errors.firstName && (
+                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+                        {studentForm.formState.errors.firstName.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      {...studentForm.register('middleName')}
+                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+                        studentForm.formState.errors.middleName
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                      }`}
+                      placeholder="Middle name"
+                    />
+                    {studentForm.formState.errors.middleName && (
+                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+                        {studentForm.formState.errors.middleName.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      {...studentForm.register('lastName')}
+                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+                        studentForm.formState.errors.lastName
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                      }`}
+                      placeholder="Last name"
+                    />
+                    {studentForm.formState.errors.lastName && (
+                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+                        {studentForm.formState.errors.lastName.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -312,7 +517,7 @@ function ProfileSetup() {
                   >
                     <SelectTrigger className={`w-full px-4 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       studentForm.formState.errors.gender
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}>
                       <SelectValue placeholder="Select your gender" />
@@ -323,26 +528,49 @@ function ProfileSetup() {
                     </SelectContent>
                   </Select>
                   {studentForm.formState.errors.gender && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {studentForm.formState.errors.gender.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <input
-                    type="date"
-                    {...studentForm.register('dateOfBirth')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                      studentForm.watch('dateOfBirth') ? 'text-[#111827]' : 'text-gray-400'
-                    } ${
-                      studentForm.formState.errors.dateOfBirth
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
-                    }`}
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+                          studentForm.watch('dateOfBirth') ? 'text-[#111827]' : 'text-gray-400'
+                        } ${
+                          studentForm.formState.errors.dateOfBirth
+                            ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
+                            : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
+                        }`}
+                      >
+                        <span>
+                          {studentForm.watch('dateOfBirth') 
+                            ? studentForm.watch('dateOfBirth').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                            : 'Set birth date'}
+                        </span>
+                        <CalendarIcon className="h-4 w-4 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={studentForm.watch('dateOfBirth')}
+                        onSelect={(date) => {
+                          if (date) {
+                            studentForm.setValue('dateOfBirth', date, { shouldValidate: true })
+                          }
+                        }}
+                        disabled={(date) => date > new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   {studentForm.formState.errors.dateOfBirth && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {studentForm.formState.errors.dateOfBirth.message}
                     </p>
                   )}
@@ -354,7 +582,7 @@ function ProfileSetup() {
                     {...studentForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       studentForm.formState.errors.contactNumber
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}
                     placeholder="Enter contact number"
@@ -365,7 +593,7 @@ function ProfileSetup() {
                     }}
                   />
                   {studentForm.formState.errors.contactNumber && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {studentForm.formState.errors.contactNumber.message}
                     </p>
                   )}
@@ -373,16 +601,22 @@ function ProfileSetup() {
 
                 <motion.button
                   type="submit"
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || loading}
                   className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
-                    isFormValid
+                    isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'
                   }`}
                   whileHover={isFormValid ? { scale: 1.02 } : {}}
                   whileTap={isFormValid ? { scale: 0.98 } : {}}
                 >
-                  Complete
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </span>
+                  ) : (
+                    <span>Complete</span>
+                  )}
                 </motion.button>
               </form>
             )}
@@ -390,32 +624,74 @@ function ProfileSetup() {
             {/* Individual Sponsor Form */}
             {selectedRole === 'individual_sponsor' && (
               <form onSubmit={individualSponsorForm.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
-                <div>
-                  <input
-                    type="text"
-                    {...individualSponsorForm.register('fullName')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      individualSponsorForm.formState.errors.fullName
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
-                    }`}
-                    placeholder="What's your full name?"
-                  />
-                  {individualSponsorForm.formState.errors.fullName && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
-                      {individualSponsorForm.formState.errors.fullName.message}
-                    </p>
-                  )}
+                <div className="flex space-x-2">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      disabled={loading}
+                      {...individualSponsorForm.register('firstName')}
+                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+                        individualSponsorForm.formState.errors.firstName
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                      }`}
+                      placeholder="First name"
+                    />
+                    {individualSponsorForm.formState.errors.firstName && (
+                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+                        {individualSponsorForm.formState.errors.firstName.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      disabled={loading}
+                      {...individualSponsorForm.register('middleName')}
+                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+                        individualSponsorForm.formState.errors.middleName
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                      }`}
+                      placeholder="Middle name"
+                    />
+                    {individualSponsorForm.formState.errors.middleName && (
+                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+                        {individualSponsorForm.formState.errors.middleName.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      disabled={loading}
+                      {...individualSponsorForm.register('lastName')}
+                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+                        individualSponsorForm.formState.errors.lastName
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                      }`}
+                      placeholder="Last name"
+                    />
+                    {individualSponsorForm.formState.errors.lastName && (
+                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+                        {individualSponsorForm.formState.errors.lastName.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
                   <Select 
                     value={individualSponsorForm.watch('employmentType')} 
+                    disabled={loading}
                     onValueChange={(value) => individualSponsorForm.setValue('employmentType', value as any, { shouldValidate: true })}
                   >
                     <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       individualSponsorForm.formState.errors.employmentType
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}>
                       <SelectValue placeholder="Select your employment type" />
@@ -429,26 +705,49 @@ function ProfileSetup() {
                     </SelectContent>
                   </Select>
                   {individualSponsorForm.formState.errors.employmentType && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {individualSponsorForm.formState.errors.employmentType.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <input
-                    type="date"
-                    {...individualSponsorForm.register('dateOfBirth')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                      individualSponsorForm.watch('dateOfBirth') ? 'text-[#111827]' : 'text-gray-400'
-                    } ${
-                      individualSponsorForm.formState.errors.dateOfBirth
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
-                    }`}
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+                          individualSponsorForm.watch('dateOfBirth') ? 'text-[#111827]' : 'text-gray-400'
+                        } ${
+                          individualSponsorForm.formState.errors.dateOfBirth
+                            ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
+                            : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
+                        }`}
+                      >
+                        <span>
+                          {individualSponsorForm.watch('dateOfBirth') 
+                            ? individualSponsorForm.watch('dateOfBirth').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                            : 'Set birth date'}
+                        </span>
+                        <CalendarIcon className="h-4 w-4 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={individualSponsorForm.watch('dateOfBirth')}
+                        onSelect={(date) => {
+                          if (date) {
+                            individualSponsorForm.setValue('dateOfBirth', date, { shouldValidate: true })
+                          }
+                        }}
+                        disabled={(date) => date > new Date() || loading}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   {individualSponsorForm.formState.errors.dateOfBirth && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {individualSponsorForm.formState.errors.dateOfBirth.message}
                     </p>
                   )}
@@ -457,10 +756,11 @@ function ProfileSetup() {
                 <div>
                   <input
                     type="tel"
+                    disabled={loading}
                     {...individualSponsorForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       individualSponsorForm.formState.errors.contactNumber
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}
                     placeholder="Enter contact number"
@@ -471,7 +771,7 @@ function ProfileSetup() {
                     }}
                   />
                   {individualSponsorForm.formState.errors.contactNumber && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {individualSponsorForm.formState.errors.contactNumber.message}
                     </p>
                   )}
@@ -479,16 +779,22 @@ function ProfileSetup() {
 
                 <motion.button
                   type="submit"
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || loading}
                   className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
-                    isFormValid
+                    isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'
                   }`}
                   whileHover={isFormValid ? { scale: 1.02 } : {}}
                   whileTap={isFormValid ? { scale: 0.98 } : {}}
                 >
-                  Complete
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </span>
+                  ) : (
+                    <span>Complete</span>
+                  )}
                 </motion.button>
               </form>
             )}
@@ -499,16 +805,17 @@ function ProfileSetup() {
                 <div>
                   <input
                     type="text"
+                    disabled={loading}
                     {...organizationSponsorForm.register('organizationName')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       organizationSponsorForm.formState.errors.organizationName
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}
                     placeholder="What's your organization name?"
                   />
                   {organizationSponsorForm.formState.errors.organizationName && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {organizationSponsorForm.formState.errors.organizationName.message}
                     </p>
                   )}
@@ -517,11 +824,12 @@ function ProfileSetup() {
                 <div>
                   <Select 
                     value={organizationSponsorForm.watch('organizationType')} 
+                    disabled={loading}
                     onValueChange={(value) => organizationSponsorForm.setValue('organizationType', value as any, { shouldValidate: true })}
                   >
                     <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       organizationSponsorForm.formState.errors.organizationType
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}>
                       <SelectValue placeholder="Select your organization type" />
@@ -533,7 +841,7 @@ function ProfileSetup() {
                     </SelectContent>
                   </Select>
                   {organizationSponsorForm.formState.errors.organizationType && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {organizationSponsorForm.formState.errors.organizationType.message}
                     </p>
                   )}
@@ -541,29 +849,12 @@ function ProfileSetup() {
 
                 <div>
                   <input
-                    type="email"
-                    {...organizationSponsorForm.register('emailAddress')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      organizationSponsorForm.formState.errors.emailAddress
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
-                    }`}
-                    placeholder="Enter official email address"
-                  />
-                  {organizationSponsorForm.formState.errors.emailAddress && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
-                      {organizationSponsorForm.formState.errors.emailAddress.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <input
                     type="tel"
+                    disabled={loading}
                     {...organizationSponsorForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       organizationSponsorForm.formState.errors.contactNumber
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}
                     placeholder="Enter contact number"
@@ -574,7 +865,7 @@ function ProfileSetup() {
                     }}
                   />
                   {organizationSponsorForm.formState.errors.contactNumber && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {organizationSponsorForm.formState.errors.contactNumber.message}
                     </p>
                   )}
@@ -582,16 +873,22 @@ function ProfileSetup() {
 
                 <motion.button
                   type="submit"
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || loading}
                   className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
-                    isFormValid
+                    isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'
                   }`}
                   whileHover={isFormValid ? { scale: 1.02 } : {}}
                   whileTap={isFormValid ? { scale: 0.98 } : {}}
                 >
-                  Complete
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </span>
+                  ) : (
+                    <span>Complete</span>
+                  )}
                 </motion.button>
               </form>
             )}
@@ -602,16 +899,17 @@ function ProfileSetup() {
                 <div>
                   <input
                     type="text"
+                    disabled={loading}
                     {...governmentSponsorForm.register('agencyName')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       governmentSponsorForm.formState.errors.agencyName
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}
                     placeholder="What's your agency name?"
                   />
                   {governmentSponsorForm.formState.errors.agencyName && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {governmentSponsorForm.formState.errors.agencyName.message}
                     </p>
                   )}
@@ -620,11 +918,12 @@ function ProfileSetup() {
                 <div>
                   <Select 
                     value={governmentSponsorForm.watch('agencyType')} 
+                    disabled={loading}
                     onValueChange={(value) => governmentSponsorForm.setValue('agencyType', value as any, { shouldValidate: true })}
                   >
                     <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       governmentSponsorForm.formState.errors.agencyType
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}>
                       <SelectValue placeholder="Select your agency type" />
@@ -636,7 +935,7 @@ function ProfileSetup() {
                     </SelectContent>
                   </Select>
                   {governmentSponsorForm.formState.errors.agencyType && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {governmentSponsorForm.formState.errors.agencyType.message}
                     </p>
                   )}
@@ -644,29 +943,12 @@ function ProfileSetup() {
 
                 <div>
                   <input
-                    type="email"
-                    {...governmentSponsorForm.register('emailAddress')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      governmentSponsorForm.formState.errors.emailAddress
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
-                    }`}
-                    placeholder="Enter official email address"
-                  />
-                  {governmentSponsorForm.formState.errors.emailAddress && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
-                      {governmentSponsorForm.formState.errors.emailAddress.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <input
                     type="tel"
+                    disabled={loading}
                     {...governmentSponsorForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       governmentSponsorForm.formState.errors.contactNumber
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}
                     placeholder="Enter contact number"
@@ -677,7 +959,7 @@ function ProfileSetup() {
                     }}
                   />
                   {governmentSponsorForm.formState.errors.contactNumber && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {governmentSponsorForm.formState.errors.contactNumber.message}
                     </p>
                   )}
@@ -685,16 +967,22 @@ function ProfileSetup() {
 
                 <motion.button
                   type="submit"
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || loading}
                   className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
-                    isFormValid
+                    isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'
                   }`}
                   whileHover={isFormValid ? { scale: 1.02 } : {}}
                   whileTap={isFormValid ? { scale: 0.98 } : {}}
                 >
-                  Complete
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </span>
+                  ) : (
+                    <span>Complete</span>
+                  )}
                 </motion.button>
               </form>
             )}
@@ -705,16 +993,17 @@ function ProfileSetup() {
                 <div>
                   <input
                     type="text"
+                    disabled={loading}
                     {...schoolForm.register('schoolName')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       schoolForm.formState.errors.schoolName
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}
                     placeholder="What's your school name?"
                   />
                   {schoolForm.formState.errors.schoolName && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {schoolForm.formState.errors.schoolName.message}
                     </p>
                   )}
@@ -723,11 +1012,12 @@ function ProfileSetup() {
                 <div>
                   <Select 
                     value={schoolForm.watch('schoolType')} 
+                    disabled={loading}
                     onValueChange={(value) => schoolForm.setValue('schoolType', value as any, { shouldValidate: true })}
                   >
                     <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       schoolForm.formState.errors.schoolType
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}>
                       <SelectValue placeholder="Select your school type" />
@@ -741,7 +1031,7 @@ function ProfileSetup() {
                     </SelectContent>
                   </Select>
                   {schoolForm.formState.errors.schoolType && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {schoolForm.formState.errors.schoolType.message}
                     </p>
                   )}
@@ -749,29 +1039,12 @@ function ProfileSetup() {
 
                 <div>
                   <input
-                    type="email"
-                    {...schoolForm.register('emailAddress')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      schoolForm.formState.errors.emailAddress
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
-                    }`}
-                    placeholder="Enter official email address"
-                  />
-                  {schoolForm.formState.errors.emailAddress && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
-                      {schoolForm.formState.errors.emailAddress.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <input
                     type="tel"
+                    disabled={loading}
                     {...schoolForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       schoolForm.formState.errors.contactNumber
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
                     }`}
                     placeholder="Enter contact number"
@@ -782,25 +1055,30 @@ function ProfileSetup() {
                     }}
                   />
                   {schoolForm.formState.errors.contactNumber && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-red-500">
+                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
                       {schoolForm.formState.errors.contactNumber.message}
                     </p>
                   )}
                 </div>
 
-                {/* Complete Button */}
                 <motion.button
                   type="submit"
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || loading}
                   className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
-                    isFormValid
+                    isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'
                   }`}
                   whileHover={isFormValid ? { scale: 1.02 } : {}}
                   whileTap={isFormValid ? { scale: 0.98 } : {}}
                 >
-                  Complete
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </span>
+                  ) : (
+                    <span>Complete</span>
+                  )}
                 </motion.button>
               </form>
             )}

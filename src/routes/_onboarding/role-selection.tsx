@@ -5,6 +5,8 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import { HiAcademicCap, HiHeart, HiBuildingOffice2, HiUser, HiUserGroup, HiBuildingLibrary, HiArrowLeft } from "react-icons/hi2";
 import Toast from "@/components/Toast";
 import { z } from 'zod';
+import { Loader2 } from "lucide-react";
+// import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute('/_onboarding/role-selection')({
   component: RoleSelection,
@@ -32,6 +34,7 @@ function RoleSelection() {
   const [selectedSubRole, setSubRole] = useState<SubRole>(null);
   const [showSponsorTypes, setShowSponsorTypes] = useState(false);
 
+  const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: "success" as "success" | "error",
@@ -171,7 +174,9 @@ function RoleSelection() {
     }
   };
 
-  const handleSelect = () => {
+  const handleSelect = async () => {
+    setLoading(true);
+
     const validation = validateSelection();
     
     if (!validation.isValid) {
@@ -219,6 +224,7 @@ function RoleSelection() {
     setShowToast(true);
 
     setTimeout(() => {
+      setLoading(false);
       setShowToast(false);
       navigate({ 
         to: '/profile-setup',
@@ -383,16 +389,22 @@ function RoleSelection() {
         >
           <motion.button
             onClick={handleSelect}
-            disabled={!canContinue}
+            disabled={!canContinue || loading}
             className={`px-50 sm:px-75 md:px-22 lg:px-29 py-3 sm:py-3.5 md:py-3 rounded-xl text-sm sm:text-base md:text-base transition-all duration-300 ${
-              canContinue
+              canContinue && !loading
                 ? 'bg-[#EFA508] hover:bg-[#D89407] text-[#F0F7FF] cursor-pointer shadow-md hover:shadow-lg'
                 : 'bg-[#9CA3AF] text-[#F0F7FF] cursor-not-allowed'
             }`}
             whileHover={canContinue ? { scale: 1.05 } : {}}
             whileTap={canContinue ? { scale: 0.95 } : {}}
           >
-            Select
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <Loader2 className="w-4 h-4 animate-spin" />
+              </span>
+            ) : (
+              <span>Sign Up</span>
+            )}
           </motion.button>
         </motion.div>
       </motion.div>
