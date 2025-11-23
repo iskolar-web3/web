@@ -12,6 +12,7 @@ import {
   CalendarIcon,
   DollarSign,
   Users,
+  Images,
   Type as TypeIcon,
   AlignLeft,
   ListChecks,
@@ -690,34 +691,44 @@ function CreateScholarship() {
             
             <div className="bg-[#F5F7FF] rounded-xl overflow-hidden border border-[#D3DCF6]">
               <div className="bg-gradient-to-r from-[#3646A8] via-[#465BC8] to-[#5A80E6]">
-                <div className="flex gap-4">
+                <div className="flex">
                   {/* Image Section */}
                   <div className="relative w-40 h-40 flex-shrink-0">
                     {imagePreview ? (
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-lg rounded-bl-none " />
                     ) : (
                       <div className="w-full h-full bg-white/20 rounded-lg rounded-bl-none flex items-center justify-center">
-                        <Upload className="text-white/60" size={32} />
+                        <Images className="text-white/60" size={32} />
                       </div>
                     )}
                   </div>
 
                   {/* Info */}
-                  <div className="flex-1 text-white mt-2">
-                    <h3 className="text-2xl mb-2">
+                  <div className="flex-1 text-white mt-2.5 px-4">
+                    <h3 className="text-2xl mb-2.5 truncate">
                       {title || 'Scholarship Title'}
                     </h3>
 
                     {(type || purpose) && (
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <div className="flex flex-wrap items-center gap-2 mb-6">
                         {type && (
                           <span className="px-3 py-0.5 bg-white/95 text-[#3A52A6] text-xs rounded-full">
-                            {type === 'merit_based' ? 'Merit-Based' : 'Skill-Based'}
+                            {type 
+                              ? type === 'merit_based' 
+                                ? 'Merit-Based' 
+                                : 'Skill-Based'
+                              : 'Type'
+                            }
                           </span>
                         )}
                         {purpose && (
                           <span className="px-3 py-0.5 bg-white/95 text-[#3A52A6] text-xs rounded-full">
-                            {purpose === 'allowance' ? 'Allowance' : 'Tuition'}
+                            {purpose 
+                              ? purpose === 'allowance' 
+                                ? 'Allowance' 
+                                : 'Tuition' 
+                              : 'Purpose'
+                            }
                           </span>
                         )}
                       </div>
@@ -776,11 +787,16 @@ function CreateScholarship() {
                     <h4 className="text-[#4B5563] text-xs  uppercase tracking-wider mb-2">CRITERIA</h4>
                     {criteria.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
-                        {criteria.map((c, i) => (
+                        {criteria.slice(0, 2).map((c, i) => (
                           <span key={i} className="px-3 py-1 rounded-full bg-white text-[#374151] text-xs border border-[#E5E7EB]">
                             {c}
                           </span>
                         ))}
+                        {criteria.length > 2 && (
+                          <span className="px-3 py-1 rounded-full bg-white text-[#374151] text-xs border border-[#E5E7EB]">
+                            +{criteria.length - 2} more
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <p className="text-[#9CA3AF] text-xs">No criteria added</p>
@@ -791,11 +807,16 @@ function CreateScholarship() {
                     <h4 className="text-[#4B5563] text-xs  uppercase tracking-wider mb-2">Required Documents</h4>
                     {documents.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
-                        {documents.map((d, i) => (
+                        {documents.slice(0, 2).map((d, i) => (
                           <span key={i} className="px-3 py-1 rounded-full bg-white text-[#374151] text-xs border border-[#E5E7EB]">
                             {d}
                           </span>
                         ))}
+                        {documents.length > 2 && (
+                          <span className="px-3 py-1 rounded-full bg-white text-[#374151] text-xs border border-[#E5E7EB]">
+                            +{documents.length - 2} more
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <p className="text-[#9CA3AF] text-xs">No documents added</p>
