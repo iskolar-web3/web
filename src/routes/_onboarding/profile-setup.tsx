@@ -227,6 +227,7 @@ function ProfileSetup() {
         //   })
         //   setShowToast(true);
         //   setTimeout(() => {
+        //     setShowToast(false)
         //     navigate({ to: '../_student/home' })
         //   }, 1250);
         // } else {
@@ -236,6 +237,7 @@ function ProfileSetup() {
         //     message: result.message,
         //   })
         //   setShowToast(true);
+        //   setTimeout(() => setShowToast(false), 2000);
         // }
       } else if (selectedRole === 'individual_sponsor') {
         const individualSponsorData = data as IndividualSponsorFormData;
@@ -260,6 +262,7 @@ function ProfileSetup() {
         //   })
         //   setShowToast(true);
         //   setTimeout(() => {
+        //     setShowToast(false)
         //     navigate({ to: '../_student/my-scholarship' })
         //   }, 1250);
         // } else {
@@ -269,6 +272,7 @@ function ProfileSetup() {
         //     message: result.message,
         //   })
         //   setShowToast(true);
+        //   setTimeout(() => setShowToast(false), 2000);
         // }
       } else if (selectedRole === 'organization_sponsor') {
         const organizationSponsorData = data as OrganizationSponsorFormData;
@@ -289,6 +293,7 @@ function ProfileSetup() {
         //   })
         //   setShowToast(true);
         //   setTimeout(() => {
+        //     setShowToast(false)
         //     navigate({ to: '../_student/my-scholarship' })
         //   }, 1250);
         // } else {
@@ -298,6 +303,7 @@ function ProfileSetup() {
         //     message: result.message,
         //   })
         //   setShowToast(true);
+        //   setTimeout(() => setShowToast(false), 2000);
         // }
       } else if (selectedRole === 'government_sponsor') {
         const governmentSponsorData = data as GovernmentSponsorFormData;
@@ -318,6 +324,7 @@ function ProfileSetup() {
         //   })
         //   setShowToast(true);
         //   setTimeout(() => {
+        //     setShowToast(false)
         //     navigate({ to: '../_student/my-scholarship' })
         //   }, 1250);
         // } else {
@@ -327,6 +334,7 @@ function ProfileSetup() {
         //     message: result.message,
         //   })
         //   setShowToast(true);
+        //   setTimeout(() => setShowToast(false), 2000);
         // }
       } else if (selectedRole === 'school') {
         const schoolData = data as SchoolFormData;
@@ -347,6 +355,7 @@ function ProfileSetup() {
         //   })
         //   setShowToast(true);
         //   setTimeout(() => {
+        //     setShowToast(false)
         //     navigate({ to: '../_student/dashboard' })
         //   }, 1250);
         // } else {
@@ -356,6 +365,7 @@ function ProfileSetup() {
         //     message: result.message,
         //   })
         //   setShowToast(true);
+        //   setTimeout(() => setShowToast(false), 2000);
         // }
       } 
     } catch(error) {
