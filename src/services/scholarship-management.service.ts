@@ -1,4 +1,5 @@
 import { authService } from './auth.service';
+import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -13,40 +14,6 @@ interface ScholarshipData {
   criteria: string[];
   required_documents: string[];
   custom_form_fields: CustomFormField[];
-}
-
-export interface CustomFormField {
-  type: 'text' | 'textarea' | 'multiple_choice' | 'dropdown' | 'checkbox' | 'number' | 'date' | 'email' | 'phone' | 'file' ;
-  label: string;
-  required: boolean;
-  options?: string[]; 
-}
-
-interface Scholarship {
-  scholarship_id: string;
-  sponsor_id: string;
-  status: string;
-  sponsor: Sponsor;
-  image_url: string;
-  type: string;
-  purpose: string;
-  title: string;
-  description?: string;
-  total_amount: number;
-  total_slot: number;
-  application_deadline: string;
-  criteria: string[];
-  required_documents: string[];
-  custom_form_fields: CustomFormField[];
-  applications_count?: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Sponsor {
-  email?: string;
-  organization_name: string;           
-  profile_url?: string;
 }
 
 class ScholarshipManagementService {

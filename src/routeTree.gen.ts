@@ -9,10 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StudentRouteImport } from './routes/_student'
 import { Route as SponsorRouteImport } from './routes/_sponsor'
 import { Route as OnboardingRouteImport } from './routes/_onboarding'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StudentDiscoverRouteImport } from './routes/_student/discover'
 import { Route as SponsorCreateRouteImport } from './routes/_sponsor/create'
 import { Route as OnboardingWelcomeRouteImport } from './routes/_onboarding/welcome'
 import { Route as OnboardingRoleSelectionRouteImport } from './routes/_onboarding/role-selection'
@@ -20,6 +22,10 @@ import { Route as OnboardingProfileSetupRouteImport } from './routes/_onboarding
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 
+const StudentRoute = StudentRouteImport.update({
+  id: '/_student',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SponsorRoute = SponsorRouteImport.update({
   id: '/_sponsor',
   getParentRoute: () => rootRouteImport,
@@ -36,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const StudentDiscoverRoute = StudentDiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => StudentRoute,
 } as any)
 const SponsorCreateRoute = SponsorCreateRouteImport.update({
   id: '/create',
@@ -76,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/role-selection': typeof OnboardingRoleSelectionRoute
   '/welcome': typeof OnboardingWelcomeRoute
   '/create': typeof SponsorCreateRoute
+  '/discover': typeof StudentDiscoverRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,6 +97,7 @@ export interface FileRoutesByTo {
   '/role-selection': typeof OnboardingRoleSelectionRoute
   '/welcome': typeof OnboardingWelcomeRoute
   '/create': typeof SponsorCreateRoute
+  '/discover': typeof StudentDiscoverRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -92,12 +105,14 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/_onboarding': typeof OnboardingRouteWithChildren
   '/_sponsor': typeof SponsorRouteWithChildren
+  '/_student': typeof StudentRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_onboarding/profile-setup': typeof OnboardingProfileSetupRoute
   '/_onboarding/role-selection': typeof OnboardingRoleSelectionRoute
   '/_onboarding/welcome': typeof OnboardingWelcomeRoute
   '/_sponsor/create': typeof SponsorCreateRoute
+  '/_student/discover': typeof StudentDiscoverRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,6 +124,7 @@ export interface FileRouteTypes {
     | '/role-selection'
     | '/welcome'
     | '/create'
+    | '/discover'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -118,18 +134,21 @@ export interface FileRouteTypes {
     | '/role-selection'
     | '/welcome'
     | '/create'
+    | '/discover'
   id:
     | '__root__'
     | '/'
     | '/_auth'
     | '/_onboarding'
     | '/_sponsor'
+    | '/_student'
     | '/_auth/login'
     | '/_auth/register'
     | '/_onboarding/profile-setup'
     | '/_onboarding/role-selection'
     | '/_onboarding/welcome'
     | '/_sponsor/create'
+    | '/_student/discover'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -137,10 +156,18 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   OnboardingRoute: typeof OnboardingRouteWithChildren
   SponsorRoute: typeof SponsorRouteWithChildren
+  StudentRoute: typeof StudentRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_student': {
+      id: '/_student'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof StudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_sponsor': {
       id: '/_sponsor'
       path: ''
@@ -168,6 +195,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_student/discover': {
+      id: '/_student/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof StudentDiscoverRouteImport
+      parentRoute: typeof StudentRoute
     }
     '/_sponsor/create': {
       id: '/_sponsor/create'
@@ -253,11 +287,23 @@ const SponsorRouteChildren: SponsorRouteChildren = {
 const SponsorRouteWithChildren =
   SponsorRoute._addFileChildren(SponsorRouteChildren)
 
+interface StudentRouteChildren {
+  StudentDiscoverRoute: typeof StudentDiscoverRoute
+}
+
+const StudentRouteChildren: StudentRouteChildren = {
+  StudentDiscoverRoute: StudentDiscoverRoute,
+}
+
+const StudentRouteWithChildren =
+  StudentRoute._addFileChildren(StudentRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   OnboardingRoute: OnboardingRouteWithChildren,
   SponsorRoute: SponsorRouteWithChildren,
+  StudentRoute: StudentRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
