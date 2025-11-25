@@ -10,9 +10,7 @@ import {
   Edit2,
   Trash2,
   CalendarIcon,
-  DollarSign,
-  Users,
-  Images,
+  Loader2,
   Type as TypeIcon,
   AlignLeft,
   ListChecks,
@@ -21,7 +19,6 @@ import {
   Mail,
   Phone,
   Paperclip,
-  Loader2,
 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -33,7 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Toast from '@/components/Toast';
-// import { scholarshipManagementService } from '@/services/scholarship-management.service';
+import ScholarshipPreviewCard from '@/components/ScholarshipPreviewCard';
+import ScholarshipFullPreviewModal from '@/components/ScholarshipFullPreviewModal';
+import { scholarshipManagementService } from '@/services/scholarship-management.service';
 
 // Form field types
 const customFieldTypes = [
@@ -56,7 +55,7 @@ const scholarshipSchema = z.object({
   purpose: z.enum(['allowance', 'tuition'], { message: 'Please select a purpose' }),
   title: z.string().min(1, 'Scholarship title is required').max(150, 'Title must be less than 150 characters'),
   description: z.string().optional(),
-  image: z.string().min(1, 'Please upload a scholarship image'),
+  imageUrl: z.string().min(1, 'Please upload a scholarship image'),
   totalAmount: z.string()
     .min(1, 'Total amount is required')
     .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
@@ -67,9 +66,9 @@ const scholarshipSchema = z.object({
     .refine((val) => !isNaN(parseInt(val)) && parseInt(val) > 0, {
       message: 'Please enter a valid slot number greater than 0'
     }),
-  deadline: z.date('Please select an application deadline'),
+  applicationDeadline: z.date('Please select an application deadline'),
   criteria: z.array(z.string()).min(1, 'At least one eligibility criterion is required'),
-  documents: z.array(z.string()).min(1, 'At least one required document is required'),
+  requiredDocuments: z.array(z.string()).min(1, 'At least one required document is required'),
   customFormFields: z.array(z.object({
     type: z.enum(customFieldTypes),
     label: z.string().min(1, 'Field label is required'),
@@ -93,12 +92,12 @@ function CreateScholarship() {
       purpose: undefined,
       title: '',
       description: '',
-      image: '',
+      imageUrl: '',
       totalAmount: '',
       totalSlot: '',
-      deadline: undefined,
+      applicationDeadline: undefined,
       criteria: [],
-      documents: [],
+      requiredDocuments: [],
       customFormFields: [],
     },
   });
@@ -115,6 +114,7 @@ function CreateScholarship() {
   const [newFieldRequired, setNewFieldRequired] = useState(false);
   const [dropdownOptions, setDropdownOptions] = useState<string[]>([]);
   const [dropdownOptionInput, setDropdownOptionInput] = useState('');
+  const [showFullPreview, setShowFullPreview] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -125,67 +125,66 @@ function CreateScholarship() {
   });
 
   const criteria = watch('criteria');
-  const documents = watch('documents');
+  const requiredDocuments = watch('requiredDocuments');
   const customFormFields = watch('customFormFields') || [];
   const description = watch('description');
   const title = watch('title');
   const totalAmount = watch('totalAmount');
   const totalSlot = watch('totalSlot');
-  const deadline = watch('deadline');
+  const applicationDeadline = watch('applicationDeadline');
   const type = watch('type');
   const purpose = watch('purpose');
+  const imageUrl = watch('imageUrl');
+
+  // Create scholarship object for preview
+  const previewScholarship = {
+    type: type,
+    purpose: purpose,
+    title: title,
+    description: description,
+    image_url: imageUrl,
+    total_amount: totalAmount ? parseFloat(totalAmount) : 0,
+    total_slot: totalSlot ? parseInt(totalSlot) : 0,
+    application_deadline: applicationDeadline ? applicationDeadline.toISOString() : '',
+    criteria: criteria,
+    required_documents: requiredDocuments,
+    sponsor: {
+      name: 'iSkolar',
+      profile_url: 'src/logo.svg',
+    },
+  };
 
   const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
-    switch (fieldType) {
-      case 'text':
-        return <TypeIcon size={18} className="text-[#3A52A6]" />;
-      case 'textarea':
-        return <AlignLeft size={18} className="text-[#3A52A6]" />;
-      case 'dropdown':
-      case 'multiple_choice':
-        return <ListChecks size={18} className="text-[#3A52A6]" />;
-      case 'checkbox':
-        return <CheckSquare size={18} className="text-[#3A52A6]" />;
-      case 'number':
-        return <Hash size={18} className="text-[#3A52A6]" />;
-      case 'date':
-        return <CalendarIcon size={18} className="text-[#3A52A6]" />;
-      case 'email':
-        return <Mail size={18} className="text-[#3A52A6]" />;
-      case 'phone':
-        return <Phone size={18} className="text-[#3A52A6]" />;
-      case 'file':
-        return <Paperclip size={18} className="text-[#3A52A6]" />;
-      default:
-        return <TypeIcon size={18} className="text-[#3A52A6]" />;
-    }
+    const iconProps = { size: 18, className: "text-[#3A52A6]" };
+    const icons = {
+      text: <TypeIcon {...iconProps} />,
+      textarea: <AlignLeft {...iconProps} />,
+      dropdown: <ListChecks {...iconProps} />,
+      multiple_choice: <ListChecks {...iconProps} />,
+      checkbox: <CheckSquare {...iconProps} />,
+      number: <Hash {...iconProps} />,
+      date: <CalendarIcon {...iconProps} />,
+      email: <Mail {...iconProps} />,
+      phone: <Phone {...iconProps} />,
+      file: <Paperclip {...iconProps} />,
+    };
+    return icons[fieldType] || icons.text;
   };
 
   const getFieldTypeLabel = (fieldType: CustomFieldType) => {
-    switch (fieldType) {
-      case 'text':
-        return 'Short answer';
-      case 'textarea':
-        return 'Long answer';
-      case 'multiple_choice':
-        return 'Multiple choice';
-      case 'dropdown':
-        return 'Dropdown';
-      case 'checkbox':
-        return 'Checkbox';
-      case 'number':
-        return 'Number';
-      case 'date':
-        return 'Date';
-      case 'email':
-        return 'Email';
-      case 'phone':
-        return 'Phone number';
-      case 'file':
-        return 'File upload';
-      default:
-        return fieldType;
-    }
+    const labels = {
+      text: 'Short answer',
+      textarea: 'Long answer',
+      multiple_choice: 'Multiple choice',
+      dropdown: 'Dropdown',
+      checkbox: 'Checkbox',
+      number: 'Number',
+      date: 'Date',
+      email: 'Email',
+      phone: 'Phone number',
+      file: 'File upload',
+    };
+    return labels[fieldType] || fieldType;
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -195,7 +194,7 @@ function CreateScholarship() {
       reader.onloadend = () => {
         const result = reader.result as string;
         setImagePreview(result);
-        setValue('image', result, { shouldValidate: true });
+        setValue('imageUrl', result, { shouldValidate: true });
       };
       reader.readAsDataURL(file);
     }
@@ -216,13 +215,13 @@ function CreateScholarship() {
   const addDocument = () => {
     const trimmed = documentsInput.trim();
     if (trimmed) {
-      setValue('documents', [...documents, trimmed]);
+      setValue('requiredDocuments', [...requiredDocuments, trimmed]);
       setDocumentsInput('');
     }
   };
 
   const removeDocument = (index: number) => {
-    setValue('documents', documents.filter((_, i) => i !== index));
+    setValue('requiredDocuments', requiredDocuments.filter((_, i) => i !== index));
   };
 
   const openCustomFormModal = (index?: number) => {
@@ -287,9 +286,9 @@ function CreateScholarship() {
       //   description: data.description?.trim() || undefined,
       //   total_amount: parseFloat(data.totalAmount),
       //   total_slot: parseInt(data.totalSlot),
-      //   application_deadline: data.deadline || undefined,
+      //   application_deadline: data.applicationDeadline || undefined,
       //   criteria: data.criteria,
-      //   required_documents: data.documents,
+      //   required_documents: data.requiredDocuments,
       //   custom_form_fields: data.customFormFields && data.customFormFields.length > 0 ? data.customFormFields : undefined,
       // };
 
@@ -396,7 +395,7 @@ function CreateScholarship() {
                           disabled={loading}
                           onClick={() => {
                             setImagePreview(null);
-                            setValue('image', '', { shouldValidate: true });
+                            setValue('imageUrl', '', { shouldValidate: true });
                           }}
                           className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70"
                         >
@@ -405,7 +404,7 @@ function CreateScholarship() {
                       </div>
                     ) : (
                       <div className={`border-2 border-dashed ${
-                        errors.image ? 'border-[#EF4444]' : 'border-[#3A52A6]'
+                        errors.imageUrl ? 'border-[#EF4444]' : 'border-[#3A52A6]'
                       } rounded-lg text-center cursor-pointer hover:bg-[#F0F7FF] transition-colors flex flex-col items-center justify-center w-full h-[410px] md:h-[218px] px-4`}>
                         <Upload className="mb-3 text-[#5B7BA6]" size={40} />
                         <p className="text-[#3A52A6] text-sm opacity-70">Click to select an image</p>
@@ -418,7 +417,7 @@ function CreateScholarship() {
                       </div>
                     )}
                   </label>
-                  {errors.image && <p className="text-xs text-[#EF4444] mt-1">{errors.image.message}</p>}
+                  {errors.imageUrl && <p className="text-xs text-[#EF4444] mt-1">{errors.imageUrl.message}</p>}
                 </div>
 
                 <div className="md:w-2/3 space-y-3.5">
@@ -500,7 +499,7 @@ function CreateScholarship() {
                   <div>
                     <Controller
                       control={control}
-                      name="deadline"
+                      name="applicationDeadline"
                       render={({ field }) => (
                         <Popover>
                           <PopoverTrigger asChild>
@@ -509,7 +508,7 @@ function CreateScholarship() {
                               disabled={loading}
                               className={`w-full px-4 py-3 text-sm border rounded-lg bg-[#F8F9FC] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] flex items-center justify-between ${
                                 field.value ? 'text-[#111827]' : 'text-gray-400'
-                              } ${errors.deadline ? 'border-[#EF4444]' : 'border-[#C4CBD5]'}`}
+                              } ${errors.applicationDeadline ? 'border-[#EF4444]' : 'border-[#C4CBD5]'}`}
                             >
                               <span>
                                 {field.value
@@ -539,7 +538,7 @@ function CreateScholarship() {
                         </Popover>
                       )}
                     />
-                    {errors.deadline && <p className="text-xs text-[#EF4444] mt-1">{errors.deadline.message}</p>}
+                    {errors.applicationDeadline && <p className="text-xs text-[#EF4444] mt-1">{errors.applicationDeadline.message}</p>}
                   </div>
                 </div>
               </div>
@@ -592,7 +591,7 @@ function CreateScholarship() {
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addDocument())}
                   placeholder="Enter required document"
                   className={`flex-1 px-4 py-3 rounded-lg border ${
-                    errors.documents ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                    errors.requiredDocuments ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
                   } bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
                 />
                 <button
@@ -604,10 +603,10 @@ function CreateScholarship() {
                   <Plus size={20} />
                 </button>
               </div>
-              {errors.documents && <p className="text-xs text-[#EF4444] mt-1">{errors.documents.message}</p>}
-              {documents.length > 0 && (
+              {errors.requiredDocuments && <p className="text-xs text-[#EF4444] mt-1">{errors.requiredDocuments.message}</p>}
+              {requiredDocuments.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {documents.map((doc, index) => (
+                  {requiredDocuments.map((doc, index) => (
                     <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg">
                       {doc}
                       <button disabled={loading} onClick={() => removeDocument(index)} className="hover:text-[#2A4296]">
@@ -686,145 +685,15 @@ function CreateScholarship() {
           </div>
 
           {/* Live Preview */}
-          <div className="lg:sticky lg:top-6 h-fit md:ml-18">
-            <h2 className="text-sm text-[#111827] mb-2">Live Preview</h2>
-            
-            <div className="bg-[#F5F7FF] rounded-xl overflow-hidden border border-[#D3DCF6]">
-              <div className="bg-gradient-to-r from-[#3646A8] via-[#465BC8] to-[#5A80E6]">
-                <div className="flex">
-                  {/* Image Section */}
-                  <div className="relative w-40 h-40 flex-shrink-0">
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-lg rounded-bl-none " />
-                    ) : (
-                      <div className="w-full h-full bg-white/20 rounded-lg rounded-bl-none flex items-center justify-center">
-                        <Images className="text-white/60" size={32} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 text-white mt-2.5 px-4">
-                    <h3 className="text-2xl mb-2.5 truncate">
-                      {title || 'Scholarship Title'}
-                    </h3>
-
-                    {(type || purpose) && (
-                      <div className="flex flex-wrap items-center gap-2 mb-6">
-                        {type && (
-                          <span className="px-3 py-0.5 bg-white/95 text-[#3A52A6] text-xs rounded-full">
-                            {type 
-                              ? type === 'merit_based' 
-                                ? 'Merit-Based' 
-                                : 'Skill-Based'
-                              : 'Type'
-                            }
-                          </span>
-                        )}
-                        {purpose && (
-                          <span className="px-3 py-0.5 bg-white/95 text-[#3A52A6] text-xs rounded-full">
-                            {purpose 
-                              ? purpose === 'allowance' 
-                                ? 'Allowance' 
-                                : 'Tuition' 
-                              : 'Purpose'
-                            }
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 text-sm mb-1">
-                      <Users size={14} />
-                      <span>iSkolar</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-sm">
-                      <CalendarIcon size={14} />
-                      <span>
-                        {deadline
-                          ? deadline.toLocaleDateString('en-US', {
-                              month: 'long',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })
-                          : 'Application deadline TBD'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-4 pb-4 pt-2">
-                {/* Amount & Slots */}
-                <div className="grid grid-cols-2 gap-4 mt-2 mb-4">
-                  <div className="bg-[#E2FBF4] border border-[#31D0AA] rounded-lg p-3">
-                    <div className="flex items-center gap-2 text-[#31D0AA] text-sm mb-1">
-                      <DollarSign size={16} />
-                      <span>Amount</span>
-                    </div>
-                    <p className="text-[#31D0AA] text-lg">
-                      {totalAmount ? `₱ ${parseFloat(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₱ 0.00'}
-                    </p>
-                    <p className="text-xs text-[#31D0AA]">per scholar</p>
-                  </div>
-                  
-                  <div className="bg-[#EEF1FF] border border-[#607EF2] rounded-lg p-3">
-                    <div className="flex items-center gap-2 text-[#607EF2] text-sm mb-1">
-                      <Users size={16} />
-                      <span>Slots</span>
-                    </div>
-                    <p className="text-[#607EF2] text-lg">
-                      {totalSlot || '0'}
-                    </p>
-                    <p className="text-xs text-[#607EF2]">scholars</p>
-                  </div>
-                </div>
-
-                {/* Criteria and Required Documents */}
-                <div className="mt-2 grid grid-cols-2 gap-8 text-sm">
-                  <div>
-                    <h4 className="text-[#4B5563] text-xs  uppercase tracking-wider mb-2">CRITERIA</h4>
-                    {criteria.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {criteria.slice(0, 2).map((c, i) => (
-                          <span key={i} className="px-3 py-1 rounded-full bg-white text-[#374151] text-xs border border-[#E5E7EB]">
-                            {c}
-                          </span>
-                        ))}
-                        {criteria.length > 2 && (
-                          <span className="px-3 py-1 rounded-full bg-white text-[#374151] text-xs border border-[#E5E7EB]">
-                            +{criteria.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-[#9CA3AF] text-xs">No criteria added</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <h4 className="text-[#4B5563] text-xs  uppercase tracking-wider mb-2">Required Documents</h4>
-                    {documents.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {documents.slice(0, 2).map((d, i) => (
-                          <span key={i} className="px-3 py-1 rounded-full bg-white text-[#374151] text-xs border border-[#E5E7EB]">
-                            {d}
-                          </span>
-                        ))}
-                        {documents.length > 2 && (
-                          <span className="px-3 py-1 rounded-full bg-white text-[#374151] text-xs border border-[#E5E7EB]">
-                            +{documents.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-[#9CA3AF] text-xs">No documents added</p>
-                    )}
-                  </div>
-                </div>
-              </div>
+          <div className="lg:sticky lg:top-6 h-fit md:ml-24">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm text-[#111827]">Live Preview</h2>
             </div>
+            
+            <ScholarshipPreviewCard 
+              scholarship={previewScholarship}
+              onClick={() => setShowFullPreview(true)}
+            />
           </div>
         </div>
       </div>
@@ -834,7 +703,7 @@ function CreateScholarship() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-lg w-full">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg  text-[#3A52A6]">Scholarship Description</h3>
+              <h3 className="text-lg text-[#3A52A6]">Scholarship Description</h3>
               <button onClick={() => setShowDescriptionModal(false)} className="text-[#4A5568] hover:text-[#3A52A6]">
                 <X size={24} />
               </button>
@@ -1008,6 +877,15 @@ function CreateScholarship() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Full Preview Modal */}
+      {showFullPreview && (
+        <ScholarshipFullPreviewModal
+          scholarship={previewScholarship}
+          onClose={() => setShowFullPreview(false)}
+          isPreview={true}
+        />
       )}
     </div>
   );
