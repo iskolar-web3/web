@@ -333,7 +333,7 @@ function CreateScholarship() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-6">
+    <div className="min-h-screen">
       <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -388,7 +388,7 @@ function CreateScholarship() {
                 <div className="md:w-[218px]">
                   <label className="block">
                     {imagePreview ? (
-                      <div className="relative w-full h-[410px] md:h-[218px] rounded-lg overflow-hidden">
+                      <div className="relative w-full aspect-square rounded-lg overflow-hidden">
                         <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                         <button
                           type="button"
@@ -405,7 +405,7 @@ function CreateScholarship() {
                     ) : (
                       <div className={`border-2 border-dashed ${
                         errors.imageUrl ? 'border-[#EF4444]' : 'border-[#3A52A6]'
-                      } rounded-lg text-center cursor-pointer hover:bg-[#F0F7FF] transition-colors flex flex-col items-center justify-center w-full h-[410px] md:h-[218px] px-4`}>
+                      } rounded-lg text-center cursor-pointer hover:bg-[#F0F7FF] transition-colors flex flex-col items-center justify-center w-full aspect-square px-4`}>
                         <Upload className="mb-3 text-[#5B7BA6]" size={40} />
                         <p className="text-[#3A52A6] text-sm opacity-70">Click to select an image</p>
                         <input

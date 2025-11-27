@@ -43,14 +43,14 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             stiffness: 300,
             duration: 0.1
           }}
-          className="relative w-full max-w-[30rem] h-full bg-white shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
+          className="relative w-full max-w-[30rem] h-full bg-[#FEFEFD] shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
         >
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-5 py-3 flex items-center justify-between z-10">
+          <div className="sticky top-0 bg-[white] border-b border-[#E5E7EB] px-5 py-3 flex items-center justify-between z-10">
             <h2 className="text-lg text-[#111827] flex items-center gap-2">
               <button
                 onClick={handleClose}
-                className="hover:bg-gray-100 rounded-lg transition-colors"
+                className="hover:bg-blue-100 rounded-lg transition-colors"
               >
                 <ChevronsRight size={20} className="text-[#111827]" />
               </button>

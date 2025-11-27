@@ -28,7 +28,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
         transition: { duration: 0.2 }
       }}
       onClick={onClick}
-      className="bg-[#F8F9FC] cursor-pointer rounded-xl overflow-hidden border border-[#D3DCF6]"
+      className="bg-[#FEFEFD] cursor-pointer rounded-xl overflow-hidden border border-[#D3DCF6]"
     >
       {/* Header */}
       <div className="bg-gradient-to-r from-[#3646A8] via-[#465BC8] to-[#5A80E6]">

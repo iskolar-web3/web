@@ -1,4 +1,6 @@
 export interface Scholarship {
+  scholarship_id: string;
+  sponsor_id: string;
   status: string;
   type: string;
   purpose: string;

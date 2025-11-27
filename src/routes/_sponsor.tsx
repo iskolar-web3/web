@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_sponsor")({
 
 function SponsorLayout(): JSX.Element {
   return (
-    <div className="w-full bg-[#F0F7FF]">
+    <div className="w-full bg-[#F0F7FF] px-4 md:px-14 py-4">
       <Outlet />
     </div>
   );

@@ -53,7 +53,7 @@ export default function ScholarshipFullPreviewModal({
             stiffness: 300,
             duration: 0.1,
           }}
-          className="relative w-full max-w-[30rem] h-full bg-white shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
+          className="relative w-full max-w-[30rem] h-full bg-[#FEFEFD] shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
         >
           {/* Header */}
           <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-5 py-3 flex items-center justify-between z-10">
@@ -120,7 +120,7 @@ export default function ScholarshipFullPreviewModal({
                         day: 'numeric',
                         year: 'numeric',
                       })
-                    : 'Application deadline TBD'}
+                    : 'Application deadline'}
                 </span>
               </div>
             </div>
