@@ -1,8 +1,26 @@
-import { Calendar, Users, Coins } from 'lucide-react';
+import { Calendar, Users, Coins, Edit2, Trash2, MoreVertical } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
 
-export default function SponsorScholarshipCard({ scholarship, index, onClick }: { scholarship: Scholarship; index: number; onClick?: () => void }) {
+export default function SponsorScholarshipCard({ 
+  scholarship, 
+  index, 
+  onClick,
+  onEdit,
+  onDelete 
+}: { 
+  scholarship: Scholarship; 
+  index: number; 
+  onClick?: () => void;
+  onEdit?: (scholarship: Scholarship) => void;
+  onDelete?: (scholarship: Scholarship) => void;
+}) {
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
   const amountPerScholar = (() => {
     if (scholarship.total_amount && scholarship.total_slot) {
       const total = scholarship.total_amount;
@@ -13,9 +31,54 @@ export default function SponsorScholarshipCard({ scholarship, index, onClick }: 
     }
     return null;
   })();
+
+  // Handle right-click
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (rect) {
+      setContextMenuPosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+    setShowContextMenu(true);
+  };
+
+  // Close context menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
+        setShowContextMenu(false);
+      }
+    };
+
+    if (showContextMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showContextMenu]);
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowContextMenu(false);
+    onEdit?.(scholarship);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowContextMenu(false);
+    onDelete?.(scholarship);
+  };
   
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
@@ -28,8 +91,65 @@ export default function SponsorScholarshipCard({ scholarship, index, onClick }: 
         transition: { duration: 0.2 }
       }}
       onClick={onClick}
-      className="bg-[#F8F9FC] cursor-pointer rounded-xl overflow-hidden border border-[#D3DCF6]"
+      onContextMenu={handleContextMenu}
+      className="bg-[#F8F9FC] cursor-pointer rounded-xl overflow-hidden border border-[#D3DCF6] relative"
     >
+      {/* Context Menu */}
+      <AnimatePresence>
+        {showContextMenu && (
+          <motion.div
+            ref={contextMenuRef}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.1 }}
+            style={{
+              position: 'absolute',
+              left: `${contextMenuPosition.x}px`,
+              top: `${contextMenuPosition.y}px`,
+              zIndex: 50,
+            }}
+            className="bg-[#F8F9FC] rounded-md shadow-lg border border-[#CEDBFF] py-[4px] min-w-[105px]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={handleEdit}
+              className="w-full px-4 py-1.5 text-left text-xs text-[#111827] hover:bg-[#D4E0FF] flex items-center gap-1 transition-colors"
+            >
+              <Edit2 size={12} className="text-[#3A52A6]" />
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              className="w-full px-4 py-1.5 text-left text-xs text-[#EF4444] hover:bg-[#FEE2E2] flex items-center gap-1 transition-colors"
+            >
+              <Trash2 size={12} />
+              Delete
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Three-dot menu button (visible on hover) */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        whileHover={{ opacity: 1 }}
+        className="absolute top-2 right-2 z-10 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors"
+        onClick={(e) => {
+          e.stopPropagation();
+          const rect = cardRef.current?.getBoundingClientRect();
+          if (rect) {
+            setContextMenuPosition({
+              x: e.clientX - rect.left,
+              y: e.clientY - rect.top,
+            });
+          }
+          setShowContextMenu(!showContextMenu);
+        }}
+      >
+        <MoreVertical size={16} className="text-[#3A52A6]" />
+      </motion.button>
+
       {/* Header */}
       <div className="bg-gradient-to-r from-[#3646A8] via-[#465BC8] to-[#5A80E6]">
         <div className="flex">

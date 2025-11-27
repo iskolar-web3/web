@@ -1,20 +1,29 @@
+import { useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Users, Coins, ChevronsRight, Images } from 'lucide-react';
-import { useState } from 'react';
 import type { Scholarship } from '@/types/scholarship.types';
+import { Calendar, Users, Coins, ChevronsRight, Images, Type, AlignLeft, ListChecks, CheckSquare, Hash, Mail, Phone, Paperclip, Edit2, Trash2, AlertCircle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 interface SponsorScholarshipFullPreviewModalProps {
   scholarship: Partial<Scholarship>;
   onClose: () => void;
   isPreview?: boolean;
+  onEdit?: (scholarship: Partial<Scholarship>) => void;
+  onDelete?: (scholarship: Partial<Scholarship>) => void;
 }
 
 export default function SponsorScholarshipFullPreviewModal({
   scholarship,
   onClose,
   isPreview = false,
+  onEdit,
+  onDelete,
 }: SponsorScholarshipFullPreviewModalProps) {
+  const navigate = useNavigate()
+
   const [isExiting, setIsExiting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const amountPerScholar = (() => {
     if (scholarship.total_amount && scholarship.total_slot) {
@@ -27,9 +36,78 @@ export default function SponsorScholarshipFullPreviewModal({
     return null;
   })();
 
+  const getFieldTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      text: 'Short answer',
+      textarea: 'Long answer',
+      dropdown: 'Dropdown',
+      multiple_choice: 'Multiple choice',
+      checkbox: 'Checkbox',
+      number: 'Number',
+      date: 'Date',
+      email: 'Email',
+      phone: 'Phone number',
+      file: 'File upload',
+    };
+    return typeMap[type] || type;
+  };
+
+  const renderFieldTypeIcon = (fieldType: string) => {
+    const iconProps = { size: 20, className: "text-[#3A52A6]" };
+    
+    switch (fieldType) {
+      case 'text':
+        return <Type {...iconProps} />;
+      case 'textarea':
+        return <AlignLeft {...iconProps} />;
+      case 'dropdown':
+      case 'multiple_choice':
+        return <ListChecks {...iconProps} />;
+      case 'checkbox':
+        return <CheckSquare {...iconProps} />;
+      case 'number':
+        return <Hash {...iconProps} />;
+      case 'date':
+        return <Calendar {...iconProps} />;
+      case 'email':
+        return <Mail {...iconProps} />;
+      case 'phone':
+        return <Phone {...iconProps} />;
+      case 'file':
+        return <Paperclip {...iconProps} />;
+      default:
+        return <Type {...iconProps} />;
+    }
+  };
+
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200);
+  };
+
+  const handleEdit = () => {
+    // navigate({ to: `/scholarship/${scholarship.id}/edit` });
+    onEdit?.(scholarship);
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setLoading(true);
+      // Perform delete operation
+      await onDelete?.(scholarship);
+      
+      // Close modals after successful delete
+      setShowDeleteModal(false);
+      handleClose();
+    } catch (error) {
+      console.error('Delete error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -206,14 +284,106 @@ export default function SponsorScholarshipFullPreviewModal({
               </div>
             )}
 
-            {/* Apply Button - only show if not preview */}
-            {!isPreview && (
-              <button className="w-full bg-[#3646A8] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md">
-                Apply Now →
-              </button>
+            {/* Custom Form Fields */}
+            {scholarship.custom_form_fields && scholarship.custom_form_fields.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm text-[#111827] mb-3">Application Form Fields</h3>
+                <div className="space-y-2.5">
+                  {scholarship.custom_form_fields.map((field: any, i: number) => (
+                    <div key={i} className="flex items-start gap-3 p-3 bg-[#F9FAFB] border border-[#E0ECFF] rounded-lg">
+                      <div className="w-9 h-9 bg-[#E0ECFF] rounded-lg flex items-center justify-center flex-shrink-0">
+                        {renderFieldTypeIcon(field.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[13px] text-[#111827] font-medium">{field.label}</span>
+                          {field.required && (
+                            <span className="px-1.5 py-0.5 bg-[#FEE2E2] text-[#DC2626] text-[9px] rounded">
+                              Required
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-[#6B7280]">
+                          {getFieldTypeLabel(field.type)}
+                          {(field.type === 'dropdown' || field.type === 'checkbox' || field.type === 'multiple_choice') && 
+                            field.options && field.options.length > 0 && 
+                            ` • ${field.options.length} option${field.options.length !== 1 ? 's' : ''}`
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Edit and Delete Buttons */}
+            {isPreview && (
+              <div className="flex gap-3 mt-2">
+                <button 
+                  onClick={handleEdit}
+                  className="flex-1 bg-[#3A52A6] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
+                >
+                  <Edit2 size={15} />
+                  Edit
+                </button>
+                <button 
+                  onClick={handleDeleteClick}
+                  className="flex-1 bg-[#EF4444] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
+                >
+                  <Trash2 size={15} />
+                  Delete
+                </button>
+              </div>
             )}
           </div>
         </motion.div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="absolute inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#F0F7FF] rounded-xl shadow-2xl max-w-sm w-full p-5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full text-[#EF4444] mb-1">
+                  <AlertCircle size={38}/>
+                </div>
+                <h3 className="text-lg text-[#111827] mb-2">Delete Scholarship</h3>
+                <p className="text-sm text-[#6B7280] mb-6">
+                  Are you sure you want to delete "<strong>{scholarship.title}</strong>"? This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-[#EF4444] text-sm text-[#F0F7FF] rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </span>
+                  ) : (
+                    'Delete'
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     </AnimatePresence>
   );
