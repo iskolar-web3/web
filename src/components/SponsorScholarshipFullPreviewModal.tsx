@@ -3,17 +3,17 @@ import { Calendar, Users, Coins, ChevronsRight, Images } from 'lucide-react';
 import { useState } from 'react';
 import type { Scholarship } from '@/types/scholarship.types';
 
-interface ScholarshipFullPreviewModalProps {
+interface SponsorScholarshipFullPreviewModalProps {
   scholarship: Partial<Scholarship>;
   onClose: () => void;
   isPreview?: boolean;
 }
 
-export default function ScholarshipFullPreviewModal({
+export default function SponsorScholarshipFullPreviewModal({
   scholarship,
   onClose,
   isPreview = false,
-}: ScholarshipFullPreviewModalProps) {
+}: SponsorScholarshipFullPreviewModalProps) {
   const [isExiting, setIsExiting] = useState(false);
 
   const amountPerScholar = (() => {
@@ -53,7 +53,7 @@ export default function ScholarshipFullPreviewModal({
             stiffness: 300,
             duration: 0.1,
           }}
-          className="relative w-full max-w-[30rem] h-full bg-[#FEFEFD] shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
+          className="relative w-full max-w-[30rem] h-full bg-white shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
         >
           {/* Header */}
           <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-5 py-3 flex items-center justify-between z-10">
@@ -126,7 +126,16 @@ export default function ScholarshipFullPreviewModal({
             </div>
 
             {/* Amount and Slots */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="bg-[#FFECEC] border border-[#D94545] rounded-lg p-3">
+                <div className="flex items-center gap-1.5 text-[#D94545] mb-1.5">
+                  <Users size={16} />
+                  <span className="text-xs">Applications</span>
+                </div>
+                <p className="text-sm text-[#D94545]">{scholarship.applications_count || 0}</p>
+                <p className="text-xs text-[#D94545]">applicants</p>
+              </div>
+
               <div className="bg-[#E2FBF4] border border-[#31D0AA] rounded-lg p-3">
                 <div className="flex items-center gap-1.5 text-[#31D0AA] mb-1.5">
                   <Coins size={16} />

@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_student")({
 
 function StudentLayout(): JSX.Element {
   return (
-    <div className="w-full bg-[#F0F7FF] px-4 md:px-12 py-4">
+    <div className="w-full bg-[#F0F7FF] px-4 md:px-14 py-4">
       <Outlet />
     </div>
   );

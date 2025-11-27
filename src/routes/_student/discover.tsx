@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import ScholarshipCard from "@/components/ScholarshipCard"; 
 import Filters from "@/components/Filters"; 
@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import Toast from '@/components/Toast';
 import type { Scholarship } from '@/types/scholarship.types';
 import ScholarshipDetailsModal from '@/components/ScholarshipDetailsModal';
+import { usePageTitle } from "@/hooks/use-page-title"
 import { scholarshipManagementService } from '@/services/scholarship-management.service';
 
 export const Route = createFileRoute('/_student/discover')({
@@ -14,14 +15,18 @@ export const Route = createFileRoute('/_student/discover')({
 });
 
 function DiscoverScholarship() {
+  usePageTitle("Discover")
+
   const [sortBy, setSortBy] = useState('Newest');
   const [scholarshipType, setScholarshipType] = useState('All');
   const [purpose, setPurpose] = useState('All');
   const [sponsorType, setSponsorType] = useState('All');
+  const [amountRange, setAmountRange] = useState({ min: '', max: '' });
+  const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   // const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
@@ -32,6 +37,7 @@ function DiscoverScholarship() {
 
   // const fetchScholarships = useCallback(async () => {
   //   try {
+  //     setLoading(true);
   //     const response = await scholarshipManagementService.getAllScholarships();
       
   //     if (response.success) {
@@ -89,8 +95,34 @@ function DiscoverScholarship() {
     updated_at: new Date().toISOString()
   }));
 
+  const filteredScholarships = useMemo(() => {
+    return scholarships.filter((scholarship) => {
+      const matchesType =
+        scholarshipType === 'All' ||
+        scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
+
+      const matchesPurpose =
+        purpose === 'All' || scholarship.purpose.toLowerCase() === purpose.toLowerCase();
+
+      const amountPerScholar =
+        scholarship.total_amount && scholarship.total_slot
+          ? scholarship.total_amount / scholarship.total_slot
+          : 0;
+
+      const matchesAmount =
+        (!amountRange.min || amountPerScholar >= Number(amountRange.min)) &&
+        (!amountRange.max || amountPerScholar <= Number(amountRange.max));
+
+      const matchesSlots =
+        (!slotRange.min || scholarship.total_slot >= Number(slotRange.min)) &&
+        (!slotRange.max || scholarship.total_slot <= Number(slotRange.max));
+
+      return matchesType && matchesPurpose && matchesAmount && matchesSlots;
+    });
+  }, [scholarships, scholarshipType, purpose, amountRange, slotRange]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen">
       {/* Mobile/Tablet Layout */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -107,7 +139,18 @@ function DiscoverScholarship() {
           <div className="flex gap-4">
             <Filters
               title="Sort By"
-              options={['Newest', 'Oldest', 'Deadline: Nearest', 'Deadline: Farthest', 'Amount: High to Low', 'Amount: Low to High', 'Slots: Most to Least', 'Slots: Least to Most', 'A → Z', 'Z → A']}
+              options={[
+                  'Newest',
+                  'Oldest',
+                  'Deadline: Nearest',
+                  'Deadline: Farthest',
+                  'Amount: High to Low',
+                  'Amount: Low to High',
+                  'Slots: Most to Least',
+                  'Slots: Least to Most',
+                  'A → Z',
+                  'Z → A',
+                ]}
               value={sortBy}
               onChange={setSortBy}
             />
@@ -142,7 +185,7 @@ function DiscoverScholarship() {
           transition={{ duration: 0.5 }}
           className="hidden lg:block lg:col-span-1"
         >
-          <div className="bg-white rounded-xl p-6 border border-[#E5E7EB] sticky top-4 shadow-sm">
+          <div className="bg-[#FEFEFD] rounded-xl p-6 border border-[#E5E7EB] sticky top-4 shadow-sm">
             <div className="flex items-center gap-1 mb-6">
               <Filter size={20}/>
               <h2 className="text-md text-[#111827]">Filters</h2>
@@ -179,12 +222,20 @@ function DiscoverScholarship() {
                 <input
                   type="number"
                   placeholder="Min"
+                  value={amountRange.min}
+                  onChange={(event) =>
+                    setAmountRange((prev) => ({ ...prev, min: event.target.value }))
+                  }
                   className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
                 <span className="flex items-center text-[#6B7280]">to</span>
                 <input
                   type="number"
                   placeholder="Max"
+                  value={amountRange.max}
+                  onChange={(event) =>
+                    setAmountRange((prev) => ({ ...prev, max: event.target.value }))
+                  }
                   className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
               </div>
@@ -196,12 +247,20 @@ function DiscoverScholarship() {
                 <input
                   type="number"
                   placeholder="Min"
+                  value={slotRange.min}
+                  onChange={(event) =>
+                    setSlotRange((prev) => ({ ...prev, min: event.target.value }))
+                  }
                   className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
                 <span className="flex items-center text-[#6B7280]">to</span>
                 <input
                   type="number"
                   placeholder="Max"
+                  value={slotRange.max}
+                  onChange={(event) =>
+                    setSlotRange((prev) => ({ ...prev, max: event.target.value }))
+                  }
                   className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
               </div>
@@ -212,10 +271,10 @@ function DiscoverScholarship() {
         {/* Scholarship Cards */}
         <div className="lg:col-span-3">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
-            {scholarships.map((scholarship, index) => (
-              <ScholarshipCard 
-                key={index} 
-                scholarship={scholarship} 
+            {filteredScholarships.map((scholarship, index) => (
+              <ScholarshipCard
+                key={`${scholarship.title}-${index}`}
+                scholarship={scholarship}
                 index={index}
                 onClick={() => setSelectedScholarship(scholarship)}
               />

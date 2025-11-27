@@ -2,7 +2,7 @@ import { Calendar, Users, Coins } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { motion } from 'framer-motion';
 
-export default function ScholarshipCard({ scholarship, index, onClick }: { scholarship: Scholarship; index: number; onClick?: () => void }) {
+export default function SponsorScholarshipCard({ scholarship, index, onClick }: { scholarship: Scholarship; index: number; onClick?: () => void }) {
   const amountPerScholar = (() => {
     if (scholarship.total_amount && scholarship.total_slot) {
       const total = scholarship.total_amount;
@@ -28,7 +28,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
         transition: { duration: 0.2 }
       }}
       onClick={onClick}
-      className="bg-[#FEFEFD] cursor-pointer rounded-xl overflow-hidden border border-[#D3DCF6]"
+      className="bg-[#F8F9FC] cursor-pointer rounded-xl overflow-hidden border border-[#D3DCF6]"
     >
       {/* Header */}
       <div className="bg-gradient-to-r from-[#3646A8] via-[#465BC8] to-[#5A80E6]">
@@ -91,7 +91,19 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
       {/* Content */}
       <div className="p-4">
         {/* Amount and Slots */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <motion.div
+            transition={{ duration: 0.2 }}
+            className="bg-[#FFECEC] border border-[#31D0AA] rounded-lg p-3"
+          >
+            <div className="flex items-center gap-1 text-[#D94545] text-sm mb-1">
+              <Users size={16} />
+              <span>Applications</span>
+            </div>
+            <p className="text-sm text-[#D94545]">{scholarship.applications_count || 0}</p>
+            <p className="text-xs text-[#D94545]">applicants</p>
+          </motion.div>
+
           <motion.div
             transition={{ duration: 0.2 }}
             className="bg-[#E2FBF4] border border-[#31D0AA] rounded-lg p-3"

@@ -333,7 +333,7 @@ function CreateScholarship() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-6">
+    <div className="min-h-screen p-4">
       <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2">
