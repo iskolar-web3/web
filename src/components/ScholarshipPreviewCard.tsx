@@ -21,7 +21,7 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
   return (
     <div
       onClick={onClick}
-      className="bg-[#F5F7FF] rounded-xl overflow-hidden border border-[#D3DCF6] cursor-pointer transition-transform duration-200 hover:scale-98"
+      className="bg-[#FEFEFD] rounded-xl overflow-hidden border border-[#D3DCF6] cursor-pointer transition-transform duration-200 hover:scale-98"
     >
       <div className="bg-gradient-to-r from-[#3646A8] via-[#465BC8] to-[#5A80E6]">
         <div className="flex">
@@ -79,7 +79,7 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
                       day: 'numeric',
                       year: 'numeric',
                     })
-                  : 'Application deadline TBD'}
+                  : 'Application deadline'}
               </span>
             </div>
           </div>
