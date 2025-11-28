@@ -502,7 +502,7 @@ function EditScholarshipPage() {
                     setTempDescription(description || '');
                     setShowDescriptionModal(true);
                   }}
-                  className="w-full flex items-center gap-2 px-4 py-3 rounded-lg border bg-[#F3F4F6] text-[#6B7280] text-sm hover:bg-[#E5E7EB] transition-colors"
+                  className="w-full cursor-pointer flex items-center gap-2 px-4 py-3 rounded-lg border bg-[#F3F4F6] text-[#6B7280] text-sm hover:bg-[#E5E7EB] transition-colors"
                 >
                   <span className="text-[#8B9CB5]">☰</span>
                   {description ? 'Edit Description' : 'Add Description'}
@@ -709,7 +709,7 @@ function EditScholarshipPage() {
               type="button"
               disabled={saving}
               onClick={() => openCustomFormModal()}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
+              className={`w-full flex cursor-pointer items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
                 errors.customFormFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
               } bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
             >
@@ -724,14 +724,13 @@ function EditScholarshipPage() {
           <button
             onClick={handleSubmit(onSubmit)}
             className={`w-full py-3 cursor-pointer bg-[#EFA508] my-2 text-white rounded-lg hover:bg-[#D89407] transition-colors ${
-              saving && 'opacity-70 cursor-not-allowed'
+              saving && 'opacity-60 cursor-not-allowed'
             }`}
             disabled={saving}
           >
             {saving ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Saving changes...
               </span>
             ) : (
               'Save'
@@ -745,8 +744,8 @@ function EditScholarshipPage() {
           <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-lg w-full">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg text-[#3A52A6]">Scholarship Description</h3>
-              <button onClick={() => setShowDescriptionModal(false)} className="text-[#4A5568] hover:text-[#3A52A6]">
-                <X size={24} />
+              <button onClick={() => setShowDescriptionModal(false)} className="text-[#4A5568] cursor-pointer hover:text-[#3A52A6]">
+                <X size={22} />
               </button>
             </div>
             <textarea
@@ -758,7 +757,7 @@ function EditScholarshipPage() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setShowDescriptionModal(false)}
-                className="flex-1 py-2.5 border border-[#C4CBD5] rounded-lg text-[#4A5568] hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2.5 cursor-pointer border border-[#C4CBD5] rounded-lg text-sm text-[#4A5568] bg-gray-50 hover:bg-[#F0F7FF] transition-colors"
               >
                 Cancel
               </button>
@@ -767,7 +766,7 @@ function EditScholarshipPage() {
                   setValue('description', tempDescription);
                   setShowDescriptionModal(false);
                 }}
-                className="flex-1 py-2.5 bg-[#3A52A6] text-white rounded-lg hover:bg-[#2A4296] transition-colors"
+                className="flex-1 py-2.5 cursor-pointer bg-[#3A52A6] text-sm text-[#F0F7FF] rounded-lg hover:bg-[#2A4296] transition-colors"
               >
                 Save
               </button>
@@ -892,13 +891,13 @@ function EditScholarshipPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={resetCustomFieldState}
-                className="flex-1 py-2.5 border border-[#C4CBD5] rounded-lg text-[#4A5568] hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2.5 cursor-pointer border border-[#C4CBD5] text-sm rounded-lg text-[#4A5568] hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={saveCustomFormField}
-                className="flex-1 py-2.5 bg-[#3A52A6] text-white rounded-lg hover:bg-[#2A4296] transition-colors"
+                className="flex-1 py-2.5 cursor-pointer bg-[#3A52A6] text-white text-sm rounded-lg hover:bg-[#2A4296] transition-colors"
               >
                 {editingFieldIndex !== null ? 'Update' : 'Add'} Field
               </button>

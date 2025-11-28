@@ -378,7 +378,7 @@ function Scholarships() {
           >
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full text-[#EF4444] mb-1">
-                <AlertCircle size={38}/>
+                <AlertCircle size={36}/>
               </div>
               <h3 className="text-lg text-[#111827] mb-2">Delete Scholarship</h3>
               <p className="text-sm text-[#6B7280] mb-6">
@@ -392,14 +392,18 @@ function Scholarships() {
                   setScholarshipToDelete(null);
                 }}
                 disabled={loading}
-                className="flex-1 px-4 py-2 text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className={`flex-1 px-4 py-2 cursor-pointer text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 ${
+                  loading && "opacity-60 cursor-not-allowed"
+                }`}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-[#EF4444] text-sm text-[#F0F7FF] rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-[#F0F7FF] rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+                  loading && "opacity-60 cursor-not-allowed"
+                }`}
               >
                 {loading ? (
                   <span className="flex items-center justify-center">

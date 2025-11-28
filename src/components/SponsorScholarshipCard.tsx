@@ -1,4 +1,4 @@
-import { Calendar, Users, Coins, Edit2, Trash2, MoreVertical } from 'lucide-react';
+import { Calendar, Users, Coins, Edit2, Trash2 } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
@@ -114,41 +114,21 @@ export default function SponsorScholarshipCard({
           >
             <button
               onClick={handleEdit}
-              className="w-full px-4 py-2 text-left text-sm text-[#374151] hover:bg-[#F0F7FF] flex items-center gap-2 transition-colors"
+              className="w-full px-4 py-2 cursor-pointer text-left text-[13px] text-[#111827] hover:bg-[#F0F7FF] flex items-center gap-1.5 transition-colors"
             >
-              <Edit2 size={14} className="text-[#3A52A6]" />
+              <Edit2 size={15} />
               Edit
             </button>
             <button
               onClick={handleDelete}
-              className="w-full px-4 py-2 text-left text-sm text-[#EF4444] hover:bg-[#FEE2E2] flex items-center gap-2 transition-colors"
+              className="w-full px-4 py-2 cursor-pointer text-left text-[13px] text-[#EF4444] hover:bg-[#FEE2E2] flex items-center gap-1.5 transition-colors"
             >
-              <Trash2 size={14} />
+              <Trash2 size={15} />
               Delete
             </button>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Three-dot menu button (visible on hover) */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        whileHover={{ opacity: 1 }}
-        className="absolute top-3 right-3 z-10 bg-white rounded-full p-1.5 shadow-md hover:shadow-lg border border-[#E5E7EB] transition-all"
-        onClick={(e) => {
-          e.stopPropagation();
-          const rect = cardRef.current?.getBoundingClientRect();
-          if (rect) {
-            setContextMenuPosition({
-              x: e.clientX - rect.left,
-              y: e.clientY - rect.top,
-            });
-          }
-          setShowContextMenu(!showContextMenu);
-        }}
-      >
-        <MoreVertical size={16} className="text-[#3A52A6]" />
-      </motion.button>
 
       {/* Header */}
       <div className="bg-[#3A52A6]">

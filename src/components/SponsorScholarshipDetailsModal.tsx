@@ -95,10 +95,9 @@ export default function SponsorScholarshipDetailsModal({
   const confirmDelete = async () => {
     try {
       setLoading(true);
-      // Perform delete operation
+
       await onDelete?.(scholarship);
       
-      // Close modals after successful delete
       setShowDeleteModal(false);
       handleClose();
     } catch (error) {
@@ -319,14 +318,14 @@ export default function SponsorScholarshipDetailsModal({
             <div className="flex gap-3 mt-2">
               <button 
                 onClick={handleEdit}
-                className="flex-1 bg-[#3A52A6] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
+                className="flex-1 bg-[#3A52A6] cursor-pointer text-[#F0F7FF] py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
               >
                 <Edit2 size={15} />
                 Edit
               </button>
               <button 
                 onClick={handleDeleteClick}
-                className="flex-1 bg-[#EF4444] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
+                className="flex-1 bg-[#EF4444] cursor-pointer text-[#F0F7FF] py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
               >
                 <Trash2 size={15} />
                 Delete
@@ -359,14 +358,18 @@ export default function SponsorScholarshipDetailsModal({
                 <button
                   onClick={() => setShowDeleteModal(false)}
                   disabled={loading}
-                  className="flex-1 px-4 py-2 text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className={`flex-1 px-4 py-2 cursor-pointer text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 ${
+                    loading && "opacity-60 cursor-not-allowed"
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-[#EF4444] text-sm text-[#F0F7FF] rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-[#F0F7FF] rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+                    loading && "opacity-60 cursor-not-allowed"
+                  }`}
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
