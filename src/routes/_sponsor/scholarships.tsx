@@ -39,7 +39,10 @@ function Scholarships() {
   });
 
   const handleEdit = (scholarship: Scholarship) => {
-    // navigate({ to: `/scholarship/${scholarship.id}/edit` });
+    // navigate({ 
+    //   to: "/scholarship/$id/edit",
+    //   params: { id: scholarship.scholarship_id }
+    // });
   };
 
   const handleDelete = (scholarship: Scholarship) => {
@@ -113,6 +116,8 @@ function Scholarships() {
   const scholarships: Scholarship[] = Array(6)
     .fill(null)
     .map(() => ({
+      scholarship_id: '1',
+      sponsor_id: '1',
       status: 'active',
       title: 'CHED Merit Scholarship Program',
       type: 'Merit-Based',
@@ -218,7 +223,7 @@ function Scholarships() {
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <Filter size={20} className="text-[#111827]" />
-                    <h2 className="text-lg text-[#111827]">Filters</h2>
+                    <h2 className="text-md text-[#111827]">Filters</h2>
                   </div>
 
                   <SponsorFilterSelect

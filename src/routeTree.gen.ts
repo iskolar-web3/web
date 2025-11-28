@@ -22,6 +22,7 @@ import { Route as OnboardingRoleSelectionRouteImport } from './routes/_onboardin
 import { Route as OnboardingProfileSetupRouteImport } from './routes/_onboarding/profile-setup'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as SponsorScholarshipIdEditRouteImport } from './routes/_sponsor/scholarship/$id/edit'
 
 const StudentRoute = StudentRouteImport.update({
   id: '/_student',
@@ -84,6 +85,12 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRoute,
 } as any)
+const SponsorScholarshipIdEditRoute =
+  SponsorScholarshipIdEditRouteImport.update({
+    id: '/scholarship/$id/edit',
+    path: '/scholarship/$id/edit',
+    getParentRoute: () => SponsorRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/create': typeof SponsorCreateRoute
   '/scholarships': typeof SponsorScholarshipsRoute
   '/discover': typeof StudentDiscoverRoute
+  '/scholarship/$id/edit': typeof SponsorScholarshipIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
   '/create': typeof SponsorCreateRoute
   '/scholarships': typeof SponsorScholarshipsRoute
   '/discover': typeof StudentDiscoverRoute
+  '/scholarship/$id/edit': typeof SponsorScholarshipIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,6 +131,7 @@ export interface FileRoutesById {
   '/_sponsor/create': typeof SponsorCreateRoute
   '/_sponsor/scholarships': typeof SponsorScholarshipsRoute
   '/_student/discover': typeof StudentDiscoverRoute
+  '/_sponsor/scholarship/$id/edit': typeof SponsorScholarshipIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/create'
     | '/scholarships'
     | '/discover'
+    | '/scholarship/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/create'
     | '/scholarships'
     | '/discover'
+    | '/scholarship/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
     | '/_sponsor/create'
     | '/_sponsor/scholarships'
     | '/_student/discover'
+    | '/_sponsor/scholarship/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -264,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_sponsor/scholarship/$id/edit': {
+      id: '/_sponsor/scholarship/$id/edit'
+      path: '/scholarship/$id/edit'
+      fullPath: '/scholarship/$id/edit'
+      preLoaderRoute: typeof SponsorScholarshipIdEditRouteImport
+      parentRoute: typeof SponsorRoute
+    }
   }
 }
 
@@ -298,11 +318,13 @@ const OnboardingRouteWithChildren = OnboardingRoute._addFileChildren(
 interface SponsorRouteChildren {
   SponsorCreateRoute: typeof SponsorCreateRoute
   SponsorScholarshipsRoute: typeof SponsorScholarshipsRoute
+  SponsorScholarshipIdEditRoute: typeof SponsorScholarshipIdEditRoute
 }
 
 const SponsorRouteChildren: SponsorRouteChildren = {
   SponsorCreateRoute: SponsorCreateRoute,
   SponsorScholarshipsRoute: SponsorScholarshipsRoute,
+  SponsorScholarshipIdEditRoute: SponsorScholarshipIdEditRoute,
 }
 
 const SponsorRouteWithChildren =

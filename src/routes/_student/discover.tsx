@@ -75,6 +75,8 @@ function DiscoverScholarship() {
 
   // Mock data
   const scholarships: Scholarship[] = Array(23).fill(null).map((_, i) => ({
+    scholarship_id: '1',
+    sponsor_id: '1',
     status: 'active',
     title: 'CHED Merit Scholarship Program',
     type: 'Merit-Based',

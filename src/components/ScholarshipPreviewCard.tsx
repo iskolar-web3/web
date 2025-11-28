@@ -79,7 +79,7 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
                       day: 'numeric',
                       year: 'numeric',
                     })
-                  : 'Application deadline TBD'}
+                  : 'Application deadline'}
               </span>
             </div>
           </div>

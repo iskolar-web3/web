@@ -120,7 +120,7 @@ export default function ScholarshipFullPreviewModal({
                         day: 'numeric',
                         year: 'numeric',
                       })
-                    : 'Application deadline TBD'}
+                    : 'Application deadline'}
                 </span>
               </div>
             </div>
