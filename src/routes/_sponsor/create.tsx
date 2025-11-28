@@ -448,7 +448,7 @@ function CreateScholarship() {
                       setTempDescription(description || '');
                       setShowDescriptionModal(true);
                     }}
-                    className="w-full flex items-center gap-2 px-4 py-3 rounded-lg bg-[#F3F4F6] text-[#6B7280] text-sm hover:bg-[#E5E7EB] transition-colors"
+                    className="w-full flex items-center gap-2 px-4 py-3 rounded-lg bg-[#F3F4F6] border text-[#6B7280] text-sm hover:bg-[#E5E7EB] transition-colors"
                   >
                     <span className="text-[#8B9CB5]">☰</span>
                     {description ? 'Edit Description' : 'Add Description'}
@@ -570,7 +570,7 @@ function CreateScholarship() {
               {criteria.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {criteria.map((criterion, index) => (
-                    <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg">
+                    <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-[#E5E7EB]">
                       {criterion}
                       <button disabled={loading} onClick={() => removeCriterion(index)} className="hover:text-[#2A4296]">
                         <X size={14} />
@@ -607,7 +607,7 @@ function CreateScholarship() {
               {requiredDocuments.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {requiredDocuments.map((doc, index) => (
-                    <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg">
+                    <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-[#E5E7EB] rounded-lg">
                       {doc}
                       <button disabled={loading} onClick={() => removeDocument(index)} className="hover:text-[#2A4296]">
                         <X size={14} />

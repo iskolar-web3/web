@@ -4,21 +4,19 @@ import type { Scholarship } from '@/types/scholarship.types';
 import { Calendar, Users, Coins, ChevronsRight, Images, Type, AlignLeft, ListChecks, CheckSquare, Hash, Mail, Phone, Paperclip, Edit2, Trash2, AlertCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-interface SponsorScholarshipFullPreviewModalProps {
+interface SponsorScholarshipDetailsModalProps {
   scholarship: Partial<Scholarship>;
   onClose: () => void;
-  isPreview?: boolean;
   onEdit?: (scholarship: Partial<Scholarship>) => void;
   onDelete?: (scholarship: Partial<Scholarship>) => void;
 }
 
-export default function SponsorScholarshipFullPreviewModal({
+export default function SponsorScholarshipDetailsModal({
   scholarship,
   onClose,
-  isPreview = false,
   onEdit,
   onDelete,
-}: SponsorScholarshipFullPreviewModalProps) {
+}: SponsorScholarshipDetailsModalProps) {
   const navigate = useNavigate()
 
   const [isExiting, setIsExiting] = useState(false);
@@ -142,7 +140,7 @@ export default function SponsorScholarshipFullPreviewModal({
               >
                 <ChevronsRight size={20} className="text-[#111827]" />
               </button>
-              {isPreview ? 'Preview' : 'Scholarship Details'}
+              Scholarship Details
             </h2>
           </div>
 
@@ -198,45 +196,45 @@ export default function SponsorScholarshipFullPreviewModal({
                         day: 'numeric',
                         year: 'numeric',
                       })
-                    : 'Application deadline TBD'}
+                    : 'Application deadline'}
                 </span>
               </div>
             </div>
 
             {/* Amount and Slots */}
             <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-[#FFECEC] border border-[#D94545] rounded-lg p-3">
-                <div className="flex items-center gap-1.5 text-[#D94545] mb-1.5">
+              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+                <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Users size={16} />
                   <span className="text-xs">Applications</span>
                 </div>
-                <p className="text-sm text-[#D94545]">{scholarship.applications_count || 0}</p>
-                <p className="text-xs text-[#D94545]">applicants</p>
+                <p className="text-base text-[#111827]">{scholarship.applications_count || 0}</p>
+                <p className="text-xs text-[#6B7280]">applicants</p>
               </div>
 
-              <div className="bg-[#E2FBF4] border border-[#31D0AA] rounded-lg p-3">
-                <div className="flex items-center gap-1.5 text-[#31D0AA] mb-1.5">
+              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+                <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Coins size={16} />
                   <span className="text-xs">Amount</span>
                 </div>
-                <p className="text-sm text-[#31D0AA] mb-0.5">
+                <p className="text-base text-[#111827] mb-0.5">
                   {amountPerScholar !== null
-                    ? `₱ ${amountPerScholar.toLocaleString(undefined, {
+                    ? `₱${amountPerScholar.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}`
-                    : '₱ 0.00'}
+                    : '₱0.00'}
                 </p>
-                <p className="text-xs text-[#31D0AA]">per scholar</p>
+                <p className="text-xs text-[#6B7280]">per scholar</p>
               </div>
 
-              <div className="bg-[#EEF1FF] border border-[#607EF2] rounded-lg p-3">
-                <div className="flex items-center gap-1.5 text-[#607EF2] mb-1.5">
+              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+                <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Users size={16} />
                   <span className="text-xs">Slots</span>
                 </div>
-                <p className="text-sm text-[#607EF2] mb-0.5">{scholarship.total_slot || 0}</p>
-                <p className="text-xs text-[#607EF2]">scholars</p>
+                <p className="text-base text-[#111827] mb-0.5">{scholarship.total_slot || 0}</p>
+                <p className="text-xs text-[#6B7280]">scholars</p>
               </div>
             </div>
 
@@ -258,7 +256,7 @@ export default function SponsorScholarshipFullPreviewModal({
                   {scholarship.criteria.map((criterion: string, i: number) => (
                     <span
                       key={i}
-                      className="px-3 py-1.5 bg-white text-[#374151] text-xs rounded border-2 border-[#E5E7EB]"
+                      className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB]"
                     >
                       {criterion}
                     </span>
@@ -275,7 +273,7 @@ export default function SponsorScholarshipFullPreviewModal({
                   {scholarship.required_documents.map((doc: string, i: number) => (
                     <div
                       key={i}
-                      className="px-3 py-2 bg-white text-[#374151] text-xs rounded border-2 border-[#E5E7EB] text-center"
+                      className="px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB] text-center"
                     >
                       {doc}
                     </div>
@@ -318,24 +316,22 @@ export default function SponsorScholarshipFullPreviewModal({
             )}
 
             {/* Edit and Delete Buttons */}
-            {isPreview && (
-              <div className="flex gap-3 mt-2">
-                <button 
-                  onClick={handleEdit}
-                  className="flex-1 bg-[#3A52A6] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
-                >
-                  <Edit2 size={15} />
-                  Edit
-                </button>
-                <button 
-                  onClick={handleDeleteClick}
-                  className="flex-1 bg-[#EF4444] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
-                >
-                  <Trash2 size={15} />
-                  Delete
-                </button>
-              </div>
-            )}
+            <div className="flex gap-3 mt-2">
+              <button 
+                onClick={handleEdit}
+                className="flex-1 bg-[#3A52A6] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
+              >
+                <Edit2 size={15} />
+                Edit
+              </button>
+              <button 
+                onClick={handleDeleteClick}
+                className="flex-1 bg-[#EF4444] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
+              >
+                <Trash2 size={15} />
+                Delete
+              </button>
+            </div>
           </div>
         </motion.div>
 

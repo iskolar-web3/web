@@ -92,7 +92,7 @@ export default function SponsorScholarshipCard({
       }}
       onClick={onClick}
       onContextMenu={handleContextMenu}
-      className="bg-[#F8F9FC] cursor-pointer rounded-xl overflow-hidden border border-[#D3DCF6] relative"
+      className="bg-white cursor-pointer rounded-lg overflow-hidden border border-[#E5E7EB] hover:border-[#3A52A6] transition-colors relative shadow-sm"
     >
       {/* Context Menu */}
       <AnimatePresence>
@@ -109,21 +109,21 @@ export default function SponsorScholarshipCard({
               top: `${contextMenuPosition.y}px`,
               zIndex: 50,
             }}
-            className="bg-[#F8F9FC] rounded-md shadow-lg border border-[#CEDBFF] py-[4px] min-w-[105px]"
+            className="bg-white rounded-lg shadow-xl border border-[#E5E7EB] py-1 min-w-[120px]"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={handleEdit}
-              className="w-full px-4 py-1.5 text-left text-xs text-[#111827] hover:bg-[#D4E0FF] flex items-center gap-1 transition-colors"
+              className="w-full px-4 py-2 text-left text-sm text-[#374151] hover:bg-[#F0F7FF] flex items-center gap-2 transition-colors"
             >
-              <Edit2 size={12} className="text-[#3A52A6]" />
+              <Edit2 size={14} className="text-[#3A52A6]" />
               Edit
             </button>
             <button
               onClick={handleDelete}
-              className="w-full px-4 py-1.5 text-left text-xs text-[#EF4444] hover:bg-[#FEE2E2] flex items-center gap-1 transition-colors"
+              className="w-full px-4 py-2 text-left text-sm text-[#EF4444] hover:bg-[#FEE2E2] flex items-center gap-2 transition-colors"
             >
-              <Trash2 size={12} />
+              <Trash2 size={14} />
               Delete
             </button>
           </motion.div>
@@ -134,7 +134,7 @@ export default function SponsorScholarshipCard({
       <motion.button
         initial={{ opacity: 0 }}
         whileHover={{ opacity: 1 }}
-        className="absolute top-2 right-2 z-10 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors"
+        className="absolute top-3 right-3 z-10 bg-white rounded-full p-1.5 shadow-md hover:shadow-lg border border-[#E5E7EB] transition-all"
         onClick={(e) => {
           e.stopPropagation();
           const rect = cardRef.current?.getBoundingClientRect();
@@ -151,12 +151,12 @@ export default function SponsorScholarshipCard({
       </motion.button>
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#3646A8] via-[#465BC8] to-[#5A80E6]">
+      <div className="bg-[#3A52A6]">
         <div className="flex">
           {/* Image */}
           <motion.div 
             transition={{ duration: 0.3 }}
-            className="w-32 h-32 bg-white/20 rounded-lg rounded-bl-none flex-shrink-0 overflow-hidden"
+            className="w-32 h-32 bg-white/10 flex-shrink-0 overflow-hidden"
           >
             <img
               src={scholarship.image_url || "src/logo.svg"}
@@ -167,15 +167,15 @@ export default function SponsorScholarshipCard({
 
           {/* Info */}
           <div className="flex-1 text-white px-4 py-2">
-            <h3 className="text-xl mb-1 truncate">{scholarship.title}</h3>
+            <h3 className="text-lg mb-1 truncate">{scholarship.title}</h3>
             
             {/* Badges */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-3">
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.05 + 0.1 }}
-                className="px-1.5 py-0.5 bg-[#F8F9FC] text-[#3A52A6] text-[10px] rounded"
+                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[11px] rounded"
               >
                 {scholarship.type}
               </motion.span>
@@ -183,14 +183,14 @@ export default function SponsorScholarshipCard({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.05 + 0.15 }}
-                className="px-1.5 py-0.5 bg-[#F8F9FC] text-[#3A52A6] text-[10px] rounded"
+                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[11px] rounded"
               >
                 {scholarship.purpose}
               </motion.span>
             </div>
 
             {/* Sponsor and Deadline */}
-            <div className="space-y-1.5 text-xs">
+            <div className="space-y-1.5 text-xs opacity-90">
               <div className="flex items-center gap-2">
                <img
                   src={scholarship.sponsor.profile_url || "src/logo.svg"}
@@ -211,87 +211,87 @@ export default function SponsorScholarshipCard({
       {/* Content */}
       <div className="p-4">
         {/* Amount and Slots */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-3 gap-3 mb-4">
           <motion.div
             transition={{ duration: 0.2 }}
-            className="bg-[#FFECEC] border border-[#31D0AA] rounded-lg p-3"
+            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
           >
-            <div className="flex items-center gap-1 text-[#D94545] text-sm mb-1">
-              <Users size={16} />
+            <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
+              <Users size={14} />
               <span>Applications</span>
             </div>
-            <p className="text-sm text-[#D94545]">{scholarship.applications_count || 0}</p>
-            <p className="text-xs text-[#D94545]">applicants</p>
+            <p className="text-base text-[#111827]">{scholarship.applications_count || 0}</p>
+            <p className="text-xs text-[#6B7280]">applicants</p>
           </motion.div>
 
           <motion.div
             transition={{ duration: 0.2 }}
-            className="bg-[#E2FBF4] border border-[#31D0AA] rounded-lg p-3"
+            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
           >
-            <div className="flex items-center gap-1 text-[#31D0AA] text-sm mb-1">
-              <Coins size={16} />
+            <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
+              <Coins size={14} />
               <span>Amount</span>
             </div>
-            <p className="text-[#31D0AA] text-sm">
+            <p className="text-[#111827] text-base">
               {amountPerScholar !== null
-                ? `₱ ${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                : '₱ 0.00'}
+                ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                : '₱0.00'}
             </p>
-            <p className="text-xs text-[#31D0AA]">per scholar</p>
+            <p className="text-xs text-[#6B7280]">per scholar</p>
           </motion.div>
 
           <motion.div
             transition={{ duration: 0.2 }}
-            className="bg-[#EEF1FF] border border-[#607EF2] rounded-lg p-3"
+            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
           >
-            <div className="flex items-center gap-1 text-[#607EF2] text-sm mb-1">
-              <Users size={16} />
+            <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
+              <Users size={14} />
               <span>Slots</span>
             </div>
-            <p className="text-[#607EF2] text-sm">{scholarship.total_slot}</p>
-            <p className="text-xs text-[#607EF2]">scholars</p>
+            <p className="text-[#111827] text-base">{scholarship.total_slot}</p>
+            <p className="text-xs text-[#6B7280]">scholars</p>
           </motion.div>
         </div>
 
         {/* Criteria and Documents */}
-        <div className="grid grid-cols-2 gap-6 text-sm">
+        <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <h4 className="text-[#4B5563] text-xs tracking-wider mb-2">
+            <h4 className="text-[#6B7280] text-xs tracking-wide mb-2">
               Criteria
             </h4>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {scholarship.criteria.slice(0, 2).map((item, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1 bg-[#F3F4F6] text-[#374151] text-[11px] rounded border border-[#E5E7EB]"
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]"
                 >
                   {item}
                 </span>
               ))}
               {scholarship.criteria.length > 2 && (
-                <span className="px-3 py-1 bg-[#F3F4F6] text-[#374151] text-[11px] rounded border border-[#E5E7EB]">
-                  + {scholarship.criteria.length - 2} more
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]">
+                  +{scholarship.criteria.length - 2}
                 </span>
               )}
             </div>
           </div>
 
           <div>
-            <h4 className="text-[#4B5563] text-xs tracking-wider mb-2">
+            <h4 className="text-[#6B7280] text-[11px] tracking-wide mb-2">
               Required Documents
             </h4>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {scholarship.required_documents.slice(0, 2).map((item, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1 bg-[#F3F4F6] text-[#374151] text-[11px] rounded border border-[#E5E7EB]"
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]"
                 >
                   {item}
                 </span>
               ))}
               {scholarship.required_documents.length > 2 && (
-                <span className="px-3 py-1 bg-[#F3F4F6] text-[#374151] text-[11px] rounded border border-[#E5E7EB]">
-                  + {scholarship.required_documents.length - 2} more
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+                  +{scholarship.required_documents.length - 2}
                 </span>
               )}
             </div>

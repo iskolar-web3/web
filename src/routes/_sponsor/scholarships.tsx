@@ -4,7 +4,7 @@ import { Filter, AlertCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SponsorFilterSelect from '@/components/SponsorFilters';
 import SponsorScholarshipCard from '@/components/SponsorScholarshipCard';
-import SponsorScholarshipFullPreviewModal from '@/components/SponsorScholarshipFullPreviewModal';
+import SponsorScholarshipDetailsModal from '@/components/SponsorScholarshipDetailsModal';
 import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/use-page-title"
 // import { scholarshipManagementService } from '@/services/scholarship-management.service';
@@ -360,10 +360,9 @@ function Scholarships() {
       </div>
 
       {selectedScholarship && (
-        <SponsorScholarshipFullPreviewModal
+        <SponsorScholarshipDetailsModal
           scholarship={selectedScholarship}
           onClose={() => setSelectedScholarship(null)}
-          isPreview
         />
       )}
 
