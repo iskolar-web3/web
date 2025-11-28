@@ -97,26 +97,26 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
 
             {/* Amount and Slots */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-[#E2FBF4] border border-[#31D0AA] rounded-lg p-3">
-                <div className="flex items-center gap-1.5 text-[#31D0AA] mb-1.5">
+              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+                <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Coins size={16} />
                   <span className="text-xs ">Amount</span>
                 </div>
-                <p className="text-sm text-[#31D0AA] mb-0.5">
+                <p className="text-base text-[#111827] mb-0.5">
                   {amountPerScholar !== null
-                    ? `₱ ${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                    : '₱ 0.00'}
+                    ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : '₱0.00'}
                 </p>
-                <p className="text-xs text-[#31D0AA]">per scholar</p>
+                <p className="text-xs text-[#6B7280]">per scholar</p>
               </div>
 
-              <div className="bg-[#EEF1FF] border border-[#607EF2] rounded-lg p-3">
-                <div className="flex items-center gap-1.5 text-[#607EF2] mb-1.5">
+              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+                <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Users size={16} />
                   <span className="text-xs ">Slots</span>
                 </div>
-                <p className="text-sm text-[#607EF2] mb-0.5">{scholarship.total_slot}</p>
-                <p className="text-xs text-[#607EF2]">scholars</p>
+                <p className="text-base text-[#111827] mb-0.5">{scholarship.total_slot}</p>
+                <p className="text-xs text-[#6B7280]">scholars</p>
               </div>
             </div>
 
@@ -135,7 +135,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
                 {scholarship.criteria?.map((criterion: string, i: number) => (
                   <span
                     key={i}
-                    className="px-3 py-1.5 bg-white text-[#374151] text-xs rounded border-2 border-[#E5E7EB] "
+                    className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB]"
                   >
                     {criterion}
                   </span>
@@ -150,7 +150,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
                 {scholarship.required_documents?.map((doc: string, i: number) => (
                   <div
                     key={i}
-                    className="px-3 py-2 bg-white text-[#374151] text-xs rounded border-2 border-[#E5E7EB]  text-center"
+                    className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB] text-center"
                   >
                     {doc}
                   </div>
