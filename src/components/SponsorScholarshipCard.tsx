@@ -155,7 +155,7 @@ export default function SponsorScholarshipCard({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.05 + 0.1 }}
-                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[11px] rounded"
+                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded"
               >
                 {scholarship.type}
               </motion.span>
@@ -163,7 +163,7 @@ export default function SponsorScholarshipCard({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.05 + 0.15 }}
-                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[11px] rounded"
+                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded"
               >
                 {scholarship.purpose}
               </motion.span>
@@ -200,7 +200,7 @@ export default function SponsorScholarshipCard({
               <Users size={14} />
               <span>Applications</span>
             </div>
-            <p className="text-base text-[#111827]">{scholarship.applications_count || 0}</p>
+            <p className="text-sm md:text-base text-[#111827]">{scholarship.applications_count || 0}</p>
             <p className="text-xs text-[#6B7280]">applicants</p>
           </motion.div>
 
@@ -212,7 +212,7 @@ export default function SponsorScholarshipCard({
               <Coins size={14} />
               <span>Amount</span>
             </div>
-            <p className="text-[#111827] text-base">
+            <p className="text-[#111827] text-sm md:text-base">
               {amountPerScholar !== null
                 ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
                 : '₱0.00'}
@@ -228,7 +228,7 @@ export default function SponsorScholarshipCard({
               <Users size={14} />
               <span>Slots</span>
             </div>
-            <p className="text-[#111827] text-base">{scholarship.total_slot}</p>
+            <p className="text-[#111827] text-sm md:text-base">{scholarship.total_slot}</p>
             <p className="text-xs text-[#6B7280]">scholars</p>
           </motion.div>
         </div>
@@ -243,13 +243,13 @@ export default function SponsorScholarshipCard({
               {scholarship.criteria.slice(0, 2).map((item, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]"
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
                 >
                   {item}
                 </span>
               ))}
               {scholarship.criteria.length > 2 && (
-                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]">
                   +{scholarship.criteria.length - 2}
                 </span>
               )}
@@ -264,13 +264,13 @@ export default function SponsorScholarshipCard({
               {scholarship.required_documents.slice(0, 2).map((item, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]"
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
                 >
                   {item}
                 </span>
               ))}
               {scholarship.required_documents.length > 2 && (
-                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px]] rounded border border-[#E5E7EB]">
                   +{scholarship.required_documents.length - 2}
                 </span>
               )}

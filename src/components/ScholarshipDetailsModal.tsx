@@ -1,10 +1,17 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from "@tanstack/react-router";
 import { Calendar, Users, Coins, ChevronsRight, ArrowBigRight } from 'lucide-react';
 import { useState } from 'react';
 import type { Scholarship } from '@/types/scholarship.types';
 
-export default function ScholarshipDetailsModal({ scholarship, onClose }: { scholarship: Scholarship; onClose: () => void }) {
+export default function ScholarshipDetailsModal({ scholarship, onClose }: { scholarship: Scholarship; onClose: () => void }) {4
+  const navigate = useNavigate();
+
   const [isExiting, setIsExiting] = useState(false);
+
+  const handleApply = () => {
+    // navigate({ to: `/scholarship/${scholarship.id}/apply` });
+  };
 
   const amountPerScholar = (() => {
     if (scholarship.total_amount && scholarship.total_slot) {
@@ -159,7 +166,10 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             </div>
 
             {/* Apply Button */}
-            <button className="w-full bg-[#3646A8] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md">
+            <button
+              onClick={handleApply} 
+              className="w-full bg-[#3646A8] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
+            >
               Apply Now →
             </button>
           </div>
