@@ -55,6 +55,7 @@ type CustomFieldType = (typeof customFieldTypes)[number];
 const editScholarshipSchema = z.object({
   type: z.enum(['merit_based', 'skill_based'], { message: 'Please select a scholarship type' }),
   purpose: z.enum(['allowance', 'tuition'], { message: 'Please select a purpose' }),
+  status: z.enum(['active', 'closed'], { message: 'Please select a status' }),
   title: z.string().min(1, 'Scholarship title is required').max(150, 'Title must be less than 150 characters'),
   description: z.string().optional(),
   imageUrl: z.string().min(1, 'Please upload a scholarship image'),
@@ -99,6 +100,7 @@ function EditScholarshipPage() {
     defaultValues: {
       type: undefined,
       purpose: undefined,
+      status: 'active',
       title: '',
       description: '',
       imageUrl: '',
@@ -138,6 +140,7 @@ function EditScholarshipPage() {
   const description = watch('description');
   const type = watch('type');
   const purpose = watch('purpose');
+  const status = watch('status');
 
   const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string) => {
     setToastConfig({ type, title, message });
@@ -197,6 +200,7 @@ function EditScholarshipPage() {
     reset({
       type: (scholarship.type as 'merit_based' | 'skill_based') ?? 'merit_based',
       purpose: (scholarship.purpose as 'allowance' | 'tuition') ?? 'allowance',
+      status: (scholarship.status === 'closed' ? 'closed' : 'active') as 'active' | 'closed',
       title: scholarship.title || '',
       description: scholarship.description || '',
       imageUrl: scholarship.image_url || '/src/logo.svg',
@@ -346,6 +350,7 @@ function EditScholarshipPage() {
       // const updatePayload = {
       //   type: data.type,
       //   purpose: data.purpose,
+      //   status: data.status,
       //   title: data.title.trim(),
       //   description: data.description?.trim(),
       //   total_amount: parseFloat(data.totalAmount),
@@ -390,6 +395,32 @@ function EditScholarshipPage() {
       <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
       <div className="max-w-[40rem] mx-auto">
         <div className="space-y-4">
+          {/* Status */}
+          <div>
+            <Select
+              value={status}
+              onValueChange={(value) =>
+                setValue('status', value as 'active' | 'closed', { shouldValidate: true })
+              }
+            >
+              <SelectTrigger
+                disabled={saving}
+                className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                  errors.status
+                    ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
+                    : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                }`}
+              >
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.status && <p className="text-xs text-[#EF4444] mt-1">{errors.status.message}</p>}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Select
