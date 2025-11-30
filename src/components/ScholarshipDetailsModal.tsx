@@ -1,17 +1,21 @@
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from "@tanstack/react-router";
-import { Calendar, Users, Coins, ChevronsRight, ArrowBigRight } from 'lucide-react';
-import { useState } from 'react';
+import { Calendar, Users, Coins, ChevronsRight, LockKeyhole } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
+import Toast from '@/components/Toast';
+// import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 
 export default function ScholarshipDetailsModal({ scholarship, onClose }: { scholarship: Scholarship; onClose: () => void }) {4
   const navigate = useNavigate();
 
   const [isExiting, setIsExiting] = useState(false);
-
-  const handleApply = () => {
-    // navigate({ to: `/scholarship/${scholarship.id}/apply` });
-  };
+   const [toastConfig, setToastConfig] = useState({
+    type: 'success' as 'success' | 'error',
+    title: '',
+    message: '',
+  });
+  const [showToast, setShowToast] = useState(false);
 
   const amountPerScholar = (() => {
     if (scholarship.total_amount && scholarship.total_slot) {
@@ -24,10 +28,48 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
     return null;
   })();
 
+  const isClosed = useCallback(() => {
+    return scholarship.status === 'closed';
+  }, [scholarship?.status]);
+
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200); 
   };
+
+  const handleApply = useCallback(async () => {
+    // const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
+
+    // if (response.success && response.exists) {
+    //   setToastConfig({
+    //     type: "error",
+    //     title: "Already Applied",
+    //     message: result.message,
+    //   });
+    //   setShowToast(true);
+
+    //   setTimeout(() => {
+    //     setShowToast(false);
+    //   }, 2000);
+    //   return;
+    // }
+
+    // if (isClosed()) {
+    //   setToastConfig({
+    //     type: "error",
+    //     title: "Scholarship Closed",
+    //     message: result.message,
+    //   });
+    //   setShowToast(true);
+
+    //   setTimeout(() => {
+    //     setShowToast(false);
+    //   }, 2000);
+    //   return;
+    // }
+
+    // navigate({ to: `/scholarship/${scholarship.scholarship_id}/apply` });
+  }, [scholarship, isClosed, navigate]);
 
   return (
     <AnimatePresence>
@@ -66,6 +108,22 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
           </div>
 
           <div className="p-5">
+            {/* Status Badge */}
+            <div className="flex items-center gap-2 mb-4">
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  scholarship.status === 'closed' ? 'bg-[#EF4444]' : 'bg-[#31D0AA]'
+                }`}
+              />
+              <span
+                className={`text-sm font-medium capitalize ${
+                  scholarship.status === 'closed' ? 'text-[#EF4444]' : 'text-[#31D0AA]'
+                }`}
+              >
+                {scholarship.status}
+              </span>
+            </div>
+
             {/* Image Banner */}
             <div className="relative w-full aspect-square mb-5 rounded-lg overflow-hidden shadow-[0_0_20px_2px_rgba(0,0,0,0.2)]">
               <img
@@ -166,12 +224,22 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             </div>
 
             {/* Apply Button */}
-            <button
-              onClick={handleApply} 
-              className="w-full bg-[#3646A8] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
-            >
-              Apply Now →
-            </button>
+            {isClosed() ? (
+              <div className="flex items-center gap-2.5 bg-[#FEE2E2] border border-[#FECACA] rounded-md p-3 mt-1.5 mb-2">
+                <LockKeyhole size={16} className="text-[#DC2626] flex-shrink-0" />
+                <p className="text-[11px] md:text-xs text-[#DC2626] leading-relaxed flex-1">
+                  This scholarship program is no longer accepting applications.
+                </p>
+              </div>
+            ) : (
+              <button
+                onClick={handleApply} 
+                className="w-full bg-[#3A52A6] cursor-pointer text-[#F0F7FF] py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:bg-[#2F4189] hover:shadow-lg hover:shadow-[#3A52A6]/30 active:scale-[0.98] shadow-md mt-1.5 mb-2"
+              >
+                Apply Now
+                <span>→</span>
+              </button>
+            )}
           </div>
         </motion.div>
       </div>

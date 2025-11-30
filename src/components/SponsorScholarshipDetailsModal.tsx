@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Scholarship } from '@/types/scholarship.types';
 import { 
@@ -17,9 +16,10 @@ import {
   Paperclip, 
   Edit2, 
   Trash2, 
+  Archive,
   AlertCircle, 
   Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 interface SponsorScholarshipDetailsModalProps {
   scholarship: Scholarship;
@@ -36,7 +36,6 @@ export default function SponsorScholarshipDetailsModal({
   onDelete,
   onViewApplicants,
 }: SponsorScholarshipDetailsModalProps) {
-  const navigate = useNavigate()
 
   const [isExiting, setIsExiting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -97,13 +96,16 @@ export default function SponsorScholarshipDetailsModal({
     }
   };
 
+  const isClosed = useCallback(() => {
+    return scholarship.status === 'closed';
+  }, [scholarship?.status]);
+
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200);
   };
 
   const handleEdit = () => {
-    // navigate({ to: `/scholarship/${scholarship.id}/edit` });
     onEdit?.(scholarship);
   };
 
@@ -167,6 +169,22 @@ export default function SponsorScholarshipDetailsModal({
           </div>
 
           <div className="p-5">
+            {/* Status Badge */}
+            <div className="flex items-center gap-2 mb-4">
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  scholarship.status === 'closed' ? 'bg-[#EF4444]' : 'bg-[#31D0AA]'
+                }`}
+              />
+              <span
+                className={`text-sm font-medium capitalize ${
+                  scholarship.status === 'closed' ? 'text-[#EF4444]' : 'text-[#31D0AA]'
+                }`}
+              >
+                {scholarship.status}
+              </span>
+            </div>
+
             {/* Image Banner */}
             <div className="relative w-full aspect-square mb-5 rounded-lg overflow-hidden shadow-[0_0_20px_2px_rgba(0,0,0,0.2)]">
               {scholarship.image_url ? (
@@ -346,21 +364,37 @@ export default function SponsorScholarshipDetailsModal({
               View Applicants
             </button>
 
-            {/* Edit and Delete Buttons */}
+            {/* Edit and Delete/Archive Buttons */}
             <div className="flex gap-3 mt-2">
               <button 
                 onClick={handleEdit}
-                className="flex-1 bg-[#3A52A6] cursor-pointer text-[#F0F7FF] py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
+                disabled={isClosed()}
+                className={`flex-1 py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 ${
+                  isClosed()
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#3A52A6] cursor-pointer text-[#F0F7FF] hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md'
+                }`}
               >
                 <Edit2 size={15} />
                 Edit
               </button>
               <button 
                 onClick={handleDeleteClick}
-                className="flex-1 bg-[#EF4444] cursor-pointer text-[#F0F7FF] py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md"
+                className={`flex-1 cursor-pointer text-[#F0F7FF] py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md ${
+                  isClosed() ? 'bg-[#F59E0B] hover:bg-[#D97706]' : 'bg-[#EF4444] hover:bg-[#DC2626]'
+                }`}
               >
-                <Trash2 size={15} />
-                Delete
+                {isClosed() ? (
+                  <>
+                    <Archive size={15} />
+                    Archive
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={15} />
+                    Delete
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -378,12 +412,19 @@ export default function SponsorScholarshipDetailsModal({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full text-[#EF4444] mb-1">
+                <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-1 ${
+                  isClosed() ? 'text-[#F59E0B]' : 'text-[#EF4444]'
+                }`}>
                   <AlertCircle size={38}/>
                 </div>
-                <h3 className="text-lg text-[#111827] mb-2">Delete Scholarship</h3>
+                <h3 className="text-lg text-[#111827] mb-2">
+                  {isClosed() ? 'Archive Scholarship' : 'Delete Scholarship'}
+                </h3>
                 <p className="text-sm text-[#6B7280] mb-6">
-                  Are you sure you want to delete "<strong>{scholarship.title}</strong>"? This action cannot be undone.
+                  {isClosed() 
+                    ? `Are you sure you want to archive "${scholarship.title}"? This will move it to your archived scholarships.`
+                    : `Are you sure you want to delete "${scholarship.title}"? This action cannot be undone.`
+                  }
                 </p>
               </div>
               <div className="flex gap-3">
@@ -399,16 +440,18 @@ export default function SponsorScholarshipDetailsModal({
                 <button
                   onClick={confirmDelete}
                   disabled={loading}
-                  className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-[#F0F7FF] rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
-                    loading && "opacity-60 cursor-not-allowed"
-                  }`}
+                  className={`flex-1 px-4 py-2 cursor-pointer text-sm text-[#F0F7FF] rounded-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+                    isClosed() 
+                      ? 'bg-[#F59E0B] hover:bg-[#D97706]' 
+                      : 'bg-[#EF4444] hover:bg-[#DC2626]'
+                  } ${loading && "opacity-60 cursor-not-allowed"}`}
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
                       <Loader2 className="w-4 h-4 animate-spin" />
                     </span>
                   ) : (
-                    'Delete'
+                    isClosed() ? 'Archive' : 'Delete'
                   )}
                 </button>
               </div>
