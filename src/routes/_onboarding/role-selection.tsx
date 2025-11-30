@@ -403,7 +403,7 @@ function RoleSelection() {
                 <Loader2 className="w-4 h-4 animate-spin" />
               </span>
             ) : (
-              <span>Sign Up</span>
+              <span>Select</span>
             )}
           </motion.button>
         </motion.div>
