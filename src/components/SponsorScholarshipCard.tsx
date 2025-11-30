@@ -8,13 +8,15 @@ export default function SponsorScholarshipCard({
   index, 
   onClick,
   onEdit,
-  onDelete 
+  onDelete,
+  onViewApplicants
 }: { 
   scholarship: Scholarship; 
   index: number; 
   onClick?: () => void;
   onEdit?: (scholarship: Scholarship) => void;
   onDelete?: (scholarship: Scholarship) => void;
+  onViewApplicants?: (scholarship: Scholarship) => void;
 }) {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
@@ -75,6 +77,12 @@ export default function SponsorScholarshipCard({
     setShowContextMenu(false);
     onDelete?.(scholarship);
   };
+
+  const handleViewApplicants = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowContextMenu(false);
+    onViewApplicants?.(scholarship);
+  };
   
   return (
     <motion.div
@@ -92,7 +100,7 @@ export default function SponsorScholarshipCard({
       }}
       onClick={onClick}
       onContextMenu={handleContextMenu}
-      className="bg-white cursor-pointer rounded-lg overflow-hidden border border-[#E5E7EB] hover:border-[#3A52A6] transition-colors relative shadow-sm"
+      className="bg-white cursor-pointer rounded-lg border border-[#E5E7EB] hover:border-[#3A52A6] transition-colors relative shadow-sm"
     >
       {/* Context Menu */}
       <AnimatePresence>
@@ -107,21 +115,28 @@ export default function SponsorScholarshipCard({
               position: 'absolute',
               left: `${contextMenuPosition.x}px`,
               top: `${contextMenuPosition.y}px`,
-              zIndex: 50,
+              zIndex: 100,
             }}
-            className="bg-white rounded-lg shadow-xl border border-[#E5E7EB] py-1 min-w-[120px]"
+            className="bg-white rounded-lg shadow-xl border border-[#E5E7EB] py-1 min-w-[160px]"
             onClick={(e) => e.stopPropagation()}
           >
             <button
+              onClick={handleViewApplicants}
+              className="w-full px-4 py-2 cursor-pointer text-left text-[12px] text-[#111827] hover:bg-[#F0F7FF] flex items-center gap-1.5 transition-colors"
+            >
+              <Users size={15} />
+              View Applicants
+            </button>
+            <button
               onClick={handleEdit}
-              className="w-full px-4 py-2 cursor-pointer text-left text-[13px] text-[#111827] hover:bg-[#F0F7FF] flex items-center gap-1.5 transition-colors"
+              className="w-full px-4 py-2 cursor-pointer text-left text-[12px] text-[#111827] hover:bg-[#F0F7FF] flex items-center gap-1.5 transition-colors"
             >
               <Edit2 size={15} />
               Edit
             </button>
             <button
               onClick={handleDelete}
-              className="w-full px-4 py-2 cursor-pointer text-left text-[13px] text-[#EF4444] hover:bg-[#FEE2E2] flex items-center gap-1.5 transition-colors"
+              className="w-full px-4 py-2 cursor-pointer text-left text-[12px] text-[#EF4444] hover:bg-[#FEE2E2] flex items-center gap-1.5 transition-colors"
             >
               <Trash2 size={15} />
               Delete
@@ -131,12 +146,12 @@ export default function SponsorScholarshipCard({
       </AnimatePresence>
 
       {/* Header */}
-      <div className="bg-[#3A52A6]">
+      <div className="bg-[#3A52A6] rounded-lg rounded-bl-none rounded-br-none">
         <div className="flex">
           {/* Image */}
           <motion.div 
             transition={{ duration: 0.3 }}
-            className="w-32 h-32 bg-white/10 flex-shrink-0 overflow-hidden"
+            className="w-32 h-32 bg-white/10 flex-shrink-0 overflow-hidden rounded-tl-lg"
           >
             <img
               src={scholarship.image_url || "src/logo.svg"}

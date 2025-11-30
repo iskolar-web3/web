@@ -39,6 +39,13 @@ function Scholarships() {
     message: '',
   });
 
+  const handleViewApplicants = (scholarship: Scholarship) => {
+    // navigate({ 
+    //   to: "/scholarship/$id/applicants",
+    //   params: { id: scholarship.scholarship_id }
+    // });
+  };
+
   const handleEdit = (scholarship: Scholarship) => {
     // navigate({ 
     //   to: "/scholarship/$id/edit",
@@ -530,6 +537,7 @@ function Scholarships() {
                   onClick={() => setSelectedScholarship(scholarship)}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onViewApplicants={handleViewApplicants}
                 />
               ))}
             </div>
@@ -541,9 +549,12 @@ function Scholarships() {
         <SponsorScholarshipDetailsModal
           scholarship={selectedScholarship}
           onClose={() => setSelectedScholarship(null)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onViewApplicants={handleViewApplicants}
         />
       )}
-
+      
       {/* Delete Confirmation Modal */}
       {showDeleteModal && scholarshipToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]">

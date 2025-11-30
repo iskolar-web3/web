@@ -1,14 +1,32 @@
 import { useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Scholarship } from '@/types/scholarship.types';
-import { Calendar, Users, Coins, ChevronsRight, Images, Type, AlignLeft, ListChecks, CheckSquare, Hash, Mail, Phone, Paperclip, Edit2, Trash2, AlertCircle, Loader2 } from 'lucide-react';
+import { 
+  Calendar, 
+  Users, 
+  Coins, 
+  ChevronsRight, 
+  Images, 
+  Type, 
+  AlignLeft, 
+  ListChecks, 
+  CheckSquare, 
+  Hash, 
+  Mail, 
+  Phone, 
+  Paperclip, 
+  Edit2, 
+  Trash2, 
+  AlertCircle, 
+  Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface SponsorScholarshipDetailsModalProps {
-  scholarship: Partial<Scholarship>;
+  scholarship: Scholarship;
   onClose: () => void;
-  onEdit?: (scholarship: Partial<Scholarship>) => void;
-  onDelete?: (scholarship: Partial<Scholarship>) => void;
+  onEdit?: (scholarship: Scholarship) => void;
+  onDelete?: (scholarship: Scholarship) => void;
+  onViewApplicants?: (scholarship: Scholarship) => void;
 }
 
 export default function SponsorScholarshipDetailsModal({
@@ -16,6 +34,7 @@ export default function SponsorScholarshipDetailsModal({
   onClose,
   onEdit,
   onDelete,
+  onViewApplicants,
 }: SponsorScholarshipDetailsModalProps) {
   const navigate = useNavigate()
 
@@ -90,6 +109,10 @@ export default function SponsorScholarshipDetailsModal({
 
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
+  };
+
+  const handleViewApplicants = () => {
+    onViewApplicants?.(scholarship);
   };
 
   const confirmDelete = async () => {
@@ -313,6 +336,15 @@ export default function SponsorScholarshipDetailsModal({
                 </div>
               </div>
             )}
+
+            {/* View Applicants Button */}
+            <button 
+              onClick={handleViewApplicants}
+              className="w-full bg-[#E0ECFF] cursor-pointer text-[#3A52A6] py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md border-2 border-[#3A52A6] mb-3"
+            >
+              <Users size={15} />
+              View Applicants
+            </button>
 
             {/* Edit and Delete Buttons */}
             <div className="flex gap-3 mt-2">
