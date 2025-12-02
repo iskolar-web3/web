@@ -178,12 +178,6 @@ function ApplyScholarshipPage() {
     }, {} as Record<string, any>),
   });
 
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-  }, []);
-
   const fetchScholarshipDetails = useCallback(async () => {
     setLoading(true);
     try {
@@ -260,7 +254,16 @@ function ApplyScholarshipPage() {
     });
 
     if (fileErrors.length > 0) {
-      showToastMessage('error', 'Error', fileErrors.join(', '));
+      //   setToastConfig({
+      //     type: "error",
+      //     title: "Error",
+      //     message: fileErrors.join(', ')),
+      //   });
+      //   setShowToast(true);
+
+      //   setTimeout(() => {
+      //     setShowToast(false);
+      //   }, 2000);
       return;
     }
 
@@ -275,6 +278,36 @@ function ApplyScholarshipPage() {
     setShowConfirmation(false);
 
     try {
+      // const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
+
+      // if (response.success && response.exists) {
+      //   setToastConfig({
+      //     type: "error",
+      //     title: "Already Applied",
+      //     message: result.message,
+      //   });
+      //   setShowToast(true);
+
+      //   setTimeout(() => {
+      //     setShowToast(false);
+      //   }, 2000);
+      //   return;
+      // }
+
+      // if (isClosed()) {
+      //   setToastConfig({
+      //     type: "error",
+      //     title: "Scholarship Closed",
+      //     message: result.message,
+      //   });
+      //   setShowToast(true);
+
+      //   setTimeout(() => {
+      //     setShowToast(false);
+      //   }, 2000);
+      //   return;
+      // }
+
       // Transform form data into custom_form_response format
       const customFormResponse = Object.entries(pendingData).map(([label, value]) => ({
         label,
@@ -330,14 +363,32 @@ function ApplyScholarshipPage() {
         }
       }
 
-      showToastMessage('success', 'Success', 'Your application has been submitted!');
+      //   setToastConfig({
+      //     type: "success",
+      //     title: "Success",
+      //     message: result.message,
+      //   });
+      //   setShowToast(true);
+
+      //   setTimeout(() => {
+      //     setShowToast(false);
+      //   }, 2000);
       
       setTimeout(() => {
         window.history.back();
-      }, 2000);
+      }, 1500);
     } catch (error) {
       console.error('Submission error:', error);
-      showToastMessage('error', 'Error', error instanceof Error ? error.message : 'Failed to submit application. Please try again.');
+      //   setToastConfig({
+      //     type: "error",
+      //     title: "Error",
+      //     message: error.message,
+      //   });
+      //   setShowToast(true);
+
+      //   setTimeout(() => {
+      //     setShowToast(false);
+      //   }, 2000);
     } finally {
       setSubmitting(false);
     }
