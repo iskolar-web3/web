@@ -18,7 +18,7 @@ export interface ApplicationFileUpload {
   }>;
 }
 
-interface ScholarshipApplication {
+export interface ScholarshipApplication {
   scholarship_application_id: string;
   student_id: string;
   scholarship_id: string;
