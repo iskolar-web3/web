@@ -1,0 +1,171 @@
+import { Calendar, Users, Coins } from 'lucide-react';
+import type { Scholarship } from '@/types/scholarship.types';
+import { motion } from 'framer-motion';
+
+export default function ScholarshipCard({ scholarship, index, onClick }: { scholarship: Scholarship; index: number; onClick?: () => void }) {
+  const amountPerScholar = (() => {
+    if (scholarship.total_amount && scholarship.total_slot) {
+      const total = scholarship.total_amount;
+      const slots = scholarship.total_slot;
+      if (slots > 0) {
+        return total / slots;
+      }
+    }
+    return null;
+  })();
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ 
+        duration: 0.4, 
+        delay: index * 0.05,
+        ease: [0.25, 0.1, 0.25, 1]
+      }}
+      whileHover={{ 
+        scale: 0.98,
+        transition: { duration: 0.2 }
+      }}
+      onClick={onClick}
+      className="bg-[#FEFEFD] cursor-pointer rounded-lg overflow-hidden border border-[#D3DCF6] hover:border-[#3A52A6] transition-colors"
+    >
+      {/* Header */}
+      <div className="bg-[#3A52A6]">
+        <div className="flex">
+          {/* Image */}
+          <motion.div 
+            transition={{ duration: 0.3 }}
+            className="w-32 h-32 bg-white/10 flex-shrink-0 overflow-hidden"
+          >
+            <img
+              src={scholarship.image_url || "src/logo.svg"}
+              alt="Preview"
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
+
+          {/* Info */}
+          <div className="flex-1 text-white px-4 py-2">
+            <h3 className="text-xl mb-1 truncate">{scholarship.title}</h3>
+            
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: index * 0.05 + 0.1 }}
+                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded"
+              >
+                {scholarship.type}
+              </motion.span>
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: index * 0.05 + 0.15 }}
+                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded"
+              >
+                {scholarship.purpose}
+              </motion.span>
+            </div>
+
+            {/* Sponsor and Deadline */}
+            <div className="space-y-1.5 text-xs">
+              <div className="flex items-center gap-2">
+               <img
+                  src={scholarship.sponsor.profile_url || "src/logo.svg"}
+                  alt="Sponsor Profile"
+                  className="w-4 h-4 bg-white/20 rounded-full flex-shrink-0 object-cover overflow-hidden block"
+                />
+                <span>{scholarship.sponsor.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar size={16} />
+                <span>{scholarship.application_deadline}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        {/* Amount and Slots */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <motion.div
+            transition={{ duration: 0.2 }}
+            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
+          >
+            <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
+              <Coins size={16} />
+              <span>Amount</span>
+            </div>
+            <p className="text-sm md:text-base text-[#111827]">
+              {amountPerScholar !== null
+                ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : '₱0.00'}
+            </p>
+            <p className="text-xs text-[#6B7280]">per scholar</p>
+          </motion.div>
+
+          <motion.div
+            transition={{ duration: 0.2 }}
+            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
+          >
+            <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
+              <Users size={16} />
+              <span>Slots</span>
+            </div>
+            <p className="text-sm md:text-base text-[#111827]">{scholarship.total_slot}</p>
+            <p className="text-xs text-[#6B7280]">scholars</p>
+          </motion.div>
+        </div>
+
+        {/* Criteria and Documents */}
+        <div className="grid grid-cols-2 gap-6 text-sm">
+          <div>
+            <h4 className="text-[#6B7280] text-xs tracking-wide mb-2">
+              Criteria
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {scholarship.criteria.slice(0, 2).map((item, i) => (
+                <span
+                  key={i}
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
+                >
+                  {item}
+                </span>
+              ))}
+              {scholarship.criteria.length > 2 && (
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]">
+                  + {scholarship.criteria.length - 2} more
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-[#6B7280] text-xs tracking-wider mb-2">
+              Required Documents
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {scholarship.required_documents.slice(0, 2).map((item, i) => (
+                <span
+                  key={i}
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
+                >
+                  {item}
+                </span>
+              ))}
+              {scholarship.required_documents.length > 2 && (
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]">
+                  + {scholarship.required_documents.length - 2} more
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
