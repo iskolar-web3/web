@@ -9,21 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SponsorRouteImport } from './routes/_sponsor'
 import { Route as OnboardingRouteImport } from './routes/_onboarding'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SponsorCreateRouteImport } from './routes/_sponsor/create'
 import { Route as OnboardingWelcomeRouteImport } from './routes/_onboarding/welcome'
 import { Route as OnboardingRoleSelectionRouteImport } from './routes/_onboarding/role-selection'
 import { Route as OnboardingProfileSetupRouteImport } from './routes/_onboarding/profile-setup'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 
-const SponsorRoute = SponsorRouteImport.update({
-  id: '/_sponsor',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/_onboarding',
   getParentRoute: () => rootRouteImport,
@@ -36,11 +30,6 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const SponsorCreateRoute = SponsorCreateRouteImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => SponsorRoute,
 } as any)
 const OnboardingWelcomeRoute = OnboardingWelcomeRouteImport.update({
   id: '/welcome',
@@ -75,7 +64,6 @@ export interface FileRoutesByFullPath {
   '/profile-setup': typeof OnboardingProfileSetupRoute
   '/role-selection': typeof OnboardingRoleSelectionRoute
   '/welcome': typeof OnboardingWelcomeRoute
-  '/create': typeof SponsorCreateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -84,20 +72,17 @@ export interface FileRoutesByTo {
   '/profile-setup': typeof OnboardingProfileSetupRoute
   '/role-selection': typeof OnboardingRoleSelectionRoute
   '/welcome': typeof OnboardingWelcomeRoute
-  '/create': typeof SponsorCreateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteWithChildren
   '/_onboarding': typeof OnboardingRouteWithChildren
-  '/_sponsor': typeof SponsorRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_onboarding/profile-setup': typeof OnboardingProfileSetupRoute
   '/_onboarding/role-selection': typeof OnboardingRoleSelectionRoute
   '/_onboarding/welcome': typeof OnboardingWelcomeRoute
-  '/_sponsor/create': typeof SponsorCreateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,7 +93,6 @@ export interface FileRouteTypes {
     | '/profile-setup'
     | '/role-selection'
     | '/welcome'
-    | '/create'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,37 +101,26 @@ export interface FileRouteTypes {
     | '/profile-setup'
     | '/role-selection'
     | '/welcome'
-    | '/create'
   id:
     | '__root__'
     | '/'
     | '/_auth'
     | '/_onboarding'
-    | '/_sponsor'
     | '/_auth/login'
     | '/_auth/register'
     | '/_onboarding/profile-setup'
     | '/_onboarding/role-selection'
     | '/_onboarding/welcome'
-    | '/_sponsor/create'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
   OnboardingRoute: typeof OnboardingRouteWithChildren
-  SponsorRoute: typeof SponsorRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_sponsor': {
-      id: '/_sponsor'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof SponsorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_onboarding': {
       id: '/_onboarding'
       path: ''
@@ -168,13 +141,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_sponsor/create': {
-      id: '/_sponsor/create'
-      path: '/create'
-      fullPath: '/create'
-      preLoaderRoute: typeof SponsorCreateRouteImport
-      parentRoute: typeof SponsorRoute
     }
     '/_onboarding/welcome': {
       id: '/_onboarding/welcome'
@@ -242,22 +208,10 @@ const OnboardingRouteWithChildren = OnboardingRoute._addFileChildren(
   OnboardingRouteChildren,
 )
 
-interface SponsorRouteChildren {
-  SponsorCreateRoute: typeof SponsorCreateRoute
-}
-
-const SponsorRouteChildren: SponsorRouteChildren = {
-  SponsorCreateRoute: SponsorCreateRoute,
-}
-
-const SponsorRouteWithChildren =
-  SponsorRoute._addFileChildren(SponsorRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   OnboardingRoute: OnboardingRouteWithChildren,
-  SponsorRoute: SponsorRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
