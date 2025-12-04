@@ -47,7 +47,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
 
           {/* Info */}
           <div className="flex-1 text-white px-4 py-2">
-            <h3 className="text-xl mb-1 truncate">{scholarship.title}</h3>
+            <h3 className="text-xl mb-1 line-clamp-1">{scholarship.title}</h3>
             
             {/* Badges */}
             <div className="flex flex-wrap gap-2 mb-3">

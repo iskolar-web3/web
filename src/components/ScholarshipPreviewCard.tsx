@@ -42,7 +42,7 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
 
           {/* Info */}
           <div className="flex-1 text-white px-4 py-2">
-            <h3 className="text-xl mb-1 truncate">
+            <h3 className="text-xl mb-1 line-clamp-1">
               {scholarship.title || 'Scholarship Title'}
             </h3>
 
