@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import ScholarshipCard from "@/components/ScholarshipCard"; 
+import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton"; 
 import Filters from "@/components/Filters"; 
 import { Filter, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,7 +26,7 @@ function DiscoverScholarship() {
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  // const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -36,46 +37,48 @@ function DiscoverScholarship() {
     message: '',
   });
 
-  // const fetchScholarships = useCallback(async () => {
-  //   try {
-  //     setLoading(true);
-  //     const response = await scholarshipManagementService.getAllScholarships();
+  const fetchScholarships = useCallback(async () => {
+    try {
+      setLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setScholarships(mockScholarship);
+      // const response = await scholarshipManagementService.getAllScholarships();
       
-  //     if (response.success) {
-  //       setScholarships(response.scholarships);
-  //     } else {
-  //       setToastConfig({
-  //         type: 'error',
-  //         title: 'Error',
-  //         message: response.message,
-  //       });
-  //       setShowToast(true);
-  //       setTimeout(() => {
-  //         setShowToast(false)
-  //       }, 2000);
-  //     }
-  //   } catch (error) {
-  //     setToastConfig({
-  //       type: 'error',
-  //       title: 'Error',
-  //       message: 'Failed to connect to server.'
-  //     });
-  //     setShowToast(true);
-  //     setTimeout(() => {
-  //       setShowToast(false)
-  //     }, 2000);
-  //   } finally {
-  //     setLoading(false);
-  //     setRefreshing(false);
-  //   }
-  // }, []);
+      // if (response.success) {
+      //   setScholarships(response.scholarships);
+      // } else {
+      //   setToastConfig({
+      //     type: 'error',
+      //     title: 'Error',
+      //     message: response.message,
+      //   });
+      //   setShowToast(true);
+      //   setTimeout(() => {
+      //     setShowToast(false)
+      //   }, 2000);
+      // }
+    } catch (error) {
+      setToastConfig({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to connect to server.'
+      });
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false)
+      }, 2000);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
-  // useEffect(() => {
-  //   fetchScholarships();
-  // }, [fetchScholarships]);
+  useEffect(() => {
+    fetchScholarships();
+  }, [fetchScholarships]);
 
   // Mock data
-  const scholarships: Scholarship[] = Array(23).fill(null).map((_, i) => ({
+  const mockScholarship: Scholarship[] = Array(23).fill(null).map((_, i) => ({
     scholarship_id: '1',
     sponsor_id: '1',
     status: 'active',
@@ -99,7 +102,7 @@ function DiscoverScholarship() {
   }));
 
   const filteredScholarships = useMemo(() => {
-    return scholarships.filter((scholarship) => {
+    return mockScholarship.filter((scholarship) => {
       const matchesType =
         scholarshipType === 'All' ||
         scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
@@ -125,7 +128,7 @@ function DiscoverScholarship() {
 
       return matchesType && matchesPurpose && matchesSponsorType && matchesAmount && matchesSlots;
     });
-  }, [scholarships, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
+  }, [mockScholarship, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
 
   return (
     <div className="min-h-screen">
@@ -368,14 +371,22 @@ function DiscoverScholarship() {
         {/* Scholarship Cards */}
         <div className="lg:col-span-3">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
-            {filteredScholarships.map((scholarship, index) => (
-              <ScholarshipCard
-                key={`${scholarship.title}-${index}`}
-                scholarship={scholarship}
-                index={index}
-                onClick={() => setSelectedScholarship(scholarship)}
-              />
-            ))}
+            {loading ? (
+              // Show skeleton loaders when loading
+              Array.from({ length: 4 }).map((_, index) => (
+                <ScholarshipCardSkeleton key={`skeleton-${index}`} index={index} />
+              ))
+            ) : (
+              // Show actual scholarship cards when loaded
+              filteredScholarships.map((scholarship, index) => (
+                <ScholarshipCard
+                  key={`${scholarship.title}-${index}`}
+                  scholarship={scholarship}
+                  index={index}
+                  onClick={() => setSelectedScholarship(scholarship)}
+                />
+              ))
+            )}
           </div>
         </div>
       </div>
