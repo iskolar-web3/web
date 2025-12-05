@@ -187,7 +187,7 @@ function Home() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-[44rem] mx-auto space-y-12 py-6">
+      <div className="max-w-[44rem] mx-auto space-y-12">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>

@@ -333,368 +333,366 @@ function CreateScholarship() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="max-w-7xl mx-auto">
       <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
-          {/* Scholarship Details */}
-          <div className="space-y-4">
-            {/* Type and Purpose */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Select 
-                  value={type} 
-                  onValueChange={(value) => setValue('type', value as 'merit_based' | 'skill_based', { shouldValidate: true })}
-                >
-                  <SelectTrigger disabled={loading} className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                    errors.type
-                      ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                      : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
-                  }`}>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="merit_based">Merit-Based</SelectItem>
-                    <SelectItem value="skill_based">Skill-Based</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.type && <p className="text-xs text-[#EF4444] mt-1">{errors.type.message}</p>}
-              </div>
-
-              <div>
-                <Select 
-                  value={purpose} 
-                  onValueChange={(value) => setValue('purpose', value as 'allowance' | 'tuition', { shouldValidate: true })}
-                >
-                  <SelectTrigger disabled={loading} className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                    errors.purpose
-                      ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                      : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
-                  }`}>
-                    <SelectValue placeholder="Select purpose" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="allowance">Allowance</SelectItem>
-                    <SelectItem value="tuition">Tuition</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.purpose && <p className="text-xs text-[#EF4444] mt-1">{errors.purpose.message}</p>}
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2">
+        {/* Scholarship Details */}
+        <div className="space-y-4">
+          {/* Type and Purpose */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Select 
+                value={type} 
+                onValueChange={(value) => setValue('type', value as 'merit_based' | 'skill_based', { shouldValidate: true })}
+              >
+                <SelectTrigger disabled={loading} className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
+                  errors.type
+                    ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
+                    : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                }`}>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="merit_based">Merit-Based</SelectItem>
+                  <SelectItem value="skill_based">Skill-Based</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.type && <p className="text-xs text-[#EF4444] mt-1">{errors.type.message}</p>}
             </div>
 
-            <div className="bg-[#F8F9FC] rounded-xl p-3 shadow-sm">
-              <div className="flex flex-col md:flex-row gap-4">
-                {/* Image Upload */}
-                <div className="md:w-[218px]">
-                  <label className="block">
-                    {imagePreview ? (
-                      <div className="relative w-full aspect-square rounded-lg overflow-hidden">
-                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          disabled={loading}
-                          onClick={() => {
-                            setImagePreview(null);
-                            setValue('imageUrl', '', { shouldValidate: true });
-                          }}
-                          className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className={`border-2 border-dashed ${
-                        errors.imageUrl ? 'border-[#EF4444]' : 'border-[#3A52A6]'
-                      } rounded-lg text-center cursor-pointer hover:bg-[#F0F7FF] transition-colors flex flex-col items-center justify-center w-full aspect-square px-4`}>
-                        <Upload className="mb-3 text-[#5B7BA6]" size={40} />
-                        <p className="text-[#3A52A6] text-sm opacity-70">Click to select an image</p>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                      </div>
+            <div>
+              <Select 
+                value={purpose} 
+                onValueChange={(value) => setValue('purpose', value as 'allowance' | 'tuition', { shouldValidate: true })}
+              >
+                <SelectTrigger disabled={loading} className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
+                  errors.purpose
+                    ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
+                    : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                }`}>
+                  <SelectValue placeholder="Select purpose" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="allowance">Allowance</SelectItem>
+                  <SelectItem value="tuition">Tuition</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.purpose && <p className="text-xs text-[#EF4444] mt-1">{errors.purpose.message}</p>}
+            </div>
+          </div>
+
+          <div className="bg-[#F8F9FC] rounded-xl p-3 shadow-sm">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Image Upload */}
+              <div className="md:w-[218px]">
+                <label className="block">
+                  {imagePreview ? (
+                    <div className="relative w-full aspect-square rounded-lg overflow-hidden">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() => {
+                          setImagePreview(null);
+                          setValue('imageUrl', '', { shouldValidate: true });
+                        }}
+                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={`border-2 border-dashed ${
+                      errors.imageUrl ? 'border-[#EF4444]' : 'border-[#3A52A6]'
+                    } rounded-lg text-center cursor-pointer hover:bg-[#F0F7FF] transition-colors flex flex-col items-center justify-center w-full aspect-square px-4`}>
+                      <Upload className="mb-3 text-[#5B7BA6]" size={40} />
+                      <p className="text-[#3A52A6] text-sm opacity-70">Click to select an image</p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </div>
+                  )}
+                </label>
+                {errors.imageUrl && <p className="text-xs text-[#EF4444] mt-1">{errors.imageUrl.message}</p>}
+              </div>
+
+              <div className="md:w-2/3 space-y-3.5">
+                {/* Title */}
+                <div>
+                  <Controller
+                    control={control}
+                    name="title"
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        placeholder="Scholarship Title"
+                        disabled={loading}
+                        className={`w-full text-2xl border-b-2 ${
+                          errors.title ? 'border-[#EF4444]' : 'border-transparent'
+                        } bg-transparent pb-2 focus:outline-none focus:border-[#3A52A6] text-[#111827]`}
+                      />
                     )}
-                  </label>
-                  {errors.imageUrl && <p className="text-xs text-[#EF4444] mt-1">{errors.imageUrl.message}</p>}
+                  />
+                  {errors.title && <p className="text-xs text-[#EF4444] mt-1">{errors.title.message}</p>}
                 </div>
 
-                <div className="md:w-2/3 space-y-3.5">
-                  {/* Title */}
+                {/* Description */}
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    setTempDescription(description || '');
+                    setShowDescriptionModal(true);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-3 rounded-lg bg-[#F3F4F6] border text-[#6B7280] text-sm hover:bg-[#E5E7EB] transition-colors"
+                >
+                  <span className="text-[#8B9CB5]">☰</span>
+                  {description ? 'Edit Description' : 'Add Description'}
+                </button>
+
+                {/* Total Amount & Slot */}
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Controller
                       control={control}
-                      name="title"
+                      name="totalAmount"
                       render={({ field }) => (
                         <input
                           {...field}
-                          placeholder="Scholarship Title"
+                          type="number"
                           disabled={loading}
-                          className={`w-full text-2xl border-b-2 ${
-                            errors.title ? 'border-[#EF4444]' : 'border-transparent'
-                          } bg-transparent pb-2 focus:outline-none focus:border-[#3A52A6] text-[#111827]`}
+                          placeholder="Total amount"
+                          className={`w-full px-4 py-3 rounded-lg border ${
+                            errors.totalAmount ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                          } bg-[#F8F9FC] text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
                         />
                       )}
                     />
-                    {errors.title && <p className="text-xs text-[#EF4444] mt-1">{errors.title.message}</p>}
+                    {errors.totalAmount && <p className="text-xs text-[#EF4444] mt-1">{errors.totalAmount.message}</p>}
                   </div>
 
-                  {/* Description */}
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => {
-                      setTempDescription(description || '');
-                      setShowDescriptionModal(true);
-                    }}
-                    className="w-full flex items-center gap-2 px-4 py-3 rounded-lg bg-[#F3F4F6] border text-[#6B7280] text-sm hover:bg-[#E5E7EB] transition-colors"
-                  >
-                    <span className="text-[#8B9CB5]">☰</span>
-                    {description ? 'Edit Description' : 'Add Description'}
-                  </button>
-
-                  {/* Total Amount & Slot */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Controller
-                        control={control}
-                        name="totalAmount"
-                        render={({ field }) => (
-                          <input
-                            {...field}
-                            type="number"
-                            disabled={loading}
-                            placeholder="Total amount"
-                            className={`w-full px-4 py-3 rounded-lg border ${
-                              errors.totalAmount ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
-                            } bg-[#F8F9FC] text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
-                          />
-                        )}
-                      />
-                      {errors.totalAmount && <p className="text-xs text-[#EF4444] mt-1">{errors.totalAmount.message}</p>}
-                    </div>
-
-                    <div>
-                      <Controller
-                        control={control}
-                        name="totalSlot"
-                        render={({ field }) => (
-                          <input
-                            {...field}
-                            type="number"
-                            disabled={loading}
-                            placeholder="Total slots"
-                            className={`w-full px-4 py-3 rounded-lg border ${
-                              errors.totalSlot ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
-                            } bg-[#F8F9FC] text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
-                          />
-                        )}
-                      />
-                      {errors.totalSlot && <p className="text-xs text-[#EF4444] mt-1">{errors.totalSlot.message}</p>}
-                    </div>
-                  </div>
-
-                  {/* Application Deadline */}
                   <div>
                     <Controller
                       control={control}
-                      name="applicationDeadline"
+                      name="totalSlot"
                       render={({ field }) => (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              disabled={loading}
-                              className={`w-full px-4 py-3 text-sm border rounded-lg bg-[#F8F9FC] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] flex items-center justify-between ${
-                                field.value ? 'text-[#111827]' : 'text-gray-400'
-                              } ${errors.applicationDeadline ? 'border-[#EF4444]' : 'border-[#C4CBD5]'}`}
-                            >
-                              <span>
-                                {field.value
-                                  ? field.value.toLocaleDateString('en-US', {
-                                      month: 'long',
-                                      day: 'numeric',
-                                      year: 'numeric',
-                                    })
-                                  : 'Application deadline'}
-                              </span>
-                              <CalendarIcon className="h-4 w-4 opacity-60" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value ?? undefined}
-                              onSelect={(date) => {
-                                if (date) {
-                                  field.onChange(date);
-                                }
-                              }}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <input
+                          {...field}
+                          type="number"
+                          disabled={loading}
+                          placeholder="Total slots"
+                          className={`w-full px-4 py-3 rounded-lg border ${
+                            errors.totalSlot ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                          } bg-[#F8F9FC] text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
+                        />
                       )}
                     />
-                    {errors.applicationDeadline && <p className="text-xs text-[#EF4444] mt-1">{errors.applicationDeadline.message}</p>}
+                    {errors.totalSlot && <p className="text-xs text-[#EF4444] mt-1">{errors.totalSlot.message}</p>}
                   </div>
                 </div>
+
+                {/* Application Deadline */}
+                <div>
+                  <Controller
+                    control={control}
+                    name="applicationDeadline"
+                    render={({ field }) => (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            disabled={loading}
+                            className={`w-full px-4 py-3 text-sm border rounded-lg bg-[#F8F9FC] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] flex items-center justify-between ${
+                              field.value ? 'text-[#111827]' : 'text-gray-400'
+                            } ${errors.applicationDeadline ? 'border-[#EF4444]' : 'border-[#C4CBD5]'}`}
+                          >
+                            <span>
+                              {field.value
+                                ? field.value.toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  })
+                                : 'Application deadline'}
+                            </span>
+                            <CalendarIcon className="h-4 w-4 opacity-60" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ?? undefined}
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(date);
+                              }
+                            }}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  />
+                  {errors.applicationDeadline && <p className="text-xs text-[#EF4444] mt-1">{errors.applicationDeadline.message}</p>}
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Criteria */}
-            <div>
-              <div className="flex gap-2">
-                <input
-                  value={criteriaInput}
-                  disabled={loading}
-                  onChange={(e) => setCriteriaInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCriterion())}
-                  placeholder="Enter eligibility criterion"
-                  className={`flex-1 px-4 py-3 rounded-lg border ${
-                    errors.criteria ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
-                  } bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
-                />
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={addCriterion}
-                  className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
-                >
-                  <Plus size={20} />
-                </button>
-              </div>
-              {errors.criteria && <p className="text-xs text-[#EF4444] mt-1">{errors.criteria.message}</p>}
-              {criteria.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {criteria.map((criterion, index) => (
-                    <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-[#E5E7EB]">
-                      {criterion}
-                      <button disabled={loading} onClick={() => removeCriterion(index)} className="hover:text-[#2A4296]">
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Required Documents */}
-            <div>
-              <div className="flex gap-2">
-                <input
-                  value={documentsInput}
-                  disabled={loading}
-                  onChange={(e) => setDocumentsInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addDocument())}
-                  placeholder="Enter required document"
-                  className={`flex-1 px-4 py-3 rounded-lg border ${
-                    errors.requiredDocuments ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
-                  } bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
-                />
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={addDocument}
-                  className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
-                >
-                  <Plus size={20} />
-                </button>
-              </div>
-              {errors.requiredDocuments && <p className="text-xs text-[#EF4444] mt-1">{errors.requiredDocuments.message}</p>}
-              {requiredDocuments.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {requiredDocuments.map((doc, index) => (
-                    <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-[#E5E7EB] rounded-lg">
-                      {doc}
-                      <button disabled={loading} onClick={() => removeDocument(index)} className="hover:text-[#2A4296]">
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Custom Form Fields */}
-            <div>
-              <div className="mb-3">
-                <label className="block text-sm text-[#4A5568] mb-1 ml-0.5">Application Form</label>
-                <p className="text-xs text-[#6B7280] ml-0.5">Add custom fields to collect information from applicants.</p>
-              </div>
-
-              {customFormFields.length > 0 && (
-                <div className="space-y-2 mb-3">
-                  {customFormFields.map((field, index) => (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-white border border-[#E0ECFF] rounded-lg">
-                      <div className="w-9 h-9 bg-[#E0ECFF] rounded-lg flex items-center justify-center">
-                        {renderFieldTypeIcon(field.type as CustomFieldType)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm  text-[#111827]">{field.label}</span>
-                          {field.required && (
-                            <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded">Required</span>
-                          )}
-                        </div>
-                        <p className="text-xs text-[#6B7280]">{getFieldTypeLabel(field.type as CustomFieldType)}</p>
-                      </div>
-                      <button disabled={loading} onClick={() => openCustomFormModal(index)} className="p-1.5 hover:bg-gray-100 rounded">
-                        <Edit2 size={16} className="text-[#3A52A6]" />
-                      </button>
-                      <button disabled={loading} onClick={() => removeCustomFormField(index)} className="p-1.5 hover:bg-gray-100 rounded">
-                        <Trash2 size={16} className="text-[#EF4444]" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
+          {/* Criteria */}
+          <div>
+            <div className="flex gap-2">
+              <input
+                value={criteriaInput}
+                disabled={loading}
+                onChange={(e) => setCriteriaInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCriterion())}
+                placeholder="Enter eligibility criterion"
+                className={`flex-1 px-4 py-3 rounded-lg border ${
+                  errors.criteria ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                } bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
+              />
               <button
                 type="button"
                 disabled={loading}
-                onClick={() => openCustomFormModal()}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
-                  errors.customFormFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
-                } bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
+                onClick={addCriterion}
+                className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
               >
                 <Plus size={20} />
-                {customFormFields.length === 0 ? 'Add Form Field' : 'Add Another Field'}
               </button>
-              {errors.customFormFields && <p className="text-xs text-[#EF4444] mt-1">{errors.customFormFields.message}</p>}
+            </div>
+            {errors.criteria && <p className="text-xs text-[#EF4444] mt-1">{errors.criteria.message}</p>}
+            {criteria.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {criteria.map((criterion, index) => (
+                  <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-[#E5E7EB]">
+                    {criterion}
+                    <button disabled={loading} onClick={() => removeCriterion(index)} className="hover:text-[#2A4296]">
+                      <X size={14} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Required Documents */}
+          <div>
+            <div className="flex gap-2">
+              <input
+                value={documentsInput}
+                disabled={loading}
+                onChange={(e) => setDocumentsInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addDocument())}
+                placeholder="Enter required document"
+                className={`flex-1 px-4 py-3 rounded-lg border ${
+                  errors.requiredDocuments ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                } bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
+              />
+              <button
+                type="button"
+                disabled={loading}
+                onClick={addDocument}
+                className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+            {errors.requiredDocuments && <p className="text-xs text-[#EF4444] mt-1">{errors.requiredDocuments.message}</p>}
+            {requiredDocuments.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {requiredDocuments.map((doc, index) => (
+                  <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-[#E5E7EB] rounded-lg">
+                    {doc}
+                    <button disabled={loading} onClick={() => removeDocument(index)} className="hover:text-[#2A4296]">
+                      <X size={14} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Custom Form Fields */}
+          <div>
+            <div className="mb-3">
+              <label className="block text-sm text-[#4A5568] mb-1 ml-0.5">Application Form</label>
+              <p className="text-xs text-[#6B7280] ml-0.5">Add custom fields to collect information from applicants.</p>
             </div>
 
-            {/* Submit */}
+            {customFormFields.length > 0 && (
+              <div className="space-y-2 mb-3">
+                {customFormFields.map((field, index) => (
+                  <div key={index} className="flex items-center gap-3 p-3 bg-white border border-[#E0ECFF] rounded-lg">
+                    <div className="w-9 h-9 bg-[#E0ECFF] rounded-lg flex items-center justify-center">
+                      {renderFieldTypeIcon(field.type as CustomFieldType)}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm  text-[#111827]">{field.label}</span>
+                        {field.required && (
+                          <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded">Required</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-[#6B7280]">{getFieldTypeLabel(field.type as CustomFieldType)}</p>
+                    </div>
+                    <button disabled={loading} onClick={() => openCustomFormModal(index)} className="p-1.5 hover:bg-gray-100 rounded">
+                      <Edit2 size={16} className="text-[#3A52A6]" />
+                    </button>
+                    <button disabled={loading} onClick={() => removeCustomFormField(index)} className="p-1.5 hover:bg-gray-100 rounded">
+                      <Trash2 size={16} className="text-[#EF4444]" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <button
-              onClick={handleSubmit(onSubmit)}
-              className={`w-full mt-2 mb-6 md:mb-0 py-3 bg-[#EFA508] text-white cursor-pointer rounded-lg hover:bg-[#D89407] transition-colors ${
-                loading && "opacity-60 cursor-not-allowed"
-              }`}
+              type="button"
               disabled={loading}
+              onClick={() => openCustomFormModal()}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
+                errors.customFormFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
+              } bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
             >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                </span>
-              ) : (
-                <span>Create Scholarship</span>
-              )}
+              <Plus size={20} />
+              {customFormFields.length === 0 ? 'Add Form Field' : 'Add Another Field'}
             </button>
+            {errors.customFormFields && <p className="text-xs text-[#EF4444] mt-1">{errors.customFormFields.message}</p>}
           </div>
 
-          {/* Live Preview */}
-          <div className="lg:sticky lg:top-6 h-fit md:ml-24">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm text-[#111827]">Live Preview</h2>
-            </div>
-            
-            <ScholarshipPreviewCard 
-              scholarship={previewScholarship}
-              onClick={() => setShowFullPreview(true)}
-            />
+          {/* Submit */}
+          <button
+            onClick={handleSubmit(onSubmit)}
+            className={`w-full mt-2 mb-6 md:mb-0 py-3 bg-[#EFA508] text-white cursor-pointer rounded-lg hover:bg-[#D89407] transition-colors ${
+              loading && "opacity-60 cursor-not-allowed"
+            }`}
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <Loader2 className="w-4 h-4 animate-spin" />
+              </span>
+            ) : (
+              <span>Create Scholarship</span>
+            )}
+          </button>
+        </div>
+
+        {/* Live Preview */}
+        <div className="lg:sticky lg:top-6 h-fit md:ml-24">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm text-[#111827]">Live Preview</h2>
           </div>
+          
+          <ScholarshipPreviewCard 
+            scholarship={previewScholarship}
+            onClick={() => setShowFullPreview(true)}
+          />
         </div>
       </div>
 
