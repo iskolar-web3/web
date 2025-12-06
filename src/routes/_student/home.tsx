@@ -225,7 +225,7 @@ function Home() {
             // Show skeleton loaders when loading
             Array.from({ length: 4 }).map((_, index) => (
               <div key={`skeleton-${index}`} className="flex gap-4 md:gap-6">
-                {/* Desktop: Date/Time skeleton on LEFT */}
+                {/* Desktop: Date/Time */}
                 <div className="hidden md:flex gap-4">
                   <div className="flex flex-col items-start w-30 flex-shrink-0 pt-1">
                     <div className="text-left space-y-1">
@@ -257,7 +257,7 @@ function Home() {
 
                 {/* Card column */}
                 <div className="flex-1 mb-3">
-                  {/* Mobile/Tablet: Date/Time skeleton above card */}
+                  {/* Mobile/Tablet: Date/Time */}
                   <div className="md:hidden mb-2 text-left space-y-1">
                     <Skeleton className="h-3 w-28 bg-[#D1D5DB]" />
                     <Skeleton className="h-[11px] w-16 bg-[#D1D5DB]" />
@@ -282,7 +282,7 @@ function Home() {
             <div>
               {filteredApplications.map((application, index) => (
                 <div key={application.scholarship_application_id} className="flex gap-4 md:gap-6">
-                  {/* Desktop: Date/Time on LEFT */}
+                  {/* Desktop: Date/Time */}
                   <div className="hidden md:flex gap-4">
                     <div className="flex flex-col items-start w-30 flex-shrink-0 pt-1">
                       <div className="text-left">
@@ -318,7 +318,7 @@ function Home() {
 
                   {/* Card column */}
                   <div className="flex-1 mb-3">
-                    {/* Mobile/Tablet: Date/Time above card */}
+                    {/* Mobile/Tablet: Date/Time */}
                     <div className="md:hidden mb-2 text-left">
                       <div className="text-xs text-[#111827]">
                         {formatDate(application.applied_at)}

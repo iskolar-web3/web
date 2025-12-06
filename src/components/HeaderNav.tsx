@@ -286,7 +286,7 @@ export default function HeaderNav({ role }: HeaderNavProps) {
                 className="w-8 md:w-10 h-8 md:h-10 rounded-full bg-[#E5E7EB] flex items-center justify-center hover:ring-2 hover:ring-[#3A52A6] hover:ring-offset-2 transition-all cursor-pointer"
                 aria-label="Profile menu"
               >
-                <User className="w-4 md:w-5h-4 md:h-5 text-[#6B7280]" />
+                <User className="w-4 md:w-5 h-4 md:h-5 text-[#6B7280]" />
               </button>
 
               <AnimatePresence>

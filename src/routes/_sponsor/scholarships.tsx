@@ -1,9 +1,10 @@
-import { useState, useMemo /*, useCallback, useEffect */ } from 'react';
+import { useState, useMemo, useEffect, useCallback  } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Filter, AlertCircle, Loader2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SponsorFilterSelect from '@/components/SponsorFilters';
 import SponsorScholarshipCard from '@/components/SponsorScholarshipCard';
+import ScholarshipCardSkeleton from '@/components/ScholarshipCardSkeleton';
 import SponsorScholarshipDetailsModal from '@/components/SponsorScholarshipDetailsModal';
 import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/use-page-title"
@@ -26,13 +27,14 @@ function Scholarships() {
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  // const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [scholarshipToDelete, setScholarshipToDelete] = useState<Scholarship | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: 'success' as 'success' | 'error',
     title: '',
@@ -62,7 +64,7 @@ function Scholarships() {
     if (!scholarshipToDelete) return;
 
     try {
-      setLoading(true);
+      setIsDeleting(true);
       // const response = await scholarshipManagementService.deleteScholarship(scholarshipToDelete.scholarship_id);
       
       // if(response.success) {
@@ -86,42 +88,52 @@ function Scholarships() {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
     } finally {
-      setLoading(false);
+      setIsDeleting(false);
       setShowDeleteModal(false);
       setScholarshipToDelete(null);
     }
   };
 
-  // const fetchMyScholarships = useCallback(async () => {
-  //   try {
-  //     setLoading(true);
+  const fetchMyScholarships = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setScholarships(mockScholarship);
   //     const response = await scholarshipManagementService.getMyScholarships();
   //
   //     if (response.success) {
   //       setScholarships(response.scholarships);
   //     }
-  //   } catch (error) {
-  //     setToastConfig({
-  //       type: 'error',
-  //       title: 'Error',
-  //       message: 'Failed to connect to server.'
-  //     });
-  //     setShowToast(true);
-  //     setTimeout(() => {
-  //       setShowToast(false)
-  //     }, 2000);
-  //   } finally {
-  //     setLoading(false);
-  //     setRefreshing(false);
-  //   }
-  // }, []);
-  //
-  // useEffect(() => {
-  //   fetchMyScholarships();
-  // }, [fetchMyScholarships]);
+    } catch (error) {
+      setToastConfig({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to connect to server.'
+      });
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false)
+      }, 2000);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+  
+  useEffect(() => {
+    fetchMyScholarships();
+  }, [fetchMyScholarships]);
 
-  // Mock data
-  const scholarships: Scholarship[] = Array(6)
+  // Mock data - simulate loading delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const mockScholarship: Scholarship[] = Array(6)
     .fill(null)
     .map(() => ({
       scholarship_id: '1',
@@ -182,7 +194,7 @@ function Scholarships() {
     }));
 
   const filteredScholarships = useMemo(() => {
-    return scholarships.filter((scholarship) => {
+    return mockScholarship.filter((scholarship) => {
       const matchesType =
         scholarshipType === 'All' ||
         scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
@@ -209,7 +221,7 @@ function Scholarships() {
 
       return matchesType && matchesPurpose && matchesApplications && matchesAmount && matchesSlots;
     });
-  }, [scholarships, scholarshipType, purpose, applicationsRange, amountRange, slotRange]);
+  }, [mockScholarship, scholarshipType, purpose, applicationsRange, amountRange, slotRange]);
 
   return (
     <div className="min-h-screen">
@@ -521,7 +533,7 @@ function Scholarships() {
               </div>
             </div>
           </motion.aside>
-
+                        
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -529,17 +541,25 @@ function Scholarships() {
             className="space-y-5"
           >
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
-              {filteredScholarships.map((scholarship, index) => (
-                <SponsorScholarshipCard
-                  key={`${scholarship.title}-${index}`}
-                  scholarship={scholarship}
-                  index={index}
-                  onClick={() => setSelectedScholarship(scholarship)}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onViewApplicants={handleViewApplicants}
-                />
-              ))}
+              {loading ? (
+                // Show skeleton loaders when loading
+                Array.from({ length: 6 }).map((_, index) => (
+                  <ScholarshipCardSkeleton key={`skeleton-${index}`} index={index} />
+                ))
+              ) : (
+                // Show actual scholarship cards when loaded
+                filteredScholarships.map((scholarship, index) => (
+                  <SponsorScholarshipCard
+                    key={`${scholarship.title}-${index}`}
+                    scholarship={scholarship}
+                    index={index}
+                    onClick={() => setSelectedScholarship(scholarship)}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onViewApplicants={handleViewApplicants}
+                  />
+                ))
+              )}
             </div>
           </motion.section>
         </div>
@@ -580,21 +600,21 @@ function Scholarships() {
                   setShowDeleteModal(false);
                   setScholarshipToDelete(null);
                 }}
-                disabled={loading}
+                disabled={isDeleting}
                 className={`flex-1 px-4 py-2 cursor-pointer text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 ${
-                  loading && "opacity-60 cursor-not-allowed"
+                  isDeleting && "opacity-60 cursor-not-allowed"
                 }`}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                disabled={loading}
+                disabled={isDeleting}
                 className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-[#F0F7FF] rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
-                  loading && "opacity-60 cursor-not-allowed"
+                  isDeleting && "opacity-60 cursor-not-allowed"
                 }`}
               >
-                {loading ? (
+                {isDeleting ? (
                   <span className="flex items-center justify-center">
                     <Loader2 className="w-4 h-4 animate-spin" />
                   </span>

@@ -20,6 +20,7 @@ import {
   Phone,
   Paperclip,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -149,15 +150,16 @@ function EditScholarshipPage() {
   }, []);
 
   const loadScholarshipDetails = useCallback(async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       // const response = await scholarshipManagementService.getScholarshipById(id);
       // if (response.success && response.scholarship) {
       //   hydrateForm(response.scholarship);
       //   return;
       // }
 
-      // Mocked placeholder while integration is pending
+      // Mock scholarship data
+      await new Promise(resolve => setTimeout(resolve, 2000));
       const mockScholarship: Scholarship = {
         scholarship_id: '1',
         sponsor_id: '1',
@@ -381,10 +383,81 @@ function EditScholarshipPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-2 text-[#3A52A6]">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>Loading scholarship details...</span>
+      <div className="min-h-screen">
+        <div className="max-w-[40rem] mx-auto">
+          <div className="space-y-4">
+            {/* Status Skeleton */}
+            <Skeleton className="w-full h-12 rounded-lg bg-[#E5E7EB]" />
+
+            {/* Type and Purpose Skeleton */}
+            <div className="grid grid-cols-2 gap-4">
+              <Skeleton className="w-full h-12 rounded-lg bg-[#E5E7EB]" />
+              <Skeleton className="w-full h-12 rounded-lg bg-[#E5E7EB]" />
+            </div>
+
+            {/* Image and Form Skeleton */}
+            <div className="bg-[#F8F9FC] rounded-xl p-4 shadow-sm">
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Image Skeleton */}
+                <div className="md:w-[218px]">
+                  <Skeleton className="w-full aspect-square rounded-lg bg-[#D1D5DB]" />
+                </div>
+
+                {/* Form Fields Skeleton */}
+                <div className="md:flex-1 space-y-4">
+                  {/* Title Skeleton */}
+                  <Skeleton className="h-8 w-full bg-[#D1D5DB]" />
+                  
+                  {/* Description Button Skeleton */}
+                  <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
+
+                  {/* Amount and Slot Skeleton */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
+                    <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
+                  </div>
+
+                  {/* Deadline Skeleton */}
+                  <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Criteria Input Skeleton */}
+            <div className="flex gap-2">
+              <Skeleton className="flex-1 h-12 rounded-lg bg-[#D1D5DB]" />
+              <Skeleton className="w-11 h-11 rounded-lg bg-[#D1D5DB]" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-8 w-24 rounded-md bg-[#D1D5DB]" />
+              <Skeleton className="h-8 w-32 rounded-md bg-[#D1D5DB]" />
+              <Skeleton className="h-8 w-28 rounded-md bg-[#D1D5DB]" />
+            </div>
+
+            {/* Documents Input Skeleton */}
+            <div className="flex gap-2">
+              <Skeleton className="flex-1 h-12 rounded-lg bg-[#D1D5DB]" />
+              <Skeleton className="w-11 h-11 rounded-lg bg-[#D1D5DB]" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-8 w-28 rounded-md bg-[#D1D5DB]" />
+              <Skeleton className="h-8 w-32 rounded-md bg-[#D1D5DB]" />
+            </div>
+
+            {/* Form Fields Skeleton */}
+            <div>
+              <Skeleton className="h-4 w-32 mb-2 bg-[#D1D5DB]" />
+              <Skeleton className="h-3 w-64 mb-3 bg-[#D1D5DB]" />
+              <div className="space-y-2">
+                <Skeleton className="w-full h-16 rounded-lg bg-[#D1D5DB]" />
+                <Skeleton className="w-full h-16 rounded-lg bg-[#D1D5DB]" />
+              </div>
+              <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB] mt-3" />
+            </div>
+
+            {/* Save Button Skeleton */}
+            <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
+          </div>
         </div>
       </div>
     );

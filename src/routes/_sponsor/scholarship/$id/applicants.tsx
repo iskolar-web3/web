@@ -20,6 +20,7 @@ import {
   Phone,
   Mail,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 // import { scholarshipManagementService } from '@/services/scholarship-management.service';
 // import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 import Toast from '@/components/Toast';
@@ -94,6 +95,7 @@ function ApplicantsListPage() {
       setError(null);
       setLoading(true);
 
+      await new Promise(resolve => setTimeout(resolve, 2000));
       // const scholarshipRes = await scholarshipManagementService.getScholarshipById(id);
       // if (scholarshipRes.success && scholarshipRes.scholarship) {
       //   setScholarship(scholarshipRes.scholarship);
@@ -405,9 +407,47 @@ function ApplicantsListPage() {
       <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 animate-spin text-[#3A52A6]" />
-          <p className="mt-4 text-[#5D6673]">Loading applicants…</p>
+        <div className="max-w-3xl mx-auto">
+          {/* Scholarship Info Header Skeleton */}
+          <div className="bg-[#FEFEFD] rounded-lg shadow-sm p-4 md:p-5 mb-3">
+            <Skeleton className="h-8 w-full mb-2 bg-[#D1D5DB]" />
+            <Skeleton className="h-4 w-32 bg-[#D1D5DB]" />
+          </div>
+
+          {/* Toolbar Skeleton */}
+          <div className="flex items-center gap-2 mb-4">
+            <Skeleton className="h-9 w-24 rounded-md bg-[#D1D5DB]" />
+            <Skeleton className="h-9 w-32 rounded-md bg-[#D1D5DB]" />
+            <Skeleton className="h-9 w-24 rounded-md bg-[#D1D5DB] ml-auto" />
+          </div>
+
+          {/* Applicants List Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <motion.div
+                key={`skeleton-${index}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="bg-white rounded-xl shadow-sm p-5 relative"
+              >
+                {/* Status Icon Skeleton */}
+                <Skeleton className="w-5 h-5 rounded-full bg-[#D1D5DB] absolute top-4 right-4" />
+                
+                <div className="flex items-center gap-4">
+                  {/* Avatar Skeleton */}
+                  <Skeleton className="w-14 h-14 rounded-full bg-[#D1D5DB] flex-shrink-0" />
+
+                  {/* Info Skeleton */}
+                  <div className="flex-1">
+                    <Skeleton className="h-5 w-32 mb-2 bg-[#D1D5DB]" />
+                    <Skeleton className="h-4 w-48 mb-2 bg-[#D1D5DB]" />
+                    <Skeleton className="h-3 w-36 bg-[#D1D5DB]" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center min-h-screen p-5">
