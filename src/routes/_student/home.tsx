@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader2, Calendar, Users, Coins, ChevronsRight, Info } from 'lucide-react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Loader2, Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTitle } from '@/hooks/use-page-title';
 import type { Scholarship } from '@/types/scholarship.types';
@@ -81,6 +81,8 @@ const mockApplications: Application[] = [
 
 function Home() {
   usePageTitle('Home');
+
+  const navigate = useNavigate();
 
   const [applications, setApplications] = useState<Application[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<Application[]>([]);
@@ -269,14 +271,18 @@ function Home() {
             ))
           ) : filteredApplications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-dashed border-[#CBD5F5] bg-white text-[#9CA3AF]">
-                <Calendar className="w-6 h-6" />
-              </div>
-              <h2 className="text-base md:text-lg text-[#111827] mb-1">No applications yet</h2>
-              <p className="max-w-sm text-xs md:text-sm text-[#6B7280]">
-                Once you start applying to scholarships, you'll see their timelines and
-                statuses here.
+              <Files className="w-24 md:w-30 h-24 md:h-30 text-[#D1D5DB]" />
+              <h2 className="text-lg md:text-xl text-[#9CA3AF] mt-8 mb-2">No applications yet</h2>
+              <p className="max-w-md text-sm md:text-base text-[#9CA3AF] mb-4 md:mb-8">
+                You have to apply for scholarships to see them listed here.
               </p>
+              <button
+                onClick={() => navigate({ to: '/discover' })}
+                className="inline-flex cursor-pointer items-center gap-2 px-4 py-2.5 bg-[#9CA3AF] text-white text-sm md:text-base rounded-md hover:bg-[#D1D5DB] hover:text-white text-[#F0F7FF] transition-colors"
+              >
+                Explore Scholarships
+                <ArrowRight size={18} />
+              </button>
             </div>
           ) : (
             <div>

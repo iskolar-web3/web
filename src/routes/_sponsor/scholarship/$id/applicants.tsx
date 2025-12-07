@@ -15,6 +15,7 @@ import {
   FileText,
   ExternalLink,
   User,
+  Users,
   Trophy,
   ChevronsRight,
   Phone,
@@ -138,7 +139,7 @@ function ApplicantsListPage() {
         updated_at: new Date().toISOString(),
       };
 
-      const mockApplicants: Applicant[] = Array.from({ length: 75 }, (_, index) => ({
+      const mockApplicants: Applicant[] = Array.from({ length: 0 }, (_, index) => ({
         scholarship_application_id: `${index + 1}`,
         student_id: `${index + 1}`,
         scholarship_id: id,
@@ -610,7 +611,7 @@ function ApplicantsListPage() {
           {/* Applicants List */}
           {filteredApplicants.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm">
-              <User className="w-14 h-14 text-[#D1D5DB]" />
+              <Users className="w-14 h-14 text-[#D1D5DB]" />
               <p className="mt-4 text-[#9CA3AF]">No applicants found</p>
             </div>
           ) : (

@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import ScholarshipCard from "@/components/ScholarshipCard"; 
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton"; 
 import Filters from "@/components/Filters"; 
-import { Filter, X } from 'lucide-react';
+import { Filter, X, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '@/components/Toast';
 import type { Scholarship } from '@/types/scholarship.types';
@@ -372,12 +372,15 @@ function DiscoverScholarship() {
         <div className="lg:col-span-3">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
             {loading ? (
-              // Show skeleton loaders when loading
               Array.from({ length: 4 }).map((_, index) => (
                 <ScholarshipCardSkeleton key={`skeleton-${index}`} index={index} />
               ))
+            ) : filteredScholarships.length === 0 ? (
+              <div className="lg:col-span-3 flex flex-col items-center justify-center pt-28 pt-36">
+                <GraduationCap className="w-24 md:w-30 h-24 md:h-30 text-[#D1D5DB]" />
+                <p className="mt-4 text-lg md:text-xl text-[#9CA3AF]">No scholarships found</p>
+              </div>
             ) : (
-              // Show actual scholarship cards when loaded
               filteredScholarships.map((scholarship, index) => (
                 <ScholarshipCard
                   key={`${scholarship.title}-${index}`}

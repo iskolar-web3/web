@@ -158,7 +158,7 @@ function LoginPage(): JSX.Element {
             <h1 className="text-xl sm:text-2xl md:text-3xl mb-1 text-[#3F58B2]">
               Log In
             </h1>
-            <p className="text-[10px] sm:text-[11px] text-[#8C8C8C]">
+            <p className="text-[11px] sm:text-xs text-[#8C8C8C]">
               Don't have an account?{" "}
               <Link 
                 to="/register"
@@ -236,7 +236,7 @@ function LoginPage(): JSX.Element {
                 <input
                   type="checkbox"
                   {...register("rememberMe")}
-                  className="w-3 h-3 sm:w-2.5 sm:h-2.5 rounded border-[#C4CBD5] text-[#3A52A6] focus:ring-[#3A52A6] cursor-pointer"
+                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded border-[#C4CBD5] text-[#3A52A6] focus:ring-[#3A52A6] cursor-pointer"
                 />
                 <span className="ml-1 text-[#8C8C8C] text-xs sm:text-[11px]">Remember Me</span>
               </label>
@@ -250,7 +250,7 @@ function LoginPage(): JSX.Element {
 
             <button
               type="submit"
-              className={`w-full py-3 sm:py-2.5 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer shadow-md hover:shadow-lg transition-all bg-[#3A52A6] ${
+              className={`w-full py-3 sm:py-3 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md transition-all bg-[#3A52A6] ${
                 loading && "opacity-60 cursor-not-allowed"
               }`}
               disabled={loading}

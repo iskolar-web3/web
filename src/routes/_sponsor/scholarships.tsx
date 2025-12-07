@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback  } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Filter, AlertCircle, Loader2, X } from 'lucide-react';
+import { Filter, AlertCircle, Loader2, X, GraduationCap, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SponsorFilterSelect from '@/components/SponsorFilters';
 import SponsorScholarshipCard from '@/components/SponsorScholarshipCard';
@@ -133,7 +133,7 @@ function Scholarships() {
     return () => clearTimeout(timer);
   }, []);
 
-  const mockScholarship: Scholarship[] = Array(6)
+  const mockScholarship: Scholarship[] = Array(5)
     .fill(null)
     .map(() => ({
       scholarship_id: '1',
@@ -542,12 +542,25 @@ function Scholarships() {
           >
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
               {loading ? (
-                // Show skeleton loaders when loading
                 Array.from({ length: 6 }).map((_, index) => (
                   <ScholarshipCardSkeleton key={`skeleton-${index}`} index={index} />
                 ))
+              ) : filteredScholarships.length === 0 ? (
+                <div className="xl:col-span-2 flex flex-col items-center justify-center pt-24 md:pt-32">
+                  <GraduationCap className="w-24 md:w-30 h-24 md:h-30 text-[#D1D5DB]" />
+                  <p className="mt-5 text-lg md:text-xl text-[#9CA3AF]">No scholarships yet</p>
+                  <p className="max-w-xl text-sm md:text-base text-[#9CA3AF] mt-2 mb-4 md:mb-6">
+                    Create scholarship programs to help students succeed.
+                  </p>
+                  <button
+                    onClick={() => navigate({ to: '/create' })}
+                    className="inline-flex items-center cursor-pointer gap-2 px-4 py-2.5 bg-[#9CA3AF] text-[#F0F7FF] text-sm md:text-base rounded-md hover:bg-[#D1D5DB] hover:text-white transition-colors"
+                  >
+                    <Plus size={18} />
+                    Create Scholarship
+                  </button>
+                </div>
               ) : (
-                // Show actual scholarship cards when loaded
                 filteredScholarships.map((scholarship, index) => (
                   <SponsorScholarshipCard
                     key={`${scholarship.title}-${index}`}

@@ -95,7 +95,7 @@ export default function SponsorScholarshipCard({
         ease: [0.25, 0.1, 0.25, 1]
       }}
       whileHover={{ 
-        scale: 0.98,
+        scale: 0.99,
         transition: { duration: 0.2 }
       }}
       onClick={onClick}
