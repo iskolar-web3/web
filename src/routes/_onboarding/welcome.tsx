@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
-import { usePageTitle } from "../../hooks/use-page-title";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export const Route = createFileRoute('/_onboarding/welcome')({
   component: WelcomePage,

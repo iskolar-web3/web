@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { usePageTitle } from "@/hooks/use-page-title";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import Toast from "@/components/Toast";
 import { SiGoogle } from "react-icons/si";
 import type { JSX } from "react";

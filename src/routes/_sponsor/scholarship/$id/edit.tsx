@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Toast from '@/components/Toast';
-import { usePageTitle } from '@/hooks/use-page-title';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
 import { scholarshipManagementService } from '@/services/scholarship-management.service';
 

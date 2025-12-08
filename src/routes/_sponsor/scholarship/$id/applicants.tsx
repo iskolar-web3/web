@@ -25,7 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 // import { scholarshipManagementService } from '@/services/scholarship-management.service';
 // import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 import Toast from '@/components/Toast';
-import { usePageTitle } from '@/hooks/use-page-title';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
 import type { ScholarshipApplication } from '@/services/scholarship-application.service';
 

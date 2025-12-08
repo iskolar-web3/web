@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { motion, AnimatePresence } from "framer-motion";
-import { usePageTitle } from "@/hooks/use-page-title";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { HiAcademicCap, HiHeart, HiBuildingOffice2, HiUser, HiUserGroup, HiBuildingLibrary, HiArrowLeft } from "react-icons/hi2";
 import Toast from "@/components/Toast";
 import { z } from 'zod';

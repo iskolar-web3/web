@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '@/components/Toast';
 import type { Scholarship } from '@/types/scholarship.types';
 import ScholarshipDetailsModal from '@/components/ScholarshipDetailsModal';
-import { usePageTitle } from "@/hooks/use-page-title"
+import { usePageTitle } from "@/hooks/usePageTitle"
 import { scholarshipManagementService } from '@/services/scholarship-management.service';
 
 export const Route = createFileRoute('/_student/discover')({

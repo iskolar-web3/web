@@ -1,6 +1,6 @@
 import { createFileRoute, Link  } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { usePageTitle } from "@/hooks/use-page-title";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/")({
 	component: App,

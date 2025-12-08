@@ -23,7 +23,7 @@ import {
 import Toast from '@/components/Toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
-import { usePageTitle } from '@/hooks/use-page-title';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 
 export const Route = createFileRoute('/_student/scholarship/$id/apply')({

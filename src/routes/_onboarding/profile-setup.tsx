@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { usePageTitle } from "@/hooks/use-page-title"
+import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from "@/components/Toast"
 import Preloader from "@/components/Preloader"
 import { useForm } from "react-hook-form"

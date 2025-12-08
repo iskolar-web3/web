@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Loader2, Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePageTitle } from '@/hooks/use-page-title';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
 import type { Application } from '@/types/application.types';
 import { ApplicationDetailsModal, statusStyles } from '@/components/ApplicationDetailsModal';
@@ -317,7 +317,7 @@ function Home() {
                     <div className="w-3 h-3 rounded-full bg-[#3A52A6] shadow-[0_0_0_4px_rgba(63,81,181,0.22)] z-10" />
                     <div
                       className={`mt-1 w-px flex-1 border-l border-dashed border-[#3A52A6]/60 ${
-                        index === filteredApplications.length - 1 ? 'opacity-70r[]\ ' : ''
+                        index === filteredApplications.length - 1 ? 'opacity-70' : ''
                       }`}
                     />
                   </div>

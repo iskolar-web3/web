@@ -7,7 +7,7 @@ import SponsorScholarshipCard from '@/components/SponsorScholarshipCard';
 import ScholarshipCardSkeleton from '@/components/ScholarshipCardSkeleton';
 import SponsorScholarshipDetailsModal from '@/components/SponsorScholarshipDetailsModal';
 import type { Scholarship } from '@/types/scholarship.types';
-import { usePageTitle } from "@/hooks/use-page-title"
+import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from '@/components/Toast';
 // import { scholarshipManagementService } from '@/services/scholarship-management.service';
 
