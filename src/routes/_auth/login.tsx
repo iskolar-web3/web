@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/use-page-title";
 import Toast from "@/components/Toast";
+import Preloader from "@/components/Preloader";
 import { SiGoogle } from "react-icons/si";
 import type { JSX } from "react";
 import { useForm } from "react-hook-form";
@@ -39,6 +40,7 @@ function LoginPage(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showPreloader, setShowPreloader] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: "success" as "success" | "error",
     title: "",
@@ -100,7 +102,7 @@ function LoginPage(): JSX.Element {
 
     //     setTimeout(() => {
     //       setShowToast(false);
-    //       navigate({ to: "/welcome" });
+    //       setShowPreloader(true);
     //     }, 1000);
     //   } else {
     //     setToastConfig({
@@ -120,6 +122,27 @@ function LoginPage(): JSX.Element {
     // } finally {
     //   setLoading(false);
     // }
+    
+    // Simulate successful login 
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setShowPreloader(true);
+    }, 500);
+  };
+
+  const handlePreloaderComplete = () => {
+    // const profileResult = await profileService.getProfileStatus();
+    // if (profileResult.user?.role === 'student') {
+    //   navigate({ to: '/home', replace: true });
+    // } else if (profileResult.user?.role === 'individual_sponsor' || profileResult.user?.role === 'organization_sponsor' || profileResult.user?.role === 'government_sponsor') {
+    //   navigate({ to: '/my-scholarships', replace: true });
+    // } else {
+    //   navigate({ to: "/welcome" });
+    // }
+    
+    // For now, navigate to welcome page
+    navigate({ to: "/welcome" });
   };
 
   const handleGoogleSignIn = () => {
@@ -139,6 +162,13 @@ function LoginPage(): JSX.Element {
 
   return (
     <>
+      {showPreloader && (
+        <Preloader 
+          onComplete={handlePreloaderComplete}
+          minDisplayTime={2000}
+        />
+      )}
+      
       <Toast
         visible={showToast}
         type={toastConfig.type}
@@ -146,6 +176,7 @@ function LoginPage(): JSX.Element {
         message={toastConfig.message}
       />
       
+      {!showPreloader && (
       <motion.div 
         className="rounded-3xl py-6 px-10 md:py-8 md:px-12 lg:py-6 lg:px-10 sm:py-5 sm:px-6 shadow-[1px_1px_4px_1px_rgba(96,126,242,0.5)] bg-[#F0F7FF] min-h-[520px] sm:min-h-[480px] w-full max-w-md mx-auto"
         initial={{ opacity: 0, x: -20 }}
@@ -286,6 +317,7 @@ function LoginPage(): JSX.Element {
           </div>
         </div>
       </motion.div>
+      )}
     </>
   );
 }

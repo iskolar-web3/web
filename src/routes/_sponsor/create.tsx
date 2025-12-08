@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -135,6 +135,12 @@ function CreateScholarship() {
   const type = watch('type');
   const purpose = watch('purpose');
   const imageUrl = watch('imageUrl');
+
+  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  }, []);
 
   // Create scholarship object for preview
   const previewScholarship = {
@@ -292,41 +298,23 @@ function CreateScholarship() {
       //   custom_form_fields: data.customFormFields && data.customFormFields.length > 0 ? data.customFormFields : undefined,
       // };
 
-      // const result = await scholarshipManagementService.createScholarship(scholarshipData);
+      // const response = await scholarshipManagementService.createScholarship(scholarshipData);
 
-      // if (result.success) {
-      //   const scholarshipId = result.scholarship.scholarship_id;
+      // if (response.success) {
+      //   const scholarshipId = response.scholarship.scholarship_id;
 
-      //   setToastConfig({
-      //     type: 'success',
-      //     title: 'Success',
-      //     message: result.message || 'Scholarship program created successfully!',
-      //   })
-      //   setShowToast(true)
-      //   setTimeout(() => setShowToast(false), 2000);
+      //   showToastMessage('success', 'Success', response.message, 2000);
 
       //   reset();
       //   setImagePreview('')
       //   setCriteriaInput('');
       //   setDocumentsInput('');
       // } else {
-      //   setToastConfig({
-      //     type: 'error',
-      //     title: 'Error',
-      //     message: result.message || 'Failed to create scholarship',
-      //   })
-      //   setShowToast(true)
-      //   setTimeout(() => setShowToast(false), 2000);
+      //   showToastMessage('error', 'Error', response.message, 2500);
       // }
     } catch(error) {
       console.error('Profile setup error:', error);
-      setToastConfig({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to create scholarship. Please try again.',
-      })
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 2000);
+      showToastMessage('error', 'Error', 'Failed to create scholarship. Please try again.', 2500);
     } finally{
       setLoading(false);
     }
@@ -335,6 +323,7 @@ function CreateScholarship() {
   return (
     <div className="max-w-7xl mx-auto">
       <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      
       <div className="grid grid-cols-1 lg:grid-cols-2">
         {/* Scholarship Details */}
         <div className="space-y-4">

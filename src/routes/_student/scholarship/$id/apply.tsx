@@ -134,6 +134,12 @@ function ApplyScholarshipPage() {
   });
   const [showToast, setShowToast] = useState(false);
 
+  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  }, []);
+
   // Mock scholarship data
   const mockScholarship: Partial<Scholarship> = {
     scholarship_id: '1',
@@ -255,16 +261,7 @@ function ApplyScholarshipPage() {
     });
 
     if (fileErrors.length > 0) {
-      //   setToastConfig({
-      //     type: "error",
-      //     title: "Error",
-      //     message: fileErrors.join(', ')),
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      //   showToastMessage('error', 'Error', fileErrors.join(', ')), 2500);
       return;
     }
 
@@ -282,30 +279,12 @@ function ApplyScholarshipPage() {
       // const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
 
       // if (response.success && response.exists) {
-      //   setToastConfig({
-      //     type: "error",
-      //     title: "Already Applied",
-      //     message: result.message,
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      //   showToastMessage('error', 'Already Applied', response.message, 2500);
       //   return;
       // }
 
       // if (isClosed()) {
-      //   setToastConfig({
-      //     type: "error",
-      //     title: "Scholarship Closed",
-      //     message: result.message,
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      //   showToastMessage('error', 'Scholarship Closed', response.message, 2500);
       //   return;
       // }
 
@@ -358,38 +337,20 @@ function ApplyScholarshipPage() {
       if (fileUploadPromises.length > 0) {
         const uploadResults = await Promise.all(fileUploadPromises);
         
-        const failedUploads = uploadResults.filter(result => !result.success);
+        const failedUploads = uploadResults.filter(response => !response.success);
         if (failedUploads.length > 0) {
           console.warn('Some files failed to upload:', failedUploads);
         }
       }
 
-      //   setToastConfig({
-      //     type: "success",
-      //     title: "Success",
-      //     message: result.message,
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      // showToastMessage('success', 'Success', response.message, 2000);
       
       setTimeout(() => {
         window.history.back();
       }, 1500);
     } catch (error) {
       console.error('Submission error:', error);
-      //   setToastConfig({
-      //     type: "error",
-      //     title: "Error",
-      //     message: error.message,
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      //   showToastMessage('error', 'Error', error.message, 2500);
     } finally {
       setSubmitting(false);
     }

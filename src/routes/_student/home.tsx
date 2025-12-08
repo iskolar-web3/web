@@ -114,10 +114,10 @@ function Home() {
   // const fetchApplications = useCallback(async () => {
   //   try {
   //     setIsLoading(true);
-  //     const result = await scholarshipApplicationService.getMyApplications();
+  //     const response = await scholarshipApplicationService.getMyApplications();
   //
-  //     if (result.success && result.applications) {
-  //       const appsWithScholarship = result.applications.filter(
+  //     if (response.success && response.applications) {
+  //       const appsWithScholarship = response.applications.filter(
   //         (application) => application.scholarship,
   //       );
   //       setApplications(

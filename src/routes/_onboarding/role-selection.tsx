@@ -390,7 +390,7 @@ function RoleSelection() {
           <motion.button
             onClick={handleSelect}
             disabled={!canContinue || loading}
-            className={`px-50 sm:px-75 md:px-22 lg:px-29 py-3 sm:py-3.5 md:py-3 rounded-xl text-sm sm:text-base md:text-base transition-all duration-300 ${
+            className={`px-50 sm:px-75 md:px-22 lg:px-29 py-3 sm:py-3.5 md:py-3 rounded-lg text-sm sm:text-base md:text-base transition-all duration-300 ${
               canContinue && !loading
                 ? 'bg-[#EFA508] hover:bg-[#D89407] text-[#F0F7FF] cursor-pointer shadow-md hover:shadow-lg'
                 : 'bg-[#9CA3AF] text-[#F0F7FF] cursor-not-allowed'

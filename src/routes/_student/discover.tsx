@@ -37,6 +37,12 @@ function DiscoverScholarship() {
     message: '',
   });
 
+  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  }, []);
+
   const fetchScholarships = useCallback(async () => {
     try {
       setLoading(true);
@@ -47,26 +53,10 @@ function DiscoverScholarship() {
       // if (response.success) {
       //   setScholarships(response.scholarships);
       // } else {
-      //   setToastConfig({
-      //     type: 'error',
-      //     title: 'Error',
-      //     message: response.message,
-      //   });
-      //   setShowToast(true);
-      //   setTimeout(() => {
-      //     setShowToast(false)
-      //   }, 2000);
+      //   showToastMessage('error', 'Error', response.message, 2500);
       // }
     } catch (error) {
-      setToastConfig({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to connect to server.'
-      });
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false)
-      }, 2000);
+      showToastMessage('error', 'Error', 'Failed to connect to server.', 2500);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -132,6 +122,8 @@ function DiscoverScholarship() {
 
   return (
     <div className="min-h-screen">
+      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} /> 
+      
       {/* Mobile/Tablet Layout */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

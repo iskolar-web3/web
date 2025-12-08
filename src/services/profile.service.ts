@@ -108,6 +108,18 @@ class ProfileService {
       school: response.data?.school
     };
   }
+
+  async getProfileStatus(): Promise<{ success: boolean; message: string; user?: any }> {
+    const response = await authService.authenticatedRequest('/onboarding/profile-status', {
+      method: 'POST'
+    });
+
+    return {
+      success: response.success,
+      message: response.message,
+      user: response.data?.user
+    };
+  }
 }
 
 export const profileService = new ProfileService();

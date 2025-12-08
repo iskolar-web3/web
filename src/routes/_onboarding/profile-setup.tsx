@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { usePageTitle } from "@/hooks/use-page-title"
 import Toast from "@/components/Toast"
+import Preloader from "@/components/Preloader"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod'
@@ -113,6 +114,7 @@ function ProfileSetup() {
   
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false)
+  const [showPreloader, setShowPreloader] = useState(false)
   const [toastConfig, setToastConfig] = useState({
     type: "success" as "success" | "error",
     title: "",
@@ -228,7 +230,7 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => {
         //     setShowToast(false)
-        //     navigate({ to: '../_student/home' })
+        //     setShowPreloader(true);
         //   }, 1250);
         // } else {
         //   setToastConfig({
@@ -239,6 +241,18 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => setShowToast(false), 2000);
         // }
+        
+        // For now, simulate successful profile setup to test preloader
+        setToastConfig({
+          type: 'success',
+          title: 'Profile Created',
+          message: 'Your profile has been set up successfully!',
+        })
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false)
+          setShowPreloader(true);
+        }, 1250);
       } else if (selectedRole === 'individual_sponsor') {
         const individualSponsorData = data as IndividualSponsorFormData;
 
@@ -263,7 +277,8 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => {
         //     setShowToast(false)
-        //     navigate({ to: '../_student/my-scholarship' })
+        //     // Show preloader after successful profile setup
+        //     setShowPreloader(true);
         //   }, 1250);
         // } else {
         //   setToastConfig({
@@ -274,6 +289,18 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => setShowToast(false), 2000);
         // }
+        
+        // For now, simulate successful profile setup to test preloader
+        setToastConfig({
+          type: 'success',
+          title: 'Profile Created',
+          message: 'Your profile has been set up successfully!',
+        })
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false)
+          setShowPreloader(true);
+        }, 1250);
       } else if (selectedRole === 'organization_sponsor') {
         const organizationSponsorData = data as OrganizationSponsorFormData;
 
@@ -294,7 +321,8 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => {
         //     setShowToast(false)
-        //     navigate({ to: '../_student/my-scholarship' })
+        //     // Show preloader after successful profile setup
+        //     setShowPreloader(true);
         //   }, 1250);
         // } else {
         //   setToastConfig({
@@ -305,6 +333,18 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => setShowToast(false), 2000);
         // }
+        
+        // For now, simulate successful profile setup to test preloader
+        setToastConfig({
+          type: 'success',
+          title: 'Profile Created',
+          message: 'Your profile has been set up successfully!',
+        })
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false)
+          setShowPreloader(true);
+        }, 1250);
       } else if (selectedRole === 'government_sponsor') {
         const governmentSponsorData = data as GovernmentSponsorFormData;
 
@@ -325,7 +365,8 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => {
         //     setShowToast(false)
-        //     navigate({ to: '../_student/my-scholarship' })
+        //     // Show preloader after successful profile setup
+        //     setShowPreloader(true);
         //   }, 1250);
         // } else {
         //   setToastConfig({
@@ -336,6 +377,18 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => setShowToast(false), 2000);
         // }
+        
+        // For now, simulate successful profile setup to test preloader
+        setToastConfig({
+          type: 'success',
+          title: 'Profile Created',
+          message: 'Your profile has been set up successfully!',
+        })
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false)
+          setShowPreloader(true);
+        }, 1250);
       } else if (selectedRole === 'school') {
         const schoolData = data as SchoolFormData;
 
@@ -356,7 +409,8 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => {
         //     setShowToast(false)
-        //     navigate({ to: '../_student/dashboard' })
+        //     // Show preloader after successful profile setup
+        //     setShowPreloader(true);
         //   }, 1250);
         // } else {
         //   setToastConfig({
@@ -367,6 +421,18 @@ function ProfileSetup() {
         //   setShowToast(true);
         //   setTimeout(() => setShowToast(false), 2000);
         // }
+        
+        // For now, simulate successful profile setup to test preloader
+        setToastConfig({
+          type: 'success',
+          title: 'Profile Created',
+          message: 'Your profile has been set up successfully!',
+        })
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false)
+          setShowPreloader(true);
+        }, 1250);
       } 
     } catch(error) {
       console.error('Profile setup error:', error);
@@ -379,6 +445,25 @@ function ProfileSetup() {
     } finally {
       setLoading(false);
     }
+  }
+
+  const handlePreloaderComplete = () => {
+    // After preloader completes, navigate to appropriate page based on role
+    // TODO: Uncomment when backend is ready
+    // if (selectedRole === 'student') {
+    //   navigate({ to: '/home', replace: true });
+    // } else if (selectedRole === 'individual_sponsor' || selectedRole === 'organization_sponsor' || selectedRole === 'government_sponsor') {
+    //   navigate({ to: '/my-scholarships', replace: true });
+    // } else if (selectedRole === 'school') {
+    //   navigate({ to: '/dashboard', replace: true });
+    // }
+    
+    // For now, navigate based on role
+    if (selectedRole === 'student') {
+      navigate({ to: '/home', replace: true });
+    } else if (selectedRole === 'individual_sponsor' || selectedRole === 'organization_sponsor' || selectedRole === 'government_sponsor') {
+      navigate({ to: '/scholarships', replace: true });
+    } 
   }
 
   if (roleValidationError || !selectedRole) {
@@ -426,6 +511,13 @@ function ProfileSetup() {
 
   return (
     <>
+      {showPreloader && (
+        <Preloader 
+          onComplete={handlePreloaderComplete}
+          minDisplayTime={2000}
+        />
+      )}
+      
       <Toast
         visible={showToast}
         type={toastConfig.type}
@@ -433,6 +525,7 @@ function ProfileSetup() {
         message={toastConfig.message}
       />
 
+      {!showPreloader && (
       <motion.div 
         className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12"
         initial={{ opacity: 0 }}
@@ -1096,6 +1189,7 @@ function ProfileSetup() {
           </motion.div>
         </div>
       </motion.div>
+      )}
     </>
   )
 }

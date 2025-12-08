@@ -83,10 +83,10 @@ function ApplicantsListPage() {
   const [denialRemarks, setDenialRemarks] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  const showToastMessage = (type: 'success' | 'error', title: string, message: string) => {
+  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
     setToastConfig({ type, title, message });
     setShowToast(true);
-    setTimeout(() => setShowToast(false), 2000);
+    setTimeout(() => setShowToast(false), duration);
   };
 
   const fetchApplicants = useCallback(async () => {
@@ -205,7 +205,7 @@ function ApplicantsListPage() {
 
   const handleBulkAction = (action: 'shortlisted' | 'approved' | 'denied') => {
     if (selectedApplicantIds.size === 0) {
-      showToastMessage('error', 'Error', 'Please select at least one applicant');
+      showToastMessage('error', 'Error', 'Please select at least one applicant', 2500);
       return;
     }
     setBulkAction(action);
@@ -224,14 +224,14 @@ function ApplicantsListPage() {
       // );
 
       // if (response.success) {
-      //   showToastMessage('success', 'Success', `${response.updated_count || selectedApplicantIds.size} application(s) ${bulkAction}`);
+      //   showToastMessage('success', 'Success', `${response.updated_count || selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
       //   setBulkActionModal(false);
       //   setBulkRemarks('');
       //   setSelectedApplicantIds(new Set());
       //   setBulkMode(false);
       //   fetchApplicants();
       // } else {
-      //   showToastMessage('error', 'Error', response.message);
+      //   showToastMessage('error', 'Error', response.message, 2500);
       // }
 
       // Mock behavior
@@ -247,13 +247,13 @@ function ApplicantsListPage() {
             : app
         )
       );
-      showToastMessage('success', 'Success', `${selectedApplicantIds.size} applicant(s) ${bulkAction}`);
+      showToastMessage('success', 'Success', `${selectedApplicantIds.size} applicant(s) ${bulkAction}`, 2000);
       setBulkActionModal(false);
       setBulkRemarks('');
       setSelectedApplicantIds(new Set());
       setBulkMode(false);
     } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to update applications');
+      showToastMessage('error', 'Error', 'Failed to update applications', 2500);
     } finally {
       setIsBulkUpdating(false);
     }
@@ -275,13 +275,13 @@ function ApplicantsListPage() {
       // );
 
       // if (response.success) {
-      //   showToastMessage('success', 'Success', `Applicant ${newStatus}`);
+      //   showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
       //   setModalVisible(false);
       //   setConfirmationModal(false);
       //   setDenialRemarks('');
       //   fetchApplicants();
       // } else {
-      //   showToastMessage('error', 'Error', response.message);
+      //   showToastMessage('error', 'Error', response.message, 2500);
       // }
 
       // Mock update
@@ -305,12 +305,12 @@ function ApplicantsListPage() {
           updated_at: new Date().toISOString(),
         });
       }
-      showToastMessage('success', 'Success', `Applicant ${newStatus}`);
+      showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
       handleCloseModal();
       setConfirmationModal(false);
       setDenialRemarks('');
     } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to update application status');
+      showToastMessage('error', 'Error', 'Failed to update application status', 2500);
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -508,7 +508,7 @@ function ApplicantsListPage() {
             {!bulkMode && (
               <button
                 onClick={() => {
-                  showToastMessage('error', 'Feature Unavailable', 'This feature is not available yet.');
+                  showToastMessage('error', 'Feature Unavailable', 'This feature is not available yet.', 2500);
                 }}
                 className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#EFA508] text-white rounded-md hover:bg-[#D89407] transition-colors text-[11px] md:text-xs"
               >

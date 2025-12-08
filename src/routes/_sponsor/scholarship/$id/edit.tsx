@@ -143,10 +143,10 @@ function EditScholarshipPage() {
   const purpose = watch('purpose');
   const status = watch('status');
 
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string) => {
+  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
     setToastConfig({ type, title, message });
     setShowToast(true);
-    setTimeout(() => setShowToast(false), 2000);
+    setTimeout(() => setShowToast(false), duration);
   }, []);
 
   const loadScholarshipDetails = useCallback(async () => {
@@ -192,7 +192,7 @@ function EditScholarshipPage() {
       hydrateForm(mockScholarship);
     } catch (error) {
       console.error('Failed to load scholarship:', error);
-      showToastMessage('error', 'Error', 'Unable to load scholarship details.');
+      showToastMessage('error', 'Error', 'Unable to load scholarship details.', 2500);
     } finally {
       setLoading(false);
     }
@@ -366,16 +366,16 @@ function EditScholarshipPage() {
       // const result = await scholarshipManagementService.updateScholarship(id, updatePayload);
       //
       // if (result.success) {
-      //   showToastMessage('success', 'Updated', result.message');
+      //   showToastMessage('success', 'Updated', result.message', 2000);
       //   return;
       // }
       //
       // showToastMessage('error', 'Error', result.message || 'Failed to update scholarship.');
 
-      showToastMessage('success', 'Mock Update', `"${data.title}" saved.`);
+      showToastMessage('success', 'Mock Update', `"${data.title}" saved.`, 2000);
     } catch (error) {
       console.error('Failed to update scholarship:', error);
-      showToastMessage('error', 'Error', 'Failed to update scholarship. Please try again.');
+      showToastMessage('error', 'Error', 'Failed to update scholarship. Please try again.', 2500);
     } finally {
       setSaving(false);
     }
@@ -466,6 +466,7 @@ function EditScholarshipPage() {
   return (
     <div className="min-h-screen">
       <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      
       <div className="max-w-[40rem] mx-auto">
         <div className="space-y-4">
           {/* Status */}

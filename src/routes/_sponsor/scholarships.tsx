@@ -8,6 +8,7 @@ import ScholarshipCardSkeleton from '@/components/ScholarshipCardSkeleton';
 import SponsorScholarshipDetailsModal from '@/components/SponsorScholarshipDetailsModal';
 import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/use-page-title"
+import Toast from '@/components/Toast';
 // import { scholarshipManagementService } from '@/services/scholarship-management.service';
 
 export const Route = createFileRoute('/_sponsor/scholarships')({
@@ -41,6 +42,12 @@ function Scholarships() {
     message: '',
   });
 
+  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  }, []);
+
   const handleViewApplicants = (scholarship: Scholarship) => {
     // navigate({ 
     //   to: "/scholarship/$id/applicants",
@@ -68,25 +75,13 @@ function Scholarships() {
       // const response = await scholarshipManagementService.deleteScholarship(scholarshipToDelete.scholarship_id);
       
       // if(response.success) {
-      //   setToastConfig({
-      //     type: 'success',
-      //     title: 'Success',
-      //     message: 'Scholarship deleted.',
-      //   });
-      //   setShowToast(true);
-      //   setTimeout(() => setShowToast(false), 2000);
+      //   showToastMessage('success', 'Success', response.message, 2000);
         
       //   Refresh scholarships list
       //   fetchMyScholarships(); 
       // }
     } catch (error) {
-      setToastConfig({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to delete scholarship.',
-      });
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000);
+      showToastMessage('success', 'Success', 'Failed to delete scholarship.', 2500);
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -106,15 +101,7 @@ function Scholarships() {
   //       setScholarships(response.scholarships);
   //     }
     } catch (error) {
-      setToastConfig({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to connect to server.'
-      });
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false)
-      }, 2000);
+      showToastMessage('success', 'Success', 'Failed to connect to server.', 2500);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -225,6 +212,8 @@ function Scholarships() {
 
   return (
     <div className="min-h-screen">
+      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+
       {/* Mobile/Tablet Layout */}
       <div className="lg:hidden space-y-2">
         <motion.div
