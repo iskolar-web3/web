@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { usePageTitle } from "@/hooks/use-page-title";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import Toast from "@/components/Toast";
 import { SiGoogle } from "react-icons/si";
 import type { JSX } from "react";
@@ -165,7 +165,7 @@ function RegisterPage(): JSX.Element {
             <h1 className="text-xl sm:text-2xl md:text-3xl mb-1 text-[#3F58B2]">
               Create an Account
             </h1>
-            <p className="text-[10px] sm:text-[11px] text-[#8C8C8C]">
+            <p className="text-[11px] sm:text-xs text-[#8C8C8C]">
               Already have an account?{" "}
               <Link 
                 to="/login"
@@ -276,7 +276,7 @@ function RegisterPage(): JSX.Element {
 
             <button
               type="submit"
-              className={`w-full py-3 sm:py-2.5 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer shadow-md hover:shadow-lg transition-all bg-[#3A52A6] ${
+              className={`w-full py-3 sm:py-3 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md transition-all bg-[#3A52A6] ${
                 loading && "opacity-60 cursor-not-allowed"
               }`}
               disabled={loading}

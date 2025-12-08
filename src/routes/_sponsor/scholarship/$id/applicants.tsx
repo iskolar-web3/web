@@ -15,15 +15,17 @@ import {
   FileText,
   ExternalLink,
   User,
+  Users,
   Trophy,
   ChevronsRight,
   Phone,
   Mail,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 // import { scholarshipManagementService } from '@/services/scholarship-management.service';
 // import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 import Toast from '@/components/Toast';
-import { usePageTitle } from '@/hooks/use-page-title';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
 import type { ScholarshipApplication } from '@/services/scholarship-application.service';
 
@@ -81,10 +83,10 @@ function ApplicantsListPage() {
   const [denialRemarks, setDenialRemarks] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  const showToastMessage = (type: 'success' | 'error', title: string, message: string) => {
+  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
     setToastConfig({ type, title, message });
     setShowToast(true);
-    setTimeout(() => setShowToast(false), 2000);
+    setTimeout(() => setShowToast(false), duration);
   };
 
   const fetchApplicants = useCallback(async () => {
@@ -94,6 +96,7 @@ function ApplicantsListPage() {
       setError(null);
       setLoading(true);
 
+      await new Promise(resolve => setTimeout(resolve, 2000));
       // const scholarshipRes = await scholarshipManagementService.getScholarshipById(id);
       // if (scholarshipRes.success && scholarshipRes.scholarship) {
       //   setScholarship(scholarshipRes.scholarship);
@@ -136,7 +139,7 @@ function ApplicantsListPage() {
         updated_at: new Date().toISOString(),
       };
 
-      const mockApplicants: Applicant[] = Array.from({ length: 75 }, (_, index) => ({
+      const mockApplicants: Applicant[] = Array.from({ length: 0 }, (_, index) => ({
         scholarship_application_id: `${index + 1}`,
         student_id: `${index + 1}`,
         scholarship_id: id,
@@ -202,7 +205,7 @@ function ApplicantsListPage() {
 
   const handleBulkAction = (action: 'shortlisted' | 'approved' | 'denied') => {
     if (selectedApplicantIds.size === 0) {
-      showToastMessage('error', 'Error', 'Please select at least one applicant');
+      showToastMessage('error', 'Error', 'Please select at least one applicant', 2500);
       return;
     }
     setBulkAction(action);
@@ -221,14 +224,14 @@ function ApplicantsListPage() {
       // );
 
       // if (response.success) {
-      //   showToastMessage('success', 'Success', `${response.updated_count || selectedApplicantIds.size} application(s) ${bulkAction}`);
+      //   showToastMessage('success', 'Success', `${response.updated_count || selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
       //   setBulkActionModal(false);
       //   setBulkRemarks('');
       //   setSelectedApplicantIds(new Set());
       //   setBulkMode(false);
       //   fetchApplicants();
       // } else {
-      //   showToastMessage('error', 'Error', response.message);
+      //   showToastMessage('error', 'Error', response.message, 2500);
       // }
 
       // Mock behavior
@@ -244,13 +247,13 @@ function ApplicantsListPage() {
             : app
         )
       );
-      showToastMessage('success', 'Success', `${selectedApplicantIds.size} applicant(s) ${bulkAction}`);
+      showToastMessage('success', 'Success', `${selectedApplicantIds.size} applicant(s) ${bulkAction}`, 2000);
       setBulkActionModal(false);
       setBulkRemarks('');
       setSelectedApplicantIds(new Set());
       setBulkMode(false);
     } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to update applications');
+      showToastMessage('error', 'Error', 'Failed to update applications', 2500);
     } finally {
       setIsBulkUpdating(false);
     }
@@ -272,13 +275,13 @@ function ApplicantsListPage() {
       // );
 
       // if (response.success) {
-      //   showToastMessage('success', 'Success', `Applicant ${newStatus}`);
+      //   showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
       //   setModalVisible(false);
       //   setConfirmationModal(false);
       //   setDenialRemarks('');
       //   fetchApplicants();
       // } else {
-      //   showToastMessage('error', 'Error', response.message);
+      //   showToastMessage('error', 'Error', response.message, 2500);
       // }
 
       // Mock update
@@ -302,12 +305,12 @@ function ApplicantsListPage() {
           updated_at: new Date().toISOString(),
         });
       }
-      showToastMessage('success', 'Success', `Applicant ${newStatus}`);
+      showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
       handleCloseModal();
       setConfirmationModal(false);
       setDenialRemarks('');
     } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to update application status');
+      showToastMessage('error', 'Error', 'Failed to update application status', 2500);
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -405,9 +408,47 @@ function ApplicantsListPage() {
       <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 animate-spin text-[#3A52A6]" />
-          <p className="mt-4 text-[#5D6673]">Loading applicants…</p>
+        <div className="max-w-3xl mx-auto">
+          {/* Scholarship Info Header Skeleton */}
+          <div className="bg-[#FEFEFD] rounded-lg shadow-sm p-4 md:p-5 mb-3">
+            <Skeleton className="h-8 w-full mb-2 bg-[#D1D5DB]" />
+            <Skeleton className="h-4 w-32 bg-[#D1D5DB]" />
+          </div>
+
+          {/* Toolbar Skeleton */}
+          <div className="flex items-center gap-2 mb-4">
+            <Skeleton className="h-9 w-24 rounded-md bg-[#D1D5DB]" />
+            <Skeleton className="h-9 w-32 rounded-md bg-[#D1D5DB]" />
+            <Skeleton className="h-9 w-24 rounded-md bg-[#D1D5DB] ml-auto" />
+          </div>
+
+          {/* Applicants List Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <motion.div
+                key={`skeleton-${index}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="bg-white rounded-xl shadow-sm p-5 relative"
+              >
+                {/* Status Icon Skeleton */}
+                <Skeleton className="w-5 h-5 rounded-full bg-[#D1D5DB] absolute top-4 right-4" />
+                
+                <div className="flex items-center gap-4">
+                  {/* Avatar Skeleton */}
+                  <Skeleton className="w-14 h-14 rounded-full bg-[#D1D5DB] flex-shrink-0" />
+
+                  {/* Info Skeleton */}
+                  <div className="flex-1">
+                    <Skeleton className="h-5 w-32 mb-2 bg-[#D1D5DB]" />
+                    <Skeleton className="h-4 w-48 mb-2 bg-[#D1D5DB]" />
+                    <Skeleton className="h-3 w-36 bg-[#D1D5DB]" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center min-h-screen p-5">
@@ -467,7 +508,7 @@ function ApplicantsListPage() {
             {!bulkMode && (
               <button
                 onClick={() => {
-                  showToastMessage('error', 'Feature Unavailable', 'This feature is not available yet.');
+                  showToastMessage('error', 'Feature Unavailable', 'This feature is not available yet.', 2500);
                 }}
                 className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#EFA508] text-white rounded-md hover:bg-[#D89407] transition-colors text-[11px] md:text-xs"
               >
@@ -570,7 +611,7 @@ function ApplicantsListPage() {
           {/* Applicants List */}
           {filteredApplicants.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm">
-              <User className="w-14 h-14 text-[#D1D5DB]" />
+              <Users className="w-14 h-14 text-[#D1D5DB]" />
               <p className="mt-4 text-[#9CA3AF]">No applicants found</p>
             </div>
           ) : (

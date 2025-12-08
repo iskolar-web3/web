@@ -17,6 +17,12 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
   });
   const [showToast, setShowToast] = useState(false);
 
+  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  }, []);
+
   const amountPerScholar = (() => {
     if (scholarship.total_amount && scholarship.total_slot) {
       const total = scholarship.total_amount;
@@ -41,30 +47,12 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
     // const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
 
     // if (response.success && response.exists) {
-    //   setToastConfig({
-    //     type: "error",
-    //     title: "Already Applied",
-    //     message: result.message,
-    //   });
-    //   setShowToast(true);
-
-    //   setTimeout(() => {
-    //     setShowToast(false);
-    //   }, 2000);
+    //   showToastMessage('error', 'Already Applied', response.message, 2500);
     //   return;
     // }
 
     // if (isClosed()) {
-    //   setToastConfig({
-    //     type: "error",
-    //     title: "Scholarship Closed",
-    //     message: result.message,
-    //   });
-    //   setShowToast(true);
-
-    //   setTimeout(() => {
-    //     setShowToast(false);
-    //   }, 2000);
+    //   showToastMessage('error', 'Scholarship Closed', response.message, 2500);
     //   return;
     // }
 
@@ -73,6 +61,8 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
 
   return (
     <AnimatePresence>
+      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      
       <div className="fixed inset-0 z-50 flex items-center justify-end p-2">
         {/* Backdrop */}
         <motion.div

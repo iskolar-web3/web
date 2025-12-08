@@ -21,8 +21,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Toast from '@/components/Toast';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
-import { usePageTitle } from '@/hooks/use-page-title';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 
 export const Route = createFileRoute('/_student/scholarship/$id/apply')({
@@ -133,6 +134,12 @@ function ApplyScholarshipPage() {
   });
   const [showToast, setShowToast] = useState(false);
 
+  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  }, []);
+
   // Mock scholarship data
   const mockScholarship: Partial<Scholarship> = {
     scholarship_id: '1',
@@ -181,7 +188,7 @@ function ApplyScholarshipPage() {
   const fetchScholarshipDetails = useCallback(async () => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setScholarship(mockScholarship);
       
       const defaultValues = mockScholarship.custom_form_fields?.reduce((acc, field) => {
@@ -254,16 +261,7 @@ function ApplyScholarshipPage() {
     });
 
     if (fileErrors.length > 0) {
-      //   setToastConfig({
-      //     type: "error",
-      //     title: "Error",
-      //     message: fileErrors.join(', ')),
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      //   showToastMessage('error', 'Error', fileErrors.join(', ')), 2500);
       return;
     }
 
@@ -281,30 +279,12 @@ function ApplyScholarshipPage() {
       // const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
 
       // if (response.success && response.exists) {
-      //   setToastConfig({
-      //     type: "error",
-      //     title: "Already Applied",
-      //     message: result.message,
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      //   showToastMessage('error', 'Already Applied', response.message, 2500);
       //   return;
       // }
 
       // if (isClosed()) {
-      //   setToastConfig({
-      //     type: "error",
-      //     title: "Scholarship Closed",
-      //     message: result.message,
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      //   showToastMessage('error', 'Scholarship Closed', response.message, 2500);
       //   return;
       // }
 
@@ -357,38 +337,20 @@ function ApplyScholarshipPage() {
       if (fileUploadPromises.length > 0) {
         const uploadResults = await Promise.all(fileUploadPromises);
         
-        const failedUploads = uploadResults.filter(result => !result.success);
+        const failedUploads = uploadResults.filter(response => !response.success);
         if (failedUploads.length > 0) {
           console.warn('Some files failed to upload:', failedUploads);
         }
       }
 
-      //   setToastConfig({
-      //     type: "success",
-      //     title: "Success",
-      //     message: result.message,
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      // showToastMessage('success', 'Success', response.message, 2000);
       
       setTimeout(() => {
         window.history.back();
       }, 1500);
     } catch (error) {
       console.error('Submission error:', error);
-      //   setToastConfig({
-      //     type: "error",
-      //     title: "Error",
-      //     message: error.message,
-      //   });
-      //   setShowToast(true);
-
-      //   setTimeout(() => {
-      //     setShowToast(false);
-      //   }, 2000);
+      //   showToastMessage('error', 'Error', error.message, 2500);
     } finally {
       setSubmitting(false);
     }
@@ -681,10 +643,55 @@ function ApplyScholarshipPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-[#3A52A6] mx-auto mb-2" />
-          <p className="text-[#5D6673]">Preparing application form...</p>
+      <div className="min-h-screen bg-[#F8F9FC]">
+        <div className="max-w-[40rem] mx-auto space-y-4">
+          {/* Scholarship Details Skeleton */}
+          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
+            {/* Title Skeleton */}
+            <Skeleton className="h-7 w-full md:h-8 mb-3 bg-[#D1D5DB]" />
+            
+            {/* Sponsor Info Skeleton */}
+            <div className="flex items-center gap-2 mb-2">
+              <Skeleton className="w-4 h-4 rounded-full bg-[#D1D5DB]" />
+              <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-[#D1D5DB]" />
+            </div>
+            
+            {/* Deadline Skeleton */}
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-4 h-4 rounded bg-[#D1D5DB]" />
+              <Skeleton className="h-4 w-40 md:h-5 md:w-48 bg-[#D1D5DB]" />
+            </div>
+          </div>
+
+          {/* Application Form Skeleton */}
+          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
+            {/* Form Header Skeleton */}
+            <Skeleton className="h-5 w-36 md:h-6 md:w-40 mb-1 bg-[#D1D5DB]" />
+            <Skeleton className="h-4 w-64 md:h-5 md:w-72 mb-6 md:mb-8 bg-[#D1D5DB]" />
+
+            {/* Form Fields Skeleton */}
+            <div className="space-y-5">
+              {/* Text Field Skeleton */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24 md:h-5 md:w-28 bg-[#D1D5DB]" />
+                <Skeleton className="h-11 w-full rounded-lg bg-[#D1D5DB]" />
+              </div>
+
+              {/* Email Field Skeleton */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32 md:h-5 md:w-36 bg-[#D1D5DB]" />
+                <Skeleton className="h-11 w-full rounded-lg bg-[#D1D5DB]" />
+              </div>
+
+              {/* File Upload Field Skeleton */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-[#D1D5DB]" />
+                <Skeleton className="h-12 w-full rounded-lg border-2 border-dashed bg-[#D1D5DB]" />
+              </div>
+            </div>
+          </div>
+          
+          <Skeleton className="h-10 md:h-12 w-full rounded-lg bg-[#D1D5DB]" />
         </div>
       </div>
     );
@@ -714,7 +721,7 @@ function ApplyScholarshipPage() {
 
       <div className="max-w-[40rem] mx-auto space-y-4">
         {/* Scholarship Details */}
-        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
+        <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
           <h1 className="text-xl md:text-2xl text-[#111827] mb-3">{scholarship?.title}</h1>
           <div className="flex items-center gap-2 text-xs md:text-sm text-[#6B7280] mb-2">
             <div className="flex items-center gap-2">
@@ -734,7 +741,7 @@ function ApplyScholarshipPage() {
 
         {/* Application Form */}
         {customFields.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
+          <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
             <h2 className="text-base md:text-lg text-[#111827] mb-1">Application Form</h2>
             <p className="text-xs md:text-sm text-[#6B7280] mb-6 md:mb-8">
               Please provide the following information requested.
@@ -742,25 +749,27 @@ function ApplyScholarshipPage() {
 
             <div className="space-y-5">
               {customFields.map((field, index) => renderFormField(field, index))}
-
-              <button
-                onClick={handleSubmit(onSubmit)}
-                disabled={submitting}
-                className={`w-full py-3 cursor-pointer text-sm bg-[#EFA508] text-[#F0F7FF] rounded-lg hover:bg-[#D89407] transition-colors flex items-center justify-center gap-2 ${
-                  submitting && 'opacity-60 cursor-not-allowed'
-                }`}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  </>
-                ) : (
-                  <span>Submit Application</span>
-                )}
-              </button>
             </div>
+            
           </div>
         )}
+
+        {/* Submit Button */}
+        <button
+          onClick={handleSubmit(onSubmit)}
+          disabled={submitting}
+          className={`w-full py-3 cursor-pointer text-sm bg-[#EFA508] text-[#F0F7FF] rounded-md hover:bg-[#D89407] transition-colors flex items-center justify-center gap-2 ${
+            submitting && 'opacity-60 cursor-not-allowed'
+          }`}
+        >
+          {submitting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+            </>
+          ) : (
+            <span>Submit Application</span>
+          )}
+        </button>
       </div>
 
       {/* Confirmation Modal */}
@@ -775,7 +784,7 @@ function ApplyScholarshipPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmation(false)}
-                className={`flex-1 py-2.5 text-sm cursor-pointer bg-[#CACDD2] text-[#4B5563] rounded-lg hover:bg-[#B8BCC2] transition-colors ${
+                className={`flex-1 py-2.5 text-sm cursor-pointer bg-[#CACDD2] text-[#4B5563] rounded-md hover:bg-[#B8BCC2] transition-colors ${
                   submitting && 'opacity-60 cursor-not-allowed'
                 }`}
               >
@@ -783,7 +792,7 @@ function ApplyScholarshipPage() {
               </button>
               <button
                 onClick={processSubmission}
-                className={`flex-1 py-2.5 text-sm cursor-pointer bg-[#EFA508] text-white rounded-lg hover:bg-[#D89407] transition-colors ${
+                className={`flex-1 py-2.5 text-sm cursor-pointer bg-[#EFA508] text-white rounded-md hover:bg-[#D89407] transition-colors ${
                   submitting && 'opacity-60 cursor-not-allowed'
                 }`}
               >

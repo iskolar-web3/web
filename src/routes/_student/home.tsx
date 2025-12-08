@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader2, Calendar, Users, Coins, ChevronsRight, Info } from 'lucide-react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Loader2, Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePageTitle } from '@/hooks/use-page-title';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
 import type { Application } from '@/types/application.types';
 import { ApplicationDetailsModal, statusStyles } from '@/components/ApplicationDetailsModal';
+import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 // import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 
 export const Route = createFileRoute('/_student/home')({
@@ -80,19 +82,19 @@ const mockApplications: Application[] = [
 function Home() {
   usePageTitle('Home');
 
+  const navigate = useNavigate();
+
   const [applications, setApplications] = useState<Application[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<Application[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('applied');
   const [isLoading, setIsLoading] = useState(true);
-  // Placeholder for future pull-to-refresh behavior
-  // const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
   const fetchApplicationsMock = useCallback(async () => {
     setIsLoading(true);
     try {
       // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       setApplications(
         mockApplications.sort(
           (a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
@@ -112,10 +114,10 @@ function Home() {
   // const fetchApplications = useCallback(async () => {
   //   try {
   //     setIsLoading(true);
-  //     const result = await scholarshipApplicationService.getMyApplications();
+  //     const response = await scholarshipApplicationService.getMyApplications();
   //
-  //     if (result.success && result.applications) {
-  //       const appsWithScholarship = result.applications.filter(
+  //     if (response.success && response.applications) {
+  //       const appsWithScholarship = response.applications.filter(
   //         (application) => application.scholarship,
   //       );
   //       setApplications(
@@ -187,7 +189,7 @@ function Home() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-[44rem] mx-auto space-y-12 py-6">
+      <div className="max-w-[44rem] mx-auto space-y-12">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -222,26 +224,71 @@ function Home() {
         {/* List / States */}
         <div>
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-[#3A52A6] mb-3" />
-              <p className="text-sm text-[#5D6673]">Loading your applications...</p>
-            </div>
+            // Show skeleton loaders when loading
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={`skeleton-${index}`} className="flex gap-4 md:gap-6">
+                {/* Desktop: Date/Time */}
+                <div className="hidden md:flex gap-4">
+                  <div className="flex flex-col items-start w-30 flex-shrink-0 pt-1">
+                    <div className="text-left space-y-1">
+                      <Skeleton className="h-4 w-30 bg-[#D1D5DB]" />
+                      <Skeleton className="h-3 w-20 bg-[#D1D5DB]" />
+                    </div>
+                  </div>
+
+                  {/* Timeline dot and line */}
+                  <div className="relative flex flex-col items-center pt-1">
+                    <div className="w-3 h-3 rounded-full mr-[1px] bg-[#3A52A6] shadow-[0_0_0_4px_rgba(63,81,181,0.22)] z-10" />
+                    <div
+                      className={`w-px flex-1 border-l border-dashed border-[#3A52A6]/60 ${
+                        index === 3 ? 'opacity-70' : ''
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Mobile/Tablet */}
+                <div className="md:hidden relative flex flex-col items-center pt-1">
+                  <div className="w-3 h-3 rounded-full bg-[#3A52A6] shadow-[0_0_0_4px_rgba(63,81,181,0.22)] z-10" />
+                  <div
+                    className={`mt-1 w-px flex-1 border-l border-dashed border-[#3A52A6]/60 ${
+                      index === 3 ? 'opacity-70' : ''
+                    }`}
+                  />
+                </div>
+
+                {/* Card column */}
+                <div className="flex-1 mb-3">
+                  {/* Mobile/Tablet: Date/Time */}
+                  <div className="md:hidden mb-2 text-left space-y-1">
+                    <Skeleton className="h-3 w-28 bg-[#D1D5DB]" />
+                    <Skeleton className="h-[11px] w-16 bg-[#D1D5DB]" />
+                  </div>
+
+                  <ScholarshipCardSkeleton index={index} />
+                </div>
+              </div>
+            ))
           ) : filteredApplications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-dashed border-[#CBD5F5] bg-white text-[#9CA3AF]">
-                <Calendar className="w-6 h-6" />
-              </div>
-              <h2 className="text-base md:text-lg text-[#111827] mb-1">No applications yet</h2>
-              <p className="max-w-sm text-xs md:text-sm text-[#6B7280]">
-                Once you start applying to scholarships, you'll see their timelines and
-                statuses here.
+              <Files className="w-24 md:w-30 h-24 md:h-30 text-[#D1D5DB]" />
+              <h2 className="text-lg md:text-xl text-[#9CA3AF] mt-8 mb-2">No applications yet</h2>
+              <p className="max-w-md text-sm md:text-base text-[#9CA3AF] mb-4 md:mb-8">
+                You have to apply for scholarships to see them listed here.
               </p>
+              <button
+                onClick={() => navigate({ to: '/discover' })}
+                className="inline-flex cursor-pointer items-center gap-2 px-4 py-2.5 bg-[#9CA3AF] text-white text-sm md:text-base rounded-md hover:bg-[#D1D5DB] hover:text-white text-[#F0F7FF] transition-colors"
+              >
+                Explore Scholarships
+                <ArrowRight size={18} />
+              </button>
             </div>
           ) : (
             <div>
               {filteredApplications.map((application, index) => (
                 <div key={application.scholarship_application_id} className="flex gap-4 md:gap-6">
-                  {/* Desktop: Date/Time on LEFT */}
+                  {/* Desktop: Date/Time */}
                   <div className="hidden md:flex gap-4">
                     <div className="flex flex-col items-start w-30 flex-shrink-0 pt-1">
                       <div className="text-left">
@@ -270,14 +317,14 @@ function Home() {
                     <div className="w-3 h-3 rounded-full bg-[#3A52A6] shadow-[0_0_0_4px_rgba(63,81,181,0.22)] z-10" />
                     <div
                       className={`mt-1 w-px flex-1 border-l border-dashed border-[#3A52A6]/60 ${
-                        index === filteredApplications.length - 1 ? 'opacity-70r[]\ ' : ''
+                        index === filteredApplications.length - 1 ? 'opacity-70' : ''
                       }`}
                     />
                   </div>
 
                   {/* Card column */}
                   <div className="flex-1 mb-3">
-                    {/* Mobile/Tablet: Date/Time above card */}
+                    {/* Mobile/Tablet: Date/Time */}
                     <div className="md:hidden mb-2 text-left">
                       <div className="text-xs text-[#111827]">
                         {formatDate(application.applied_at)}

@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import ScholarshipCard from "@/components/ScholarshipCard"; 
+import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton"; 
 import Filters from "@/components/Filters"; 
-import { Filter, X } from 'lucide-react';
+import { Filter, X, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '@/components/Toast';
 import type { Scholarship } from '@/types/scholarship.types';
 import ScholarshipDetailsModal from '@/components/ScholarshipDetailsModal';
-import { usePageTitle } from "@/hooks/use-page-title"
+import { usePageTitle } from "@/hooks/usePageTitle"
 import { scholarshipManagementService } from '@/services/scholarship-management.service';
 
 export const Route = createFileRoute('/_student/discover')({
@@ -25,7 +26,7 @@ function DiscoverScholarship() {
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  // const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -36,46 +37,38 @@ function DiscoverScholarship() {
     message: '',
   });
 
-  // const fetchScholarships = useCallback(async () => {
-  //   try {
-  //     setLoading(true);
-  //     const response = await scholarshipManagementService.getAllScholarships();
-      
-  //     if (response.success) {
-  //       setScholarships(response.scholarships);
-  //     } else {
-  //       setToastConfig({
-  //         type: 'error',
-  //         title: 'Error',
-  //         message: response.message,
-  //       });
-  //       setShowToast(true);
-  //       setTimeout(() => {
-  //         setShowToast(false)
-  //       }, 2000);
-  //     }
-  //   } catch (error) {
-  //     setToastConfig({
-  //       type: 'error',
-  //       title: 'Error',
-  //       message: 'Failed to connect to server.'
-  //     });
-  //     setShowToast(true);
-  //     setTimeout(() => {
-  //       setShowToast(false)
-  //     }, 2000);
-  //   } finally {
-  //     setLoading(false);
-  //     setRefreshing(false);
-  //   }
-  // }, []);
+  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  }, []);
 
-  // useEffect(() => {
-  //   fetchScholarships();
-  // }, [fetchScholarships]);
+  const fetchScholarships = useCallback(async () => {
+    try {
+      setLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setScholarships(mockScholarship);
+      // const response = await scholarshipManagementService.getAllScholarships();
+      
+      // if (response.success) {
+      //   setScholarships(response.scholarships);
+      // } else {
+      //   showToastMessage('error', 'Error', response.message, 2500);
+      // }
+    } catch (error) {
+      showToastMessage('error', 'Error', 'Failed to connect to server.', 2500);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchScholarships();
+  }, [fetchScholarships]);
 
   // Mock data
-  const scholarships: Scholarship[] = Array(23).fill(null).map((_, i) => ({
+  const mockScholarship: Scholarship[] = Array(23).fill(null).map((_, i) => ({
     scholarship_id: '1',
     sponsor_id: '1',
     status: 'active',
@@ -99,7 +92,7 @@ function DiscoverScholarship() {
   }));
 
   const filteredScholarships = useMemo(() => {
-    return scholarships.filter((scholarship) => {
+    return mockScholarship.filter((scholarship) => {
       const matchesType =
         scholarshipType === 'All' ||
         scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
@@ -125,10 +118,12 @@ function DiscoverScholarship() {
 
       return matchesType && matchesPurpose && matchesSponsorType && matchesAmount && matchesSlots;
     });
-  }, [scholarships, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
+  }, [mockScholarship, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
 
   return (
     <div className="min-h-screen">
+      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} /> 
+      
       {/* Mobile/Tablet Layout */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -368,14 +363,25 @@ function DiscoverScholarship() {
         {/* Scholarship Cards */}
         <div className="lg:col-span-3">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
-            {filteredScholarships.map((scholarship, index) => (
-              <ScholarshipCard
-                key={`${scholarship.title}-${index}`}
-                scholarship={scholarship}
-                index={index}
-                onClick={() => setSelectedScholarship(scholarship)}
-              />
-            ))}
+            {loading ? (
+              Array.from({ length: 4 }).map((_, index) => (
+                <ScholarshipCardSkeleton key={`skeleton-${index}`} index={index} />
+              ))
+            ) : filteredScholarships.length === 0 ? (
+              <div className="lg:col-span-3 flex flex-col items-center justify-center pt-28 pt-36">
+                <GraduationCap className="w-24 md:w-30 h-24 md:h-30 text-[#D1D5DB]" />
+                <p className="mt-4 text-lg md:text-xl text-[#9CA3AF]">No scholarships found</p>
+              </div>
+            ) : (
+              filteredScholarships.map((scholarship, index) => (
+                <ScholarshipCard
+                  key={`${scholarship.title}-${index}`}
+                  scholarship={scholarship}
+                  index={index}
+                  onClick={() => setSelectedScholarship(scholarship)}
+                />
+              ))
+            )}
           </div>
         </div>
       </div>
