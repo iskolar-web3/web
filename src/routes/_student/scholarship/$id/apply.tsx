@@ -25,6 +25,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { scholarshipApplicationService } from '@/services/scholarship-application.service';
+import { compressFile } from '@/utils/fileCompression';
+import { normalizeText, normalizeEmail, normalizePhone, normalizeNumber } from '@/utils/normalize';
 
 export const Route = createFileRoute('/_student/scholarship/$id/apply')({
   component: ApplyScholarshipPage,
@@ -160,7 +162,8 @@ function ApplyScholarshipPage() {
       { type: 'dropdown', label: 'Year Level', required: true, options: ['1st Year', '2nd Year', '3rd Year', '4th Year'] },
       { type: 'multiple_choice', label: 'Preferred Contact Method', required: true, options: ['Email', 'Phone', 'SMS'] },
       { type: 'checkbox', label: 'Extracurricular Activities', required: false, options: ['Sports', 'Arts', 'Leadership', 'Community Service'] },
-      { type: 'file', label: 'Upload Transcript of Records', required: true },
+      { type: 'file', label: 'Transcript of Records', required: true },
+      { type: 'file', label: 'Certificate of Registration', required: true },
     ],
     sponsor: {
       name: 'Commission on Higher Education',
@@ -214,12 +217,63 @@ function ApplyScholarshipPage() {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const handleFileUpload = (fieldLabel: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (fieldLabel: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    setCustomFiles(prev => ({
-      ...prev,
-      [fieldLabel]: [...(prev[fieldLabel] || []), ...files],
-    }));
+    
+    if (files.length === 0) return;
+    
+    const file = files[0];
+    
+    // Validate file size 
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToastMessage('error', 'File Too Large', `Maximum file size is 10MB.`, 2500);
+      event.target.value = ''; 
+      return;
+    }
+    
+    // Validate file type 
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+      showToastMessage('error', 'Invalid File Type', 'Only PDF and image files (JPEG, PNG) are allowed', 2500);
+      event.target.value = ''; 
+      return;
+    }
+    
+    const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+      showToastMessage('error', 'Invalid File Extension', 'File extension does not match allowed types', 2500);
+      event.target.value = '';
+      return;
+    }
+    
+    try {
+      // Compress the file
+      const compressedFile = await compressFile(file);
+      
+      setCustomFiles(prev => ({
+        ...prev,
+        [fieldLabel]: [compressedFile],
+      }));
+    } catch (error) {
+      console.error('File compression error:', error);
+      showToastMessage('error', 'Compression Failed', 'Using original file', 2000);
+      
+      setCustomFiles(prev => ({
+        ...prev,
+        [fieldLabel]: [file],
+      }));
+    }
+
+    event.target.value = '';
   };
 
   const removeFile = (fieldLabel: string, index: number) => {
@@ -250,6 +304,40 @@ function ApplyScholarshipPage() {
   };
 
   const onSubmit = (data: Record<string, any>) => {
+    const normalizedData = { ...data };
+    
+    customFields.forEach(field => {
+      const value = normalizedData[field.label];
+      
+      if (!value || (typeof value === 'string' && value.trim() === '')) return;
+      
+      // Normalize based on field type
+      switch (field.type) {
+        case 'text':
+        case 'textarea':
+          normalizedData[field.label] = normalizeText(value);
+          break;
+        
+        case 'email':
+          normalizedData[field.label] = normalizeEmail(value);
+          break;
+        
+        case 'phone':
+          normalizedData[field.label] = normalizePhone(value);
+          break;
+        
+        case 'number':
+          normalizedData[field.label] = normalizeNumber(value);
+          break;
+        
+        case 'checkbox':
+          if (Array.isArray(value)) {
+            normalizedData[field.label] = value.map(v => normalizeText(v));
+          }
+          break;
+      }
+    });
+
     const fileErrors: string[] = [];
     customFields.forEach(field => {
       if (field.type === 'file' && field.required) {
@@ -261,11 +349,11 @@ function ApplyScholarshipPage() {
     });
 
     if (fileErrors.length > 0) {
-      //   showToastMessage('error', 'Error', fileErrors.join(', ')), 2500);
+      showToastMessage('error', 'Missing Required Files', fileErrors.join(', '), 2500);
       return;
     }
 
-    setPendingData(data);
+    setPendingData(normalizedData);
     setShowConfirmation(true);
   };
 
@@ -362,7 +450,7 @@ function ApplyScholarshipPage() {
 
     return (
       <div key={`${fieldKey}-${index}`} className="space-y-2">
-        <label className="block text-xs md:text-sm text-[#111827]">
+        <label className="block text-xs md:text-sm text-primary">
           {field.label}
           {field.required && <span className="text-[#EF4444] ml-1">*</span>}
         </label>
@@ -380,7 +468,7 @@ function ApplyScholarshipPage() {
                 placeholder={`Enter ${field.label.toLowerCase()}`}
                 className={`w-full px-4 py-3 rounded-lg border ${
                   fieldError ? 'border-[#EF4444]' : 'border-[#E0ECFF]'
-                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] text-[#111827]`}
+                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] text-primary`}
               />
             )}
           />
@@ -399,7 +487,7 @@ function ApplyScholarshipPage() {
                 rows={4}
                 className={`w-full px-4 py-3 rounded-lg border ${
                   fieldError ? 'border-[#EF4444]' : 'border-[#E0ECFF]'
-                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none text-[#111827]`}
+                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none text-primary`}
               />
             )}
           />
@@ -419,7 +507,7 @@ function ApplyScholarshipPage() {
                 placeholder={`Enter ${field.label.toLowerCase()}`}
                 className={`w-full px-4 py-3 rounded-lg border ${
                   fieldError ? 'border-[#EF4444]' : 'border-[#E0ECFF]'
-                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] text-[#111827]`}
+                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] text-primary`}
               />
             )}
           />
@@ -438,7 +526,7 @@ function ApplyScholarshipPage() {
                 placeholder={`Enter ${field.label.toLowerCase()}`}
                 className={`w-full px-4 py-3 rounded-lg border ${
                   fieldError ? 'border-[#EF4444]' : 'border-[#E0ECFF]'
-                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] text-[#111827]`}
+                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] text-primary`}
               />
             )}
           />
@@ -457,7 +545,7 @@ function ApplyScholarshipPage() {
                 placeholder="09XX XXX XXXX"
                 className={`w-full px-4 py-3 rounded-lg border ${
                   fieldError ? 'border-[#EF4444]' : 'border-[#E0ECFF]'
-                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] text-[#111827]`}
+                } bg-[#F6F9FF] text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] text-primary`}
               />
             )}
           />
@@ -473,7 +561,7 @@ function ApplyScholarshipPage() {
                   <button
                     type="button"
                     className={`w-full px-4 py-3 text-xs md:text-sm border rounded-lg bg-[#F6F9FF] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] flex items-center justify-between ${
-                      value ? 'text-[#111827]' : 'text-[#9CA3AF]'
+                      value ? 'text-primary' : 'text-[#9CA3AF]'
                     } ${fieldError ? 'border-[#EF4444]' : 'border-[#E0ECFF]'}`}
                   >
                     <span>
@@ -509,7 +597,7 @@ function ApplyScholarshipPage() {
                   className={`w-full px-4 py-3 text-xs md:text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-[#9CA3AF] ${
                     fieldError
                       ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
-                      : 'border-[#E0ECFF] focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                      : 'border-[#E0ECFF] focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                   } bg-[#F6F9FF]`}
                 >
                   <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
@@ -545,9 +633,9 @@ function ApplyScholarshipPage() {
                         name={fieldKey}
                         checked={isSelected}
                         onChange={() => onChange(option)}
-                        className="w-3 h-3 md:w-4 md:h-4 border-[#C4CBD5] text-[#3A52A6] focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
+                        className="w-3 h-3 md:w-4 md:h-4 border-[#C4CBD5] text-secondary focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
                       />
-                      <span className="text-xs md:text-sm text-[#111827]">{option}</span>
+                      <span className="text-xs md:text-sm text-primary">{option}</span>
                     </label>
                   );
                 })}
@@ -582,9 +670,9 @@ function ApplyScholarshipPage() {
                             onChange([...currentValues, option]);
                           }
                         }}
-                        className="w-3 h-3 md:w-4 md:h-4 rounded border-[#C4CBD5] text-[#3A52A6] focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
+                        className="w-3 h-3 md:w-4 md:h-4 rounded border-[#C4CBD5] text-secondary focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
                       />
-                      <span className="text-xs md:text-sm text-[#111827]">{option}</span>
+                      <span className="text-xs md:text-sm text-primary">{option}</span>
                     </label>
                   );
                 })}
@@ -595,12 +683,12 @@ function ApplyScholarshipPage() {
 
         {field.type === 'file' && (
           <div className="space-y-3">
-            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[#3A52A6] bg-[#E0ECFF] text-[#3A52A6] rounded-lg cursor-pointer hover:bg-[#D0DCFF] transition-colors">
+            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[#3A52A6] bg-[#E0ECFF] text-secondary rounded-lg cursor-pointer hover:bg-[#D0DCFF] transition-colors">
               <Upload size={16} />
               <span className="text-[11px] md:text-xs">Upload File</span>
               <input
                 type="file"
-                multiple
+                accept=".pdf,.jpg,.jpeg,.png,"
                 onChange={(e) => handleFileUpload(fieldKey, e)}
                 className="hidden"
               />
@@ -608,24 +696,20 @@ function ApplyScholarshipPage() {
 
             {customFiles[fieldKey] && customFiles[fieldKey].length > 0 && (
               <div className="space-y-2">
-                {customFiles[fieldKey].map((file, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 px-4 py-2 bg-[#F6F9FF] border border-[#E0ECFF] rounded-lg"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-[#111827] truncate">{file.name}</p>
-                      <p className="text-[11px] text-[#6B7280]">{formatFileSize(file.size)}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(fieldKey, idx)}
-                      className="p-1 hover:bg-[#EF4444]/10 rounded transition-colors"
-                    >
-                      <X size={16} className="text-[#EF4444]" />
-                    </button>
+                {/* Only show the single file */}
+                <div className="flex items-center gap-3 px-4 py-2 bg-[#F6F9FF] border border-[#E0ECFF] rounded-lg">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-primary truncate">{customFiles[fieldKey][0].name}</p>
+                    <p className="text-[11px] text-[#6B7280]">{formatFileSize(customFiles[fieldKey][0].size)}</p>
                   </div>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => removeFile(fieldKey, 0)}
+                    className="p-1 hover:bg-[#EF4444]/10 rounded transition-colors"
+                  >
+                    <X size={16} className="text-[#EF4444]" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -648,50 +732,50 @@ function ApplyScholarshipPage() {
           {/* Scholarship Details Skeleton */}
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
             {/* Title Skeleton */}
-            <Skeleton className="h-7 w-full md:h-8 mb-3 bg-[#D1D5DB]" />
+            <Skeleton className="h-7 w-full md:h-8 mb-3 bg-muted-foreground" />
             
             {/* Sponsor Info Skeleton */}
             <div className="flex items-center gap-2 mb-2">
-              <Skeleton className="w-4 h-4 rounded-full bg-[#D1D5DB]" />
-              <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-[#D1D5DB]" />
+              <Skeleton className="w-4 h-4 rounded-full bg-muted-foreground" />
+              <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-muted-foreground" />
             </div>
             
             {/* Deadline Skeleton */}
             <div className="flex items-center gap-2">
-              <Skeleton className="w-4 h-4 rounded bg-[#D1D5DB]" />
-              <Skeleton className="h-4 w-40 md:h-5 md:w-48 bg-[#D1D5DB]" />
+              <Skeleton className="w-4 h-4 rounded bg-muted-foreground" />
+              <Skeleton className="h-4 w-40 md:h-5 md:w-48 bg-muted-foreground" />
             </div>
           </div>
 
           {/* Application Form Skeleton */}
           <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
             {/* Form Header Skeleton */}
-            <Skeleton className="h-5 w-36 md:h-6 md:w-40 mb-1 bg-[#D1D5DB]" />
-            <Skeleton className="h-4 w-64 md:h-5 md:w-72 mb-6 md:mb-8 bg-[#D1D5DB]" />
+            <Skeleton className="h-5 w-36 md:h-6 md:w-40 mb-1 bg-muted-foreground" />
+            <Skeleton className="h-4 w-64 md:h-5 md:w-72 mb-6 md:mb-8 bg-muted-foreground" />
 
             {/* Form Fields Skeleton */}
             <div className="space-y-5">
               {/* Text Field Skeleton */}
               <div className="space-y-2">
-                <Skeleton className="h-4 w-24 md:h-5 md:w-28 bg-[#D1D5DB]" />
-                <Skeleton className="h-11 w-full rounded-lg bg-[#D1D5DB]" />
+                <Skeleton className="h-4 w-24 md:h-5 md:w-28 bg-muted-foreground" />
+                <Skeleton className="h-11 w-full rounded-lg bg-muted-foreground" />
               </div>
 
               {/* Email Field Skeleton */}
               <div className="space-y-2">
-                <Skeleton className="h-4 w-32 md:h-5 md:w-36 bg-[#D1D5DB]" />
-                <Skeleton className="h-11 w-full rounded-lg bg-[#D1D5DB]" />
+                <Skeleton className="h-4 w-32 md:h-5 md:w-36 bg-muted-foreground" />
+                <Skeleton className="h-11 w-full rounded-lg bg-muted-foreground" />
               </div>
 
               {/* File Upload Field Skeleton */}
               <div className="space-y-2">
-                <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-[#D1D5DB]" />
-                <Skeleton className="h-12 w-full rounded-lg border-2 border-dashed bg-[#D1D5DB]" />
+                <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-muted-foreground" />
+                <Skeleton className="h-12 w-full rounded-lg border-2 border-dashed bg-muted-foreground" />
               </div>
             </div>
           </div>
           
-          <Skeleton className="h-10 md:h-12 w-full rounded-lg bg-[#D1D5DB]" />
+          <Skeleton className="h-10 md:h-12 w-full rounded-lg bg-muted-foreground" />
         </div>
       </div>
     );
@@ -702,11 +786,11 @@ function ApplyScholarshipPage() {
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-[#EF4444] mx-auto mb-4" />
-          <h3 className="text-lg text-[#111827] mb-2">Something went wrong</h3>
+          <h3 className="text-lg text-primary mb-2">Something went wrong</h3>
           <p className="text-[#5D6673] mb-6">{error}</p>
           <button
             onClick={fetchScholarshipDetails}
-            className="px-6 py-2.5 bg-[#3A52A6] text-white rounded-lg hover:bg-[#2A4296] transition-colors"
+            className="px-6 py-2.5 bg-[#3A52A6] text-tertiary rounded-lg hover:bg-[#2A4296] transition-colors"
           >
             Try Again
           </button>
@@ -722,7 +806,7 @@ function ApplyScholarshipPage() {
       <div className="max-w-[40rem] mx-auto space-y-4">
         {/* Scholarship Details */}
         <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
-          <h1 className="text-xl md:text-2xl text-[#111827] mb-3">{scholarship?.title}</h1>
+          <h1 className="text-xl md:text-2xl text-primary mb-3">{scholarship?.title}</h1>
           <div className="flex items-center gap-2 text-xs md:text-sm text-[#6B7280] mb-2">
             <div className="flex items-center gap-2">
               <img
@@ -742,7 +826,7 @@ function ApplyScholarshipPage() {
         {/* Application Form */}
         {customFields.length > 0 && (
           <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
-            <h2 className="text-base md:text-lg text-[#111827] mb-1">Application Form</h2>
+            <h2 className="text-base md:text-lg text-primary mb-1">Application Form</h2>
             <p className="text-xs md:text-sm text-[#6B7280] mb-6 md:mb-8">
               Please provide the following information requested.
             </p>
@@ -758,7 +842,7 @@ function ApplyScholarshipPage() {
         <button
           onClick={handleSubmit(onSubmit)}
           disabled={submitting}
-          className={`w-full py-3 cursor-pointer text-sm bg-[#EFA508] text-[#F0F7FF] rounded-md hover:bg-[#D89407] transition-colors flex items-center justify-center gap-2 ${
+          className={`w-full py-3 cursor-pointer text-sm bg-[#EFA508] text-tertiary rounded-md hover:bg-[#D89407] transition-colors flex items-center justify-center gap-2 ${
             submitting && 'opacity-60 cursor-not-allowed'
           }`}
         >
@@ -776,7 +860,7 @@ function ApplyScholarshipPage() {
       {showConfirmation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-[#F0F7FF] rounded-2xl p-5 max-w-md w-full">
-            <h3 className="text-lg text-[#111827] text-center mb-2">Submit Application?</h3>
+            <h3 className="text-lg text-primary text-center mb-2">Submit Application?</h3>
             <p className="text-sm text-[#4B5563] text-center mb-6">
               Please review your information before submitting. Once submitted, you cannot modify your application.
             </p>
@@ -792,7 +876,7 @@ function ApplyScholarshipPage() {
               </button>
               <button
                 onClick={processSubmission}
-                className={`flex-1 py-2.5 text-sm cursor-pointer bg-[#EFA508] text-white rounded-md hover:bg-[#D89407] transition-colors ${
+                className={`flex-1 py-2.5 text-sm cursor-pointer bg-[#EFA508] text-tertiary rounded-md hover:bg-[#D89407] transition-colors ${
                   submitting && 'opacity-60 cursor-not-allowed'
                 }`}
               >

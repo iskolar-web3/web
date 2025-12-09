@@ -193,7 +193,7 @@ function LoginPage(): JSX.Element {
               Don't have an account?{" "}
               <Link 
                 to="/register"
-                className="text-[#3A52A6] hover:underline"
+                className="text-secondary hover:underline"
               >
                 Sign up
               </Link>
@@ -202,7 +202,7 @@ function LoginPage(): JSX.Element {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
             <div>
-              <label htmlFor="email" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="email" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Email
               </label>
               <input
@@ -211,7 +211,7 @@ function LoginPage(): JSX.Element {
                 placeholder="Enter Email"
                 {...register("email")}
                 disabled={loading}
-                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                   errors.email
                     ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                     : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -225,7 +225,7 @@ function LoginPage(): JSX.Element {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="password" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -235,7 +235,7 @@ function LoginPage(): JSX.Element {
                   placeholder="Enter Password"
                   {...register("password")}
                   disabled={loading}
-                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                     errors.password
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                       : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -244,7 +244,7 @@ function LoginPage(): JSX.Element {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-[#3A52A6] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-secondary transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -267,13 +267,13 @@ function LoginPage(): JSX.Element {
                 <input
                   type="checkbox"
                   {...register("rememberMe")}
-                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded border-[#C4CBD5] text-[#3A52A6] focus:ring-[#3A52A6] cursor-pointer"
+                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded border-[#C4CBD5] text-secondary focus:ring-[#3A52A6] cursor-pointer"
                 />
                 <span className="ml-1 text-[#8C8C8C] text-xs sm:text-[11px]">Remember Me</span>
               </label>
               <Link 
                 to="/"
-                className="text-[#3A52A6] text-xs sm:text-[11px] hover:underline"
+                className="text-secondary text-xs sm:text-[11px] hover:underline"
               >
                 Forgot password?
               </Link>
@@ -312,7 +312,7 @@ function LoginPage(): JSX.Element {
               type="button"
               className="w-12 h-12 flex items-center justify-center rounded-full hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.25)] transition-all bg-[#F0F7FF] shadow-[0_2px_4px_0_rgba(0,0,0,0.25)] cursor-pointer"
             >
-              <SiGoogle size={24} className="text-[#3A52A6] sm:w-6 sm:h-6" />
+              <SiGoogle size={24} className="text-secondary sm:w-6 sm:h-6" />
             </button>
           </div>
         </div>

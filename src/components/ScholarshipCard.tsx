@@ -28,7 +28,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
         transition: { duration: 0.2 }
       }}
       onClick={onClick}
-      className="bg-[#FEFEFD] cursor-pointer rounded-lg overflow-hidden border border-[#D3DCF6] hover:border-[#3A52A6] transition-colors"
+      className="bg-card cursor-pointer rounded-lg overflow-hidden border border-[#D3DCF6] hover:border-[#3A52A6] transition-colors"
     >
       {/* Header */}
       <div className="bg-[#3A52A6]">
@@ -46,7 +46,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
           </motion.div>
 
           {/* Info */}
-          <div className="flex-1 text-white px-4 py-2">
+          <div className="flex-1 text-tertiary px-4 py-2">
             <h3 className="text-xl mb-1 line-clamp-1">{scholarship.title}</h3>
             
             {/* Badges */}
@@ -55,7 +55,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.05 + 0.1 }}
-                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded"
+                className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded"
               >
                 {scholarship.type}
               </motion.span>
@@ -63,7 +63,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.05 + 0.15 }}
-                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded"
+                className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded"
               >
                 {scholarship.purpose}
               </motion.span>
@@ -94,13 +94,13 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
         <div className="grid grid-cols-2 gap-2 mb-4">
           <motion.div
             transition={{ duration: 0.2 }}
-            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
+            className="bg-[#F9FAFB] border border-border rounded-lg p-3"
           >
             <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
               <Coins size={16} />
               <span>Amount</span>
             </div>
-            <p className="text-sm md:text-base text-[#111827]">
+            <p className="text-sm md:text-base text-primary">
               {amountPerScholar !== null
                 ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                 : '₱0.00'}
@@ -110,13 +110,13 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
 
           <motion.div
             transition={{ duration: 0.2 }}
-            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
+            className="bg-[#F9FAFB] border border-border rounded-lg p-3"
           >
             <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
               <Users size={16} />
               <span>Slots</span>
             </div>
-            <p className="text-sm md:text-base text-[#111827]">{scholarship.total_slot}</p>
+            <p className="text-sm md:text-base text-primary">{scholarship.total_slot}</p>
             <p className="text-xs text-[#6B7280]">scholars</p>
           </motion.div>
         </div>
@@ -131,13 +131,13 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
               {scholarship.criteria.slice(0, 2).map((item, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border"
                 >
                   {item}
                 </span>
               ))}
               {scholarship.criteria.length > 2 && (
-                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border">
                   + {scholarship.criteria.length - 2} more
                 </span>
               )}
@@ -152,13 +152,13 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
               {scholarship.required_documents.slice(0, 2).map((item, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border"
                 >
                   {item}
                 </span>
               ))}
               {scholarship.required_documents.length > 2 && (
-                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border">
                   + {scholarship.required_documents.length - 2} more
                 </span>
               )}

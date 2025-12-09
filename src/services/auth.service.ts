@@ -17,7 +17,7 @@ export interface ApiResponse<T = any> {
 export interface RegisterData {
   email: string;
   password: string;
-  confirm_password: string
+  confirm_password: string;
 }
 
 export interface LoginData {
@@ -57,9 +57,16 @@ class AuthService {
 
   async hasValidToken(): Promise<boolean> {
     const token = await this.getToken();
-    return token !== null;
+    if (!token) return false;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiration = payload.exp * 1000; 
+      return Date.now() < expiration;
+    } catch {
+      return false;
+    }
   }
-
 
   async authenticatedRequest<T = any>(
     endpoint: string,
@@ -108,28 +115,54 @@ class AuthService {
   }
 
   async register(registerData: RegisterData): Promise<{ success: boolean; message: string; }> {
-    const response = await this.authenticatedRequest('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(registerData)
-    });
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registerData)
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-    };
+      const result = await response.json();
+
+      return {
+        success: response.ok,
+        message: result.message || (response.ok ? 'Registration successful' : 'Registration failed'),
+      };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return {
+        success: false,
+        message: `Failed to connect to server at ${API_URL}`,
+      };
+    }
   } 
 
   async login(loginData: LoginData): Promise<{ success: boolean; message: string; token?: string; }> {
-    const response = await this.authenticatedRequest('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(loginData)
-    });
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData)
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      token: response.data?.token,
-    };
+      const result = await response.json();
+
+      return {
+        success: response.ok,
+        message: result.message || (response.ok ? 'Login successful' : 'Login failed'),
+        token: result.token,
+      };
+    } catch (error) {
+      console.error('Login error:', error);
+      return {
+        success: false,
+        message: `Failed to connect to server at ${API_URL}`,
+      };
+    }
   } 
 }
 

@@ -111,7 +111,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
         }}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E5E7EB] bg-white px-5 py-3">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-white px-5 py-3">
           <h2 className="text-lg text-[#111827] flex items-center gap-2">
             <button
               onClick={handleClose}
@@ -154,10 +154,10 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
           <div>
             <h1 className="text-[26px] text-[#111827] mb-2">{application.scholarship.title}</h1>
             <div className="flex gap-2 mb-4">
-              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                 {application.scholarship.type}
               </span>
-              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                 {application.scholarship.purpose}
               </span>
             </div>
@@ -183,7 +183,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
 
           {/* Amount and Slots */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+            <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
               <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                 <Coins size={16} />
                 <span className="text-xs">Amount</span>
@@ -197,7 +197,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
               <p className="text-xs text-[#6B7280]">per scholar</p>
             </div>
 
-            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+            <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
               <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                 <Users size={16} />
                 <span className="text-xs">Slots</span>
@@ -226,7 +226,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
               {application.scholarship.criteria?.map((criterion: string, i: number) => (
                 <span
                   key={i}
-                  className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB]"
+                  className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border"
                 >
                   {criterion}
                 </span>
@@ -241,7 +241,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
               {application.scholarship.required_documents?.map((doc: string, i: number) => (
                 <div
                   key={i}
-                  className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB] text-center"
+                  className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border text-center"
                 >
                   {doc}
                 </div>
@@ -250,7 +250,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
           </div>
 
           {/* Timeline */}
-          <div className="bg-white border border-[#E5E7EB] rounded-md p-4">
+          <div className="bg-white border border-border rounded-md p-4">
             <h3 className="text-sm text-[#111827] mb-4">Timeline</h3>
             <div>
               <div className="flex gap-3">

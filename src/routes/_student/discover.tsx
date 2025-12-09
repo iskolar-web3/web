@@ -129,11 +129,11 @@ function DiscoverScholarship() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="lg:hidden bg-white rounded-md mb-4 p-2 shadow-sm"
+        className="lg:hidden bg-card rounded-md mb-4 p-2 shadow-sm"
       >
         <button
           onClick={() => setShowFiltersModal(true)}
-          className="flex items-center justify-center gap-1 w-full py-2 px-4 bg-[#3A52A6] text-[#F0F7FF] rounded-md hover:bg-[#2f4389] transition-colors"
+          className="flex items-center justify-center gap-1 w-full py-2 px-4 bg-[#3A52A6] text-tertiary rounded-md hover:bg-[#2f4389] transition-colors"
         >
           <Filter size={16} />
           <span className="text-xs md:text-md">Filters</span>
@@ -162,10 +162,10 @@ function DiscoverScholarship() {
               className="lg:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 max-h-[85vh] overflow-hidden"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] sticky top-0 bg-white">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-white">
                 <div className="flex items-center gap-2">
-                  <Filter size={18} className="text-[#111827]"/>
-                  <h2 className="text-md text-[#111827]">Filters</h2>
+                  <Filter size={18} className="text-primary"/>
+                  <h2 className="text-md text-primary">Filters</h2>
                 </div>
                 <button
                   onClick={() => setShowFiltersModal(false)}
@@ -214,7 +214,7 @@ function DiscoverScholarship() {
                 />
 
                 <div className="mb-4">
-                  <label className="block text-xs text-[#111827] mb-2">Amount per Scholar</label>
+                  <label className="block text-xs text-primary mb-2">Amount per Scholar</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -223,7 +223,7 @@ function DiscoverScholarship() {
                       onChange={(event) =>
                         setAmountRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -233,13 +233,13 @@ function DiscoverScholarship() {
                       onChange={(event) =>
                         setAmountRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 <div className="mb-2">
-                  <label className="block text-xs text-[#111827] mb-2">Slots</label>
+                  <label className="block text-xs text-primary mb-2">Slots</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -248,7 +248,7 @@ function DiscoverScholarship() {
                       onChange={(event) =>
                         setSlotRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -258,7 +258,7 @@ function DiscoverScholarship() {
                       onChange={(event) =>
                         setSlotRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -277,10 +277,10 @@ function DiscoverScholarship() {
           transition={{ duration: 0.5 }}
           className="hidden lg:block lg:col-span-1"
         >
-          <div className="bg-[#FEFEFD] rounded-lg p-6 border border-[#E5E7EB] sticky top-4 shadow-sm">
+          <div className="bg-card rounded-lg p-6 border border-border sticky top-4 shadow-sm">
             <div className="flex items-center gap-1 mb-6">
               <Filter size={20}/>
-              <h2 className="text-md text-[#111827]">Filters</h2>
+              <h2 className="text-md text-primary">Filters</h2>
             </div>
 
             <Filters
@@ -309,7 +309,7 @@ function DiscoverScholarship() {
             />
 
             <div className="mb-4">
-              <label className="block text-sm text-[#111827] mb-2">Amount per Scholar</label>
+              <label className="block text-sm text-primary mb-2">Amount per Scholar</label>
               <div className="flex gap-2">
                 <input
                   type="number"
@@ -318,7 +318,7 @@ function DiscoverScholarship() {
                   onChange={(event) =>
                     setAmountRange((prev) => ({ ...prev, min: event.target.value }))
                   }
-                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
                 <span className="flex items-center text-[#6B7280]">to</span>
                 <input
@@ -328,13 +328,13 @@ function DiscoverScholarship() {
                   onChange={(event) =>
                     setAmountRange((prev) => ({ ...prev, max: event.target.value }))
                   }
-                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
               </div>
             </div>
 
             <div className="mb-2">
-              <label className="block text-sm text-[#111827] mb-2">Slots</label>
+              <label className="block text-sm text-primary mb-2">Slots</label>
               <div className="flex gap-2">
                 <input
                   type="number"
@@ -343,7 +343,7 @@ function DiscoverScholarship() {
                   onChange={(event) =>
                     setSlotRange((prev) => ({ ...prev, min: event.target.value }))
                   }
-                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
                 <span className="flex items-center text-[#6B7280]">to</span>
                 <input
@@ -353,7 +353,7 @@ function DiscoverScholarship() {
                   onChange={(event) =>
                     setSlotRange((prev) => ({ ...prev, max: event.target.value }))
                   }
-                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
               </div>
             </div>

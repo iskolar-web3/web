@@ -36,10 +36,10 @@ export default function Toast({ visible, type, title, message }: ToastProps): JS
               )}
             </div>
             <div className="flex-1 text-left">
-              <p className="text-sm text-[#111827] font-semibold leading-tight">
+              <p className="text-sm text-primary leading-tight">
                 {title}
               </p>
-              <p className="text-xs text-[#111827] opacity-85 leading-tight">
+              <p className="text-xs text-primary opacity-85 leading-tight">
                 {message}
               </p>
             </div>

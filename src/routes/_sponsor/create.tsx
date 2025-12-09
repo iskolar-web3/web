@@ -32,6 +32,7 @@ import {
 import Toast from '@/components/Toast';
 import ScholarshipPreviewCard from '@/components/ScholarshipPreviewCard';
 import ScholarshipFullPreviewModal from '@/components/ScholarshipFullPreviewModal';
+import { normalizeText, normalizeArray } from '@/utils/normalize';
 import { scholarshipManagementService } from '@/services/scholarship-management.service';
 
 // Form field types
@@ -161,7 +162,7 @@ function CreateScholarship() {
   };
 
   const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
-    const iconProps = { size: 18, className: "text-[#3A52A6]" };
+    const iconProps = { size: 18, className: "text-secondary" };
     const icons = {
       text: <TypeIcon {...iconProps} />,
       textarea: <AlignLeft {...iconProps} />,
@@ -207,9 +208,9 @@ function CreateScholarship() {
   };
 
   const addCriterion = () => {
-    const trimmed = criteriaInput.trim();
-    if (trimmed) {
-      setValue('criteria', [...criteria, trimmed]);
+    const normalized = normalizeText(criteriaInput);
+    if (normalized && !criteria.includes(normalized)) {
+      setValue('criteria', [...criteria, normalized]);
       setCriteriaInput('');
     }
   };
@@ -219,9 +220,9 @@ function CreateScholarship() {
   };
 
   const addDocument = () => {
-    const trimmed = documentsInput.trim();
-    if (trimmed) {
-      setValue('requiredDocuments', [...requiredDocuments, trimmed]);
+    const normalized = normalizeText(documentsInput);
+    if (normalized && !requiredDocuments.includes(normalized)) {
+      setValue('requiredDocuments', [...requiredDocuments, normalized]);
       setDocumentsInput('');
     }
   };
@@ -249,14 +250,15 @@ function CreateScholarship() {
   };
 
   const saveCustomFormField = () => {
-    if (!newFieldLabel.trim()) return;
+    const normalized = normalizeText(newFieldLabel);
+    if (!normalized) return;
 
     const newField = {
       type: newFieldType,
-      label: newFieldLabel.trim(),
+      label: normalized,
       required: newFieldRequired,
       ...((newFieldType === 'dropdown' || newFieldType === 'checkbox' || newFieldType === 'multiple_choice') && {
-        options: dropdownOptions,
+        options: normalizeArray(dropdownOptions),
       }),
     };
 
@@ -336,8 +338,8 @@ function CreateScholarship() {
               >
                 <SelectTrigger disabled={loading} className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                   errors.type
-                    ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                    : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                    ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                    : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                 }`}>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -356,8 +358,8 @@ function CreateScholarship() {
               >
                 <SelectTrigger disabled={loading} className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                   errors.purpose
-                    ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                    : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                    ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                    : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                 }`}>
                   <SelectValue placeholder="Select purpose" />
                 </SelectTrigger>
@@ -385,7 +387,7 @@ function CreateScholarship() {
                           setImagePreview(null);
                           setValue('imageUrl', '', { shouldValidate: true });
                         }}
-                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70"
+                        className="absolute top-2 right-2 bg-black/50 text-tertiary rounded-full p-1.5 hover:bg-black/70"
                       >
                         <X size={14} />
                       </button>
@@ -395,7 +397,7 @@ function CreateScholarship() {
                       errors.imageUrl ? 'border-[#EF4444]' : 'border-[#3A52A6]'
                     } rounded-lg text-center cursor-pointer hover:bg-[#F0F7FF] transition-colors flex flex-col items-center justify-center w-full aspect-square px-4`}>
                       <Upload className="mb-3 text-[#5B7BA6]" size={40} />
-                      <p className="text-[#3A52A6] text-sm opacity-70">Click to select an image</p>
+                      <p className="text-secondary text-sm opacity-70">Click to select an image</p>
                       <input
                         type="file"
                         accept="image/*"
@@ -421,7 +423,7 @@ function CreateScholarship() {
                         disabled={loading}
                         className={`w-full text-2xl border-b-2 ${
                           errors.title ? 'border-[#EF4444]' : 'border-transparent'
-                        } bg-transparent pb-2 focus:outline-none focus:border-[#3A52A6] text-[#111827]`}
+                        } bg-transparent pb-2 focus:outline-none focus:border-[#3A52A6] text-primary`}
                       />
                     )}
                   />
@@ -436,7 +438,7 @@ function CreateScholarship() {
                     setTempDescription(description || '');
                     setShowDescriptionModal(true);
                   }}
-                  className="w-full flex items-center gap-2 px-4 py-3 rounded-lg bg-[#F3F4F6] border text-[#6B7280] text-sm hover:bg-[#E5E7EB] transition-colors"
+                  className="w-full flex items-center gap-2 px-4 py-3 rounded-lg bg-[#F3F4F6] border text-[#6B7280] text-sm hover:bg-muted transition-colors"
                 >
                   <span className="text-[#8B9CB5]">☰</span>
                   {description ? 'Edit Description' : 'Add Description'}
@@ -495,7 +497,7 @@ function CreateScholarship() {
                             type="button"
                             disabled={loading}
                             className={`w-full px-4 py-3 text-sm border rounded-lg bg-[#F8F9FC] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] flex items-center justify-between ${
-                              field.value ? 'text-[#111827]' : 'text-gray-400'
+                              field.value ? 'text-primary' : 'text-gray-400'
                             } ${errors.applicationDeadline ? 'border-[#EF4444]' : 'border-[#C4CBD5]'}`}
                           >
                             <span>
@@ -549,7 +551,7 @@ function CreateScholarship() {
                 type="button"
                 disabled={loading}
                 onClick={addCriterion}
-                className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
+                className="w-11 h-11 bg-[#3A52A6] text-tertiary rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
               >
                 <Plus size={20} />
               </button>
@@ -558,9 +560,9 @@ function CreateScholarship() {
             {criteria.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {criteria.map((criterion, index) => (
-                  <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-[#E5E7EB]">
+                  <span key={index} className="inline-flex items-center gap-2 px-3 py-2 border border-border bg-[#F9FAFB] text-primary text-xs rounded-md">
                     {criterion}
-                    <button disabled={loading} onClick={() => removeCriterion(index)} className="hover:text-[#2A4296]">
+                    <button disabled={loading} onClick={() => removeCriterion(index)} className="cursor-pointer hover:text-[#2A4296]">
                       <X size={14} />
                     </button>
                   </span>
@@ -586,7 +588,7 @@ function CreateScholarship() {
                 type="button"
                 disabled={loading}
                 onClick={addDocument}
-                className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
+                className="w-11 h-11 bg-[#3A52A6] text-tertiary rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
               >
                 <Plus size={20} />
               </button>
@@ -595,7 +597,7 @@ function CreateScholarship() {
             {requiredDocuments.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {requiredDocuments.map((doc, index) => (
-                  <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-[#E5E7EB] rounded-lg">
+                  <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-border rounded-lg">
                     {doc}
                     <button disabled={loading} onClick={() => removeDocument(index)} className="hover:text-[#2A4296]">
                       <X size={14} />
@@ -622,7 +624,7 @@ function CreateScholarship() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm  text-[#111827]">{field.label}</span>
+                        <span className="text-sm  text-primary">{field.label}</span>
                         {field.required && (
                           <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded">Required</span>
                         )}
@@ -630,7 +632,7 @@ function CreateScholarship() {
                       <p className="text-xs text-[#6B7280]">{getFieldTypeLabel(field.type as CustomFieldType)}</p>
                     </div>
                     <button disabled={loading} onClick={() => openCustomFormModal(index)} className="p-1.5 hover:bg-gray-100 rounded">
-                      <Edit2 size={16} className="text-[#3A52A6]" />
+                      <Edit2 size={16} className="text-secondary" />
                     </button>
                     <button disabled={loading} onClick={() => removeCustomFormField(index)} className="p-1.5 hover:bg-gray-100 rounded">
                       <Trash2 size={16} className="text-[#EF4444]" />
@@ -646,7 +648,7 @@ function CreateScholarship() {
               onClick={() => openCustomFormModal()}
               className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
                 errors.customFormFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
-              } bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
+              } bg-[#E0ECFF] text-secondary text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
             >
               <Plus size={20} />
               {customFormFields.length === 0 ? 'Add Form Field' : 'Add Another Field'}
@@ -657,7 +659,7 @@ function CreateScholarship() {
           {/* Submit */}
           <button
             onClick={handleSubmit(onSubmit)}
-            className={`w-full mt-2 mb-6 md:mb-0 py-3 bg-[#EFA508] text-white cursor-pointer rounded-lg hover:bg-[#D89407] transition-colors ${
+            className={`w-full mt-2 mb-6 md:mb-0 py-3 bg-[#EFA508] text-tertiary cursor-pointer rounded-lg hover:bg-[#D89407] transition-colors ${
               loading && "opacity-60 cursor-not-allowed"
             }`}
             disabled={loading}
@@ -675,7 +677,7 @@ function CreateScholarship() {
         {/* Live Preview */}
         <div className="lg:sticky lg:top-6 h-fit md:ml-24">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm text-[#111827]">Live Preview</h2>
+            <h2 className="text-sm text-primary">Live Preview</h2>
           </div>
           
           <ScholarshipPreviewCard 
@@ -690,8 +692,8 @@ function CreateScholarship() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-lg w-full">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg text-[#3A52A6]">Scholarship Description</h3>
-              <button onClick={() => setShowDescriptionModal(false)} className="text-[#4A5568] hover:text-[#3A52A6]">
+              <h3 className="text-lg text-secondary">Scholarship Description</h3>
+              <button onClick={() => setShowDescriptionModal(false)} className="text-[#4A5568] hover:text-secondary">
                 <X size={24} />
               </button>
             </div>
@@ -713,7 +715,7 @@ function CreateScholarship() {
                   setValue('description', tempDescription);
                   setShowDescriptionModal(false);
                 }}
-                className="flex-1 py-2.5 bg-[#3A52A6] text-white rounded-lg hover:bg-[#2A4296] transition-colors"
+                className="flex-1 py-2.5 bg-[#3A52A6] text-tertiary rounded-lg hover:bg-[#2A4296] transition-colors"
               >
                 Save
               </button>
@@ -727,10 +729,10 @@ function CreateScholarship() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg text-[#3A52A6]">
+              <h3 className="text-lg text-secondary">
                 {editingFieldIndex !== null ? 'Edit Field' : 'Add Form Field'}
               </h3>
-              <button onClick={() => setShowCustomFieldModal(false)} className="text-[#4A5568] hover:text-[#3A52A6]">
+              <button onClick={() => setShowCustomFieldModal(false)} className="text-[#4A5568] hover:text-secondary">
                 <X size={24} />
               </button>
             </div>
@@ -743,7 +745,7 @@ function CreateScholarship() {
                     value={newFieldType} 
                     onValueChange={(value) => setNewFieldType(value as CustomFieldType)}
                   >
-                    <SelectTrigger className="w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]">
+                    <SelectTrigger className="w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -776,9 +778,9 @@ function CreateScholarship() {
                     type="checkbox"
                     checked={newFieldRequired}
                     onChange={(e) => setNewFieldRequired(e.target.checked)}
-                    className="w-5 h-5 rounded border-[#C4CBD5] text-[#3A52A6] focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
+                    className="w-4 h-4 rounded border-[#C4CBD5] text-secondary focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
                   />
-                  <span className="text-sm text-[#111827]">Required Field</span>
+                  <span className="text-sm text-primary">Required Field</span>
                 </label>
               </div>
 
@@ -798,9 +800,9 @@ function CreateScholarship() {
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
-                          const trimmed = dropdownOptionInput.trim();
-                          if (trimmed && !dropdownOptions.includes(trimmed)) {
-                            setDropdownOptions([...dropdownOptions, trimmed]);
+                          const normalized = normalizeText(dropdownOptionInput);
+                          if (normalized && !dropdownOptions.includes(normalized)) {
+                            setDropdownOptions([...dropdownOptions, normalized]);
                             setDropdownOptionInput('');
                           }
                         }
@@ -817,7 +819,7 @@ function CreateScholarship() {
                           setDropdownOptionInput('');
                         }
                       }}
-                      className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
+                      className="w-11 h-11 bg-[#3A52A6] text-tertiary rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
                     >
                       <Plus size={20} />
                     </button>
@@ -825,11 +827,11 @@ function CreateScholarship() {
                   {dropdownOptions.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {dropdownOptions.map((option, index) => (
-                        <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg">
+                        <span key={index} className="inline-flex items-center gap-2 px-3 py-2 border border-border bg-[#F9FAFB] text-primary text-xs rounded-md">
                           {option}
                           <button
                             onClick={() => setDropdownOptions(dropdownOptions.filter((_, i) => i !== index))}
-                            className="hover:text-[#2A4296]"
+                            className="hover:text-[#2A4296] cursor-pointer"
                           >
                             <X size={14} />
                           </button>
@@ -851,13 +853,13 @@ function CreateScholarship() {
                   setDropdownOptions([]);
                   setDropdownOptionInput('');
                 }}
-                className="flex-1 py-2.5 border border-[#C4CBD5] rounded-lg text-[#4A5568] hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2.5 border border-[#C4CBD5] cursor-pointer text-sm rounded-md text-[#4A5568] hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={saveCustomFormField}
-                className="flex-1 py-2.5 bg-[#3A52A6] text-white rounded-lg hover:bg-[#2A4296] transition-colors"
+                className="flex-1 py-2.5 bg-[#3A52A6] cursor-pointer text-sm text-tertiary rounded-md hover:bg-[#2A4296] transition-colors"
               >
                 {editingFieldIndex !== null ? 'Update' : 'Add'} Field
               </button>

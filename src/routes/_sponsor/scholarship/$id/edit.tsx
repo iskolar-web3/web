@@ -221,7 +221,7 @@ function EditScholarshipPage() {
   }, [loadScholarshipDetails]);
 
   const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
-    const iconProps = { size: 18, className: 'text-[#3A52A6]' };
+    const iconProps = { size: 18, className: 'text-secondary' };
     const icons = {
       text: <TypeIcon {...iconProps} />,
       textarea: <AlignLeft {...iconProps} />,
@@ -387,12 +387,12 @@ function EditScholarshipPage() {
         <div className="max-w-[40rem] mx-auto">
           <div className="space-y-4">
             {/* Status Skeleton */}
-            <Skeleton className="w-full h-12 rounded-lg bg-[#E5E7EB]" />
+            <Skeleton className="w-full h-12 rounded-lg bg-muted" />
 
             {/* Type and Purpose Skeleton */}
             <div className="grid grid-cols-2 gap-4">
-              <Skeleton className="w-full h-12 rounded-lg bg-[#E5E7EB]" />
-              <Skeleton className="w-full h-12 rounded-lg bg-[#E5E7EB]" />
+              <Skeleton className="w-full h-12 rounded-lg bg-muted" />
+              <Skeleton className="w-full h-12 rounded-lg bg-muted" />
             </div>
 
             {/* Image and Form Skeleton */}
@@ -400,63 +400,63 @@ function EditScholarshipPage() {
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Image Skeleton */}
                 <div className="md:w-[218px]">
-                  <Skeleton className="w-full aspect-square rounded-lg bg-[#D1D5DB]" />
+                  <Skeleton className="w-full aspect-square rounded-lg bg-muted-foreground" />
                 </div>
 
                 {/* Form Fields Skeleton */}
                 <div className="md:flex-1 space-y-4">
                   {/* Title Skeleton */}
-                  <Skeleton className="h-8 w-full bg-[#D1D5DB]" />
+                  <Skeleton className="h-8 w-full bg-muted-foreground" />
                   
                   {/* Description Button Skeleton */}
-                  <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
+                  <Skeleton className="w-full h-12 rounded-lg bg-muted-foreground" />
 
                   {/* Amount and Slot Skeleton */}
                   <div className="grid grid-cols-2 gap-4">
-                    <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
-                    <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
+                    <Skeleton className="w-full h-12 rounded-lg bg-muted-foreground" />
+                    <Skeleton className="w-full h-12 rounded-lg bg-muted-foreground" />
                   </div>
 
                   {/* Deadline Skeleton */}
-                  <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
+                  <Skeleton className="w-full h-12 rounded-lg bg-muted-foreground" />
                 </div>
               </div>
             </div>
 
             {/* Criteria Input Skeleton */}
             <div className="flex gap-2">
-              <Skeleton className="flex-1 h-12 rounded-lg bg-[#D1D5DB]" />
-              <Skeleton className="w-11 h-11 rounded-lg bg-[#D1D5DB]" />
+              <Skeleton className="flex-1 h-12 rounded-lg bg-muted-foreground" />
+              <Skeleton className="w-11 h-11 rounded-lg bg-muted-foreground" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-8 w-24 rounded-md bg-[#D1D5DB]" />
-              <Skeleton className="h-8 w-32 rounded-md bg-[#D1D5DB]" />
-              <Skeleton className="h-8 w-28 rounded-md bg-[#D1D5DB]" />
+              <Skeleton className="h-8 w-24 rounded-md bg-muted-foreground" />
+              <Skeleton className="h-8 w-32 rounded-md bg-muted-foreground" />
+              <Skeleton className="h-8 w-28 rounded-md bg-muted-foreground" />
             </div>
 
             {/* Documents Input Skeleton */}
             <div className="flex gap-2">
-              <Skeleton className="flex-1 h-12 rounded-lg bg-[#D1D5DB]" />
-              <Skeleton className="w-11 h-11 rounded-lg bg-[#D1D5DB]" />
+              <Skeleton className="flex-1 h-12 rounded-lg bg-muted-foreground" />
+              <Skeleton className="w-11 h-11 rounded-lg bg-muted-foreground" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-8 w-28 rounded-md bg-[#D1D5DB]" />
-              <Skeleton className="h-8 w-32 rounded-md bg-[#D1D5DB]" />
+              <Skeleton className="h-8 w-28 rounded-md bg-muted-foreground" />
+              <Skeleton className="h-8 w-32 rounded-md bg-muted-foreground" />
             </div>
 
             {/* Form Fields Skeleton */}
             <div>
-              <Skeleton className="h-4 w-32 mb-2 bg-[#D1D5DB]" />
-              <Skeleton className="h-3 w-64 mb-3 bg-[#D1D5DB]" />
+              <Skeleton className="h-4 w-32 mb-2 bg-muted-foreground" />
+              <Skeleton className="h-3 w-64 mb-3 bg-muted-foreground" />
               <div className="space-y-2">
-                <Skeleton className="w-full h-16 rounded-lg bg-[#D1D5DB]" />
-                <Skeleton className="w-full h-16 rounded-lg bg-[#D1D5DB]" />
+                <Skeleton className="w-full h-16 rounded-lg bg-muted-foreground" />
+                <Skeleton className="w-full h-16 rounded-lg bg-muted-foreground" />
               </div>
-              <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB] mt-3" />
+              <Skeleton className="w-full h-12 rounded-lg bg-muted-foreground mt-3" />
             </div>
 
             {/* Save Button Skeleton */}
-            <Skeleton className="w-full h-12 rounded-lg bg-[#D1D5DB]" />
+            <Skeleton className="w-full h-12 rounded-lg bg-muted-foreground" />
           </div>
         </div>
       </div>
@@ -482,7 +482,7 @@ function EditScholarshipPage() {
                 className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all ${
                   errors.status
                     ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
-                    : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                    : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                 }`}
               >
                 <SelectValue placeholder="Select status" />
@@ -508,7 +508,7 @@ function EditScholarshipPage() {
                   className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                     errors.type
                       ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
-                      : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                      : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                   }`}
                 >
                   <SelectValue placeholder="Select type" />
@@ -533,7 +533,7 @@ function EditScholarshipPage() {
                   className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                     errors.purpose
                       ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
-                      : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                      : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                   }`}
                 >
                   <SelectValue placeholder="Select purpose" />
@@ -561,7 +561,7 @@ function EditScholarshipPage() {
                           setImagePreview(null);
                           setValue('imageUrl', '', { shouldValidate: true });
                         }}
-                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70"
+                        className="absolute top-2 right-2 bg-black/50 text-tertiary rounded-full p-1.5 hover:bg-black/70"
                       >
                         <X size={14} />
                       </button>
@@ -573,7 +573,7 @@ function EditScholarshipPage() {
                       } rounded-lg text-center cursor-pointer hover:bg-[#F0F7FF] transition-colors flex flex-col items-center justify-center w-full aspect-square px-4`}
                     >
                       <Upload className="mb-3 text-[#5B7BA6]" size={40} />
-                      <p className="text-[#3A52A6] text-sm opacity-70">Click to select an image</p>
+                      <p className="text-secondary text-sm opacity-70">Click to select an image</p>
                       <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                     </div>
                   )}
@@ -593,7 +593,7 @@ function EditScholarshipPage() {
                         disabled={saving}
                         className={`w-full text-2xl border-b-2 ${
                           errors.title ? 'border-[#EF4444]' : 'border-transparent'
-                        } bg-transparent pb-2 focus:outline-none focus:border-[#3A52A6] text-[#111827]`}
+                        } bg-transparent pb-2 focus:outline-none focus:border-[#3A52A6] text-primary`}
                       />
                     )}
                   />
@@ -607,7 +607,7 @@ function EditScholarshipPage() {
                     setTempDescription(description || '');
                     setShowDescriptionModal(true);
                   }}
-                  className="w-full cursor-pointer flex items-center gap-2 px-4 py-3 rounded-lg border bg-[#F3F4F6] text-[#6B7280] text-sm hover:bg-[#E5E7EB] transition-colors"
+                  className="w-full cursor-pointer flex items-center gap-2 px-4 py-3 rounded-lg border bg-[#F3F4F6] text-[#6B7280] text-sm hover:bg-muted transition-colors"
                 >
                   <span className="text-[#8B9CB5]">☰</span>
                   {description ? 'Edit Description' : 'Add Description'}
@@ -664,7 +664,7 @@ function EditScholarshipPage() {
                             type="button"
                             disabled={saving}
                             className={`w-full px-4 py-3 text-sm border rounded-lg bg-[#F8F9FC] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] flex items-center justify-between ${
-                              field.value ? 'text-[#111827]' : 'text-gray-400'
+                              field.value ? 'text-primary' : 'text-gray-400'
                             } ${errors.applicationDeadline ? 'border-[#EF4444]' : 'border-[#C4CBD5]'}`}
                           >
                             <span>
@@ -719,7 +719,7 @@ function EditScholarshipPage() {
                 type="button"
                 disabled={saving}
                 onClick={addCriterion}
-                className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
+                className="w-11 h-11 bg-[#3A52A6] text-tertiary rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
               >
                 <Plus size={20} />
               </button>
@@ -755,7 +755,7 @@ function EditScholarshipPage() {
                 type="button"
                 disabled={saving}
                 onClick={addDocument}
-                className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
+                className="w-11 h-11 bg-[#3A52A6] text-tertiary rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
               >
                 <Plus size={20} />
               </button>
@@ -792,7 +792,7 @@ function EditScholarshipPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-[#111827]">{field.label}</span>
+                        <span className="text-sm text-primary">{field.label}</span>
                         {field.required && (
                           <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded">Required</span>
                         )}
@@ -800,7 +800,7 @@ function EditScholarshipPage() {
                       <p className="text-xs text-[#6B7280]">{getFieldTypeLabel(field.type as CustomFieldType)}</p>
                     </div>
                     <button disabled={saving} onClick={() => openCustomFormModal(index)} className="p-1.5 hover:bg-gray-100 rounded">
-                      <Edit2 size={16} className="text-[#3A52A6]" />
+                      <Edit2 size={16} className="text-secondary" />
                     </button>
                     <button disabled={saving} onClick={() => removeCustomFormField(index)} className="p-1.5 hover:bg-gray-100 rounded">
                       <Trash2 size={16} className="text-[#EF4444]" />
@@ -816,7 +816,7 @@ function EditScholarshipPage() {
               onClick={() => openCustomFormModal()}
               className={`w-full flex cursor-pointer items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
                 errors.customFormFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
-              } bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
+              } bg-[#E0ECFF] text-secondary text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
             >
               <Plus size={20} />
               {customFormFields.length === 0 ? 'Add Form Field' : 'Add Another Field'}
@@ -828,7 +828,7 @@ function EditScholarshipPage() {
 
           <button
             onClick={handleSubmit(onSubmit)}
-            className={`w-full py-3 cursor-pointer bg-[#EFA508] my-2 text-white rounded-lg hover:bg-[#D89407] transition-colors ${
+            className={`w-full py-3 cursor-pointer bg-[#EFA508] my-2 text-tertiary rounded-lg hover:bg-[#D89407] transition-colors ${
               saving && 'opacity-60 cursor-not-allowed'
             }`}
             disabled={saving}
@@ -848,8 +848,8 @@ function EditScholarshipPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-lg w-full">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg text-[#3A52A6]">Scholarship Description</h3>
-              <button onClick={() => setShowDescriptionModal(false)} className="text-[#4A5568] cursor-pointer hover:text-[#3A52A6]">
+              <h3 className="text-lg text-secondary">Scholarship Description</h3>
+              <button onClick={() => setShowDescriptionModal(false)} className="text-[#4A5568] cursor-pointer hover:text-secondary">
                 <X size={22} />
               </button>
             </div>
@@ -871,7 +871,7 @@ function EditScholarshipPage() {
                   setValue('description', tempDescription);
                   setShowDescriptionModal(false);
                 }}
-                className="flex-1 py-2.5 cursor-pointer bg-[#3A52A6] text-sm text-[#F0F7FF] rounded-lg hover:bg-[#2A4296] transition-colors"
+                className="flex-1 py-2.5 cursor-pointer bg-[#3A52A6] text-sm text-tertiary rounded-lg hover:bg-[#2A4296] transition-colors"
               >
                 Save
               </button>
@@ -884,10 +884,10 @@ function EditScholarshipPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg text-[#3A52A6]">
+              <h3 className="text-lg text-secondary">
                 {editingFieldIndex !== null ? 'Edit Field' : 'Add Form Field'}
               </h3>
-              <button onClick={resetCustomFieldState} className="text-[#4A5568] hover:text-[#3A52A6]">
+              <button onClick={resetCustomFieldState} className="text-[#4A5568] hover:text-secondary">
                 <X size={24} />
               </button>
             </div>
@@ -896,7 +896,7 @@ function EditScholarshipPage() {
               <div>
                 <label className="block text-sm text-[#4A5568] mb-2">Field Type</label>
                 <Select value={newFieldType} onValueChange={(value) => setNewFieldType(value as CustomFieldType)}>
-                  <SelectTrigger className="w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]">
+                  <SelectTrigger className="w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -928,9 +928,9 @@ function EditScholarshipPage() {
                     type="checkbox"
                     checked={newFieldRequired}
                     onChange={(event) => setNewFieldRequired(event.target.checked)}
-                    className="w-5 h-5 rounded border-[#C4CBD5] text-[#3A52A6] focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
+                    className="w-5 h-5 rounded border-[#C4CBD5] text-secondary focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
                   />
-                  <span className="text-sm text-[#111827]">Required Field</span>
+                  <span className="text-sm text-primary">Required Field</span>
                 </label>
               </div>
 
@@ -969,7 +969,7 @@ function EditScholarshipPage() {
                           setDropdownOptionInput('');
                         }
                       }}
-                      className="w-11 h-11 bg-[#3A52A6] text-white rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
+                      className="w-11 h-11 bg-[#3A52A6] text-tertiary rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
                     >
                       <Plus size={20} />
                     </button>
@@ -977,7 +977,7 @@ function EditScholarshipPage() {
                   {dropdownOptions.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {dropdownOptions.map((option, index) => (
-                        <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#E0ECFF] text-[#3A52A6] text-sm rounded-lg">
+                        <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#E0ECFF] text-secondary text-sm rounded-lg">
                           {option}
                           <button
                             onClick={() => setDropdownOptions(dropdownOptions.filter((_, i) => i !== index))}
@@ -1002,7 +1002,7 @@ function EditScholarshipPage() {
               </button>
               <button
                 onClick={saveCustomFormField}
-                className="flex-1 py-2.5 cursor-pointer bg-[#3A52A6] text-white text-sm rounded-lg hover:bg-[#2A4296] transition-colors"
+                className="flex-1 py-2.5 cursor-pointer bg-[#3A52A6] text-tertiary text-sm rounded-lg hover:bg-[#2A4296] transition-colors"
               >
                 {editingFieldIndex !== null ? 'Update' : 'Add'} Field
               </button>

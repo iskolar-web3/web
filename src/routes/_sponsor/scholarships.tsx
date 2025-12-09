@@ -220,9 +220,9 @@ function Scholarships() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-[#FEFEFD] rounded-md text-center p-2 border border-[#D3DCF6] shadow-sm"
+          className="bg-card rounded-md text-center p-2 border border-[#D3DCF6] shadow-sm"
         >
-          <p className="text-base text-[#111827] tracking-wide">My Scholarships</p>
+          <p className="text-base text-primary tracking-wide">My Scholarships</p>
         </motion.div>
 
         <motion.div
@@ -233,7 +233,7 @@ function Scholarships() {
         >
           <button
             onClick={() => setShowFiltersModal(true)}
-            className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[#3A52A6] text-white rounded-md hover:bg-[#2f4389] transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[#3A52A6] text-tertiary rounded-md hover:bg-[#2f4389] transition-colors"
           >
             <Filter size={16} />
             <span className="text-xs md:text-md">Filters</span>
@@ -260,13 +260,13 @@ function Scholarships() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="lg:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 max-h-[85vh] overflow-hidden"
+              className="lg:hidden fixed bottom-0 left-0 right-0 bg-card rounded-t-2xl shadow-2xl z-50 max-h-[85vh] overflow-hidden"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] sticky top-0 bg-white">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-white">
                 <div className="flex items-center gap-2">
-                  <Filter size={18} className="text-[#111827]"/>
-                  <h2 className="text-base text-[#111827]">Filters</h2>
+                  <Filter size={18} className="text-primary"/>
+                  <h2 className="text-base text-primary">Filters</h2>
                 </div>
                 <button
                   onClick={() => setShowFiltersModal(false)}
@@ -311,7 +311,7 @@ function Scholarships() {
                 />
 
                 <div className="mb-4">
-                  <label className="block text-xs text-[#111827] mb-2">Applications</label>
+                  <label className="block text-xs text-primary mb-2">Applications</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -320,7 +320,7 @@ function Scholarships() {
                       onChange={(event) =>
                         setApplicationsRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -330,13 +330,13 @@ function Scholarships() {
                       onChange={(event) =>
                         setApplicationsRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-xs text-[#111827] mb-2">Amount per Scholar</label>
+                  <label className="block text-xs text-primary mb-2">Amount per Scholar</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -345,7 +345,7 @@ function Scholarships() {
                       onChange={(event) =>
                         setAmountRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -355,13 +355,13 @@ function Scholarships() {
                       onChange={(event) =>
                         setAmountRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 <div className="mb-2">
-                  <label className="block text-xs text-[#111827] mb-2">Slots</label>
+                  <label className="block text-xs text-primary mb-2">Slots</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -370,7 +370,7 @@ function Scholarships() {
                       onChange={(event) =>
                         setSlotRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -380,7 +380,7 @@ function Scholarships() {
                       onChange={(event) =>
                         setSlotRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -399,17 +399,17 @@ function Scholarships() {
             className="hidden lg:block"
           >
             <div className='h-fit sticky top-4'>
-              <div className="bg-[#FEFEFD] rounded-lg text-center p-4 border border-[#D3DCF6] shadow-sm mb-2">
-                <p className="text-xl text-[#111827] tracking-wide">My Scholarships</p>
+              <div className="bg-card rounded-md text-center p-4 border border-[#D3DCF6] shadow-sm mb-2">
+                <p className="text-xl text-primary tracking-wide">My Scholarships</p>
               </div>
 
               <div
-                className="bg-[#FEFEFD] rounded-lg border border-[#D3DCF6] shadow-[0_20px_40px_rgba(17,24,39,0.04)]"
+                className="bg-card rounded-md border border-[#D3DCF6] shadow-[0_20px_40px_rgba(17,24,39,0.04)]"
               >
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-6">
-                    <Filter size={20} className="text-[#111827]" />
-                    <h2 className="text-md text-[#111827]">Filters</h2>
+                    <Filter size={20} className="text-primary" />
+                    <h2 className="text-md text-primary">Filters</h2>
                   </div>
 
                   <SponsorFilterSelect
@@ -445,7 +445,7 @@ function Scholarships() {
                   />
 
                   <div className="mb-6">
-                    <label className="block text-sm text-[#111827] mb-2">Applications</label>
+                    <label className="block text-sm text-primary mb-2">Applications</label>
                     <div className="flex gap-2">
                       <input
                         type="number"
@@ -454,7 +454,7 @@ function Scholarships() {
                         onChange={(event) =>
                           setApplicationsRange((prev) => ({ ...prev, min: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                       <span className="flex items-center text-[#6B7280]">to</span>
                       <input
@@ -464,13 +464,13 @@ function Scholarships() {
                         onChange={(event) =>
                           setApplicationsRange((prev) => ({ ...prev, max: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                     </div>
                   </div>
 
                   <div className="mb-6">
-                    <label className="block text-sm text-[#111827] mb-2">Amount per Scholar</label>
+                    <label className="block text-sm text-primary mb-2">Amount per Scholar</label>
                     <div className="flex gap-2">
                       <input
                         type="number"
@@ -479,7 +479,7 @@ function Scholarships() {
                         onChange={(event) =>
                           setAmountRange((prev) => ({ ...prev, min: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                       <span className="flex items-center text-[#6B7280]">to</span>
                       <input
@@ -489,13 +489,13 @@ function Scholarships() {
                         onChange={(event) =>
                           setAmountRange((prev) => ({ ...prev, max: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm text-[#111827] mb-2">Slots</label>
+                    <label className="block text-sm text-primary mb-2">Slots</label>
                     <div className="flex gap-2">
                       <input
                         type="number"
@@ -504,7 +504,7 @@ function Scholarships() {
                         onChange={(event) =>
                           setSlotRange((prev) => ({ ...prev, min: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                       <span className="flex items-center text-[#6B7280]">to</span>
                       <input
@@ -514,7 +514,7 @@ function Scholarships() {
                         onChange={(event) =>
                           setSlotRange((prev) => ({ ...prev, max: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -543,7 +543,7 @@ function Scholarships() {
                   </p>
                   <button
                     onClick={() => navigate({ to: '/create' })}
-                    className="inline-flex items-center cursor-pointer gap-2 px-4 py-2.5 bg-[#9CA3AF] text-[#F0F7FF] text-sm md:text-base rounded-md hover:bg-[#D1D5DB] hover:text-white transition-colors"
+                    className="inline-flex items-center cursor-pointer gap-2 px-4 py-2.5 bg-[#9CA3AF] text-tertiary text-sm md:text-base rounded-md hover:bg-muted-foreground hover:text-tertiary transition-colors"
                   >
                     <Plus size={18} />
                     Create Scholarship
@@ -591,7 +591,7 @@ function Scholarships() {
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full text-[#EF4444] mb-1">
                 <AlertCircle size={36}/>
               </div>
-              <h3 className="text-lg text-[#111827] mb-2">Delete Scholarship</h3>
+              <h3 className="text-lg text-primary mb-2">Delete Scholarship</h3>
               <p className="text-sm text-[#6B7280] mb-6">
                 Are you sure you want to delete "<strong>{scholarshipToDelete.title}</strong>"? This action cannot be undone.
               </p>
@@ -612,7 +612,7 @@ function Scholarships() {
               <button
                 onClick={confirmDelete}
                 disabled={isDeleting}
-                className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-[#F0F7FF] rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+                className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-tertiary rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
                   isDeleting && "opacity-60 cursor-not-allowed"
                 }`}
               >

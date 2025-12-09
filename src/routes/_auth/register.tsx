@@ -169,7 +169,7 @@ function RegisterPage(): JSX.Element {
               Already have an account?{" "}
               <Link 
                 to="/login"
-                className="text-[#3A52A6] hover:underline"
+                className="text-secondary hover:underline"
               >
                 Sign in
               </Link>
@@ -178,7 +178,7 @@ function RegisterPage(): JSX.Element {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
             <div>
-              <label htmlFor="email" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="email" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Email
               </label>
               <input
@@ -187,7 +187,7 @@ function RegisterPage(): JSX.Element {
                 placeholder="Enter Email"
                 {...register("email")}
                 disabled={loading}
-                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                   errors.email
                     ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                     : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -201,7 +201,7 @@ function RegisterPage(): JSX.Element {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="password" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -211,7 +211,7 @@ function RegisterPage(): JSX.Element {
                   placeholder="Enter Password"
                   {...register("password")}
                   disabled={loading}
-                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                     errors.password
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                       : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -220,7 +220,7 @@ function RegisterPage(): JSX.Element {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-[#3A52A6] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-secondary transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -238,7 +238,7 @@ function RegisterPage(): JSX.Element {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="confirmPassword" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Confirm Password
               </label>
               <div className="relative">
@@ -248,7 +248,7 @@ function RegisterPage(): JSX.Element {
                   placeholder="Confirm Password"
                   {...register("confirmPassword")}
                   disabled={loading}
-                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                     errors.confirmPassword
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                       : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -257,7 +257,7 @@ function RegisterPage(): JSX.Element {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-[#3A52A6] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-secondary transition-colors"
                   tabIndex={-1}
                 >
                   {showConfirmPassword ? (
@@ -307,7 +307,7 @@ function RegisterPage(): JSX.Element {
               type="button"
               className="w-12 h-12 flex items-center justify-center rounded-full hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.25)] transition-all bg-[#F0F7FF] shadow-[0_2px_4px_0_rgba(0,0,0,0.25)] cursor-pointer"
             >
-              <SiGoogle size={24} className="text-[#3A52A6] sm:w-6 sm:h-6" />
+              <SiGoogle size={24} className="text-secondary sm:w-6 sm:h-6" />
             </button>
           </div>
         </div>

@@ -153,7 +153,7 @@ export default function Preloader({ onComplete, minDisplayTime = 2000 }: Preload
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-xl md:text-2xl text-[#3A52A6] mt-8">
+                <h2 className="text-xl md:text-2xl text-secondary mt-8">
                   {loadingMessages[currentMessage]}
                 </h2>
               </motion.div>

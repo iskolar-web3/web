@@ -21,7 +21,7 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
   return (
     <div
       onClick={onClick}
-      className="bg-[#FEFEFD] rounded-xl overflow-hidden border border-[#D3DCF6] cursor-pointer transition-transform duration-200 hover:scale-98"
+      className="bg-card rounded-xl overflow-hidden border border-[#D3DCF6] cursor-pointer transition-transform duration-200 hover:scale-98"
     >
       <div className="bg-[#3A52A6]">
         <div className="flex">
@@ -35,13 +35,13 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
               />
             ) : (
               <div className="w-full h-full bg-white/20 flex items-center justify-center">
-                <Images className="text-white/60" size={32} />
+                <Images className="text-tertiary/60" size={32} />
               </div>
             )}
           </div>
 
           {/* Info */}
-          <div className="flex-1 text-white px-4 py-2">
+          <div className="flex-1 text-tertiary px-4 py-2">
             <h3 className="text-xl mb-1 line-clamp-1">
               {scholarship.title || 'Scholarship Title'}
             </h3>
@@ -49,12 +49,12 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
             {(scholarship.type || scholarship.purpose) && (
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 {scholarship.type && (
-                  <span className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[11px] rounded">
+                  <span className="px-2 py-0.5 bg-white/90 text-secondary text-[11px] rounded">
                     {scholarship.type === 'merit_based' ? 'Merit-Based' : 'Skill-Based'}
                   </span>
                 )}
                 {scholarship.purpose && (
-                  <span className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[11px] rounded">
+                  <span className="px-2 py-0.5 bg-white/90 text-secondary text-[11px] rounded">
                     {scholarship.purpose === 'allowance' ? 'Allowance' : 'Tuition'}
                   </span>
                 )}
@@ -89,12 +89,12 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
       <div className="px-4 pb-4 pt-2">
         {/* Amount & Slots */}
         <div className="grid grid-cols-2 gap-2 mt-2 mb-4">
-          <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+          <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
             <div className="flex items-center gap-1 text-[#6B7280] text-sm mb-1">
               <Coins size={16} />
               <span>Amount</span>
             </div>
-            <p className="text-base text-[#111827]">
+            <p className="text-base text-primary">
               {amountPerScholar !== null
                 ? `₱ ${amountPerScholar.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
@@ -110,12 +110,12 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
             <p className="text-xs text-[#6B7280]">per scholar</p>
           </div>
 
-          <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+          <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
             <div className="flex items-center gap-1 text-[#6B7280] text-sm mb-1">
               <Users size={16} />
               <span>Slots</span>
             </div>
-            <p className="text-base text-[#111827]">{scholarship.total_slot || '0'}</p>
+            <p className="text-base text-primary">{scholarship.total_slot || '0'}</p>
             <p className="text-xs text-[#6B7280]">scholars</p>
           </div>
         </div>
@@ -129,13 +129,13 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
                 {scholarship.criteria.slice(0, 2).map((c, i) => (
                   <span
                     key={i}
-                    className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]"
+                    className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-border"
                   >
                     {c}
                   </span>
                 ))}
                 {scholarship.criteria.length > 2 && (
-                  <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]">
+                  <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-border">
                     +{scholarship.criteria.length - 2} more
                   </span>
                 )}
@@ -152,13 +152,13 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
                 {scholarship.required_documents.slice(0, 2).map((d, i) => (
                   <span
                     key={i}
-                    className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]"
+                    className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-border"
                   >
                     {d}
                   </span>
                 ))}
                 {scholarship.required_documents.length > 2 && (
-                  <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-[#E5E7EB]">
+                  <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-border">
                     +{scholarship.required_documents.length - 2} more
                   </span>
                 )}

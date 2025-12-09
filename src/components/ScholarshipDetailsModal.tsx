@@ -82,16 +82,16 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             stiffness: 300,
             duration: 0.1
           }}
-          className="relative w-full max-w-[30rem] h-full bg-[#FEFEFD] shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
+          className="relative w-full max-w-[30rem] h-full bg-card shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
         >
           {/* Header */}
-          <div className="sticky top-0 bg-[white] border-b border-[#E5E7EB] px-5 py-3 flex items-center justify-between z-10">
-            <h2 className="text-lg text-[#111827] flex items-center gap-2">
+          <div className="sticky top-0 bg-card border-b border-border px-5 py-3 flex items-center justify-between z-10">
+            <h2 className="text-lg text-primary flex items-center gap-2">
               <button
                 onClick={handleClose}
                 className="hover:bg-blue-100 rounded-lg transition-colors"
               >
-                <ChevronsRight size={20} className="text-[#111827]" />
+                <ChevronsRight size={20} className="text-primary" />
               </button>
               Scholarship Details
             </h2>
@@ -124,12 +124,12 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             </div>
 
             {/* Title and Badges */}
-            <h1 className="text-[26px] text-[#111827] mb-2">{scholarship.title}</h1>
+            <h1 className="text-[26px] text-primary mb-2">{scholarship.title}</h1>
             <div className="flex gap-2 mb-4">
-              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                 {scholarship.type}
               </span>
-              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                 {scholarship.purpose}
               </span>
             </div>
@@ -152,12 +152,12 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
 
             {/* Amount and Slots */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+              <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
                 <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Coins size={16} />
                   <span className="text-xs ">Amount</span>
                 </div>
-                <p className="text-base text-[#111827] mb-0.5">
+                <p className="text-base text-primary mb-0.5">
                   {amountPerScholar !== null
                     ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     : '₱0.00'}
@@ -165,12 +165,12 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
                 <p className="text-xs text-[#6B7280]">per scholar</p>
               </div>
 
-              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+              <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
                 <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Users size={16} />
                   <span className="text-xs ">Slots</span>
                 </div>
-                <p className="text-base text-[#111827] mb-0.5">{scholarship.total_slot}</p>
+                <p className="text-base text-primary mb-0.5">{scholarship.total_slot}</p>
                 <p className="text-xs text-[#6B7280]">scholars</p>
               </div>
             </div>
@@ -178,19 +178,19 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             {/* Description */}
             {scholarship.description && (
               <div className="mb-6">
-                <h3 className="text-sm text-[#111827] mb-2">About Scholarship</h3>
+                <h3 className="text-sm text-primary mb-2">About Scholarship</h3>
                 <p className="text-[#6B7280] text-xs leading-relaxed">{scholarship.description}</p>
               </div>
             )}
 
             {/* Eligibility Criteria */}
             <div className="mb-6">
-              <h3 className="text-sm text-[#111827] mb-2">Eligibility Criteria</h3>
+              <h3 className="text-sm text-primary mb-2">Eligibility Criteria</h3>
               <div className="flex flex-wrap gap-2">
                 {scholarship.criteria?.map((criterion: string, i: number) => (
                   <span
                     key={i}
-                    className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB]"
+                    className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border"
                   >
                     {criterion}
                   </span>
@@ -200,12 +200,12 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
 
             {/* Required Documents */}
             <div className="mb-6">
-              <h3 className="text-sm text-[#111827] mb-2">Required Documents</h3>
+              <h3 className="text-sm text-primary mb-2">Required Documents</h3>
               <div className="grid grid-cols-2 gap-2">
                 {scholarship.required_documents?.map((doc: string, i: number) => (
                   <div
                     key={i}
-                    className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB] text-center"
+                    className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border text-center"
                   >
                     {doc}
                   </div>
@@ -224,7 +224,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             ) : (
               <button
                 onClick={handleApply} 
-                className="w-full bg-[#3A52A6] cursor-pointer text-[#F0F7FF] py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:bg-[#2F4189] hover:shadow-lg hover:shadow-[#3A52A6]/30 active:scale-[0.98] shadow-md mt-1.5 mb-2"
+                className="w-full bg-[#3A52A6] cursor-pointer text-tertiary py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:bg-[#2F4189] hover:shadow-lg hover:shadow-[#3A52A6]/30 active:scale-[0.98] shadow-md mt-1.5 mb-2"
               >
                 Apply Now
                 <span>→</span>

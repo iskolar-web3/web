@@ -110,7 +110,7 @@ function WelcomePage() {
       </motion.div>
 
       {/* Welcome Text with Typewriter Effect */}
-      <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl text-[#3A52A6] mb-2">
+      <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl text-secondary mb-2">
         {titleText.split("").map((char, index) => (
           <motion.span
             key={`title-${index}`}
@@ -128,7 +128,7 @@ function WelcomePage() {
       </h1>
 
       {/* Subtitle with Typewriter Effect */}
-      <p className="text-[#3A52A6] text-base sm:text-md md:text-lg lg:text-xl mb-6 sm:mb-7 md:mb-8">
+      <p className="text-secondary text-base sm:text-md md:text-lg lg:text-xl mb-6 sm:mb-7 md:mb-8">
         {subtitleText.split("").map((char, index) => (
           <motion.span
             key={`subtitle-${index}`}
@@ -151,7 +151,7 @@ function WelcomePage() {
           to="/role-selection"
         >
           <button
-            className="bg-[#EFA508] cursor-pointer text-xs sm:text-sm md:text-sm text-[#F0F7FF] py-2.5 px-16 sm:py-3 sm:px-22 md:py-3 md:px-28 lg:px-30 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+            className="bg-[#EFA508] cursor-pointer text-xs sm:text-sm md:text-sm text-tertiary py-2.5 px-16 sm:py-3 sm:px-22 md:py-3 md:px-28 lg:px-30 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             Get Started
           </button>
