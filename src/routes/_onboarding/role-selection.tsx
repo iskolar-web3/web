@@ -42,6 +42,12 @@ function RoleSelection() {
     message: "",
   });
 
+  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  };
+
   const roles = [
     {
       id: 'student',
@@ -180,13 +186,7 @@ function RoleSelection() {
     const validation = validateSelection();
     
     if (!validation.isValid) {
-      setToastConfig({
-        type: 'error',
-        title: 'Validation Error',
-        message: validation.errorMessage || 'Please make a valid selection',
-      });
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000);
+      showToastMessage('error', `Validation Error`, validation.errorMessage || 'Please make a valid selection', 2500);
       return;
     }
 
@@ -215,22 +215,15 @@ function RoleSelection() {
     } else {
       return; 
     }
+    
+    setLoading(false);
 
-    setToastConfig({
-      type: 'success',
-      title: 'Success',
-      message: roleMessage,
+    showToastMessage('success', `Success`, roleMessage, 1250);
+
+    navigate({ 
+      to: '/profile-setup',
+      search: { role: role }
     });
-    setShowToast(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      setShowToast(false);
-      navigate({ 
-        to: '/profile-setup',
-        search: { role: role }
-      });
-    }, 1000);
   };
 
   const canContinue = selectedRole && (selectedRole !== 'sponsor' || selectedSubRole);

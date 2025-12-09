@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Loader2, Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
+import { Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
@@ -8,6 +8,8 @@ import type { Application } from '@/types/application.types';
 import { ApplicationDetailsModal, statusStyles } from '@/components/ApplicationDetailsModal';
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
 import { Skeleton } from '@/components/ui/skeleton';
+import { handleError } from '@/lib/errorHandler';
+import { logger } from "@/lib/logger";
 // import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 
 export const Route = createFileRoute('/_student/home')({
@@ -128,7 +130,9 @@ function Home() {
   //       );
   //     }
   //   } catch (error) {
-  //     console.error('Failed to fetch applications', error);
+  //      const handled = handleError(error, 'Failed to connect to server.');
+  //      logger.error('Fetch applications error:', handled.raw);
+  //      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
   //   } finally {
   //     setIsLoading(false);
   //     setIsRefreshing(false);

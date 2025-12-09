@@ -9,7 +9,8 @@ import Toast from '@/components/Toast';
 import type { Scholarship } from '@/types/scholarship.types';
 import ScholarshipDetailsModal from '@/components/ScholarshipDetailsModal';
 import { usePageTitle } from "@/hooks/usePageTitle"
-import { scholarshipManagementService } from '@/services/scholarship-management.service';
+import { handleError } from '@/lib/errorHandler';
+import { logger } from "@/lib/logger";
 
 export const Route = createFileRoute('/_student/discover')({
   component: DiscoverScholarship,
@@ -26,10 +27,10 @@ function DiscoverScholarship() {
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [_scholarships, setScholarships] = useState<Scholarship[]>([]);
 
   const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  // const [refreshing, setRefreshing] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: 'success' as 'success' | 'error',
@@ -56,10 +57,12 @@ function DiscoverScholarship() {
       //   showToastMessage('error', 'Error', response.message, 2500);
       // }
     } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to connect to server.', 2500);
+      const handled = handleError(error, 'Failed to connect to server.');
+      logger.error('Fetch scholarships error:', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
-      setRefreshing(false);
+      // setRefreshing(false);
     }
   }, []);
 
@@ -68,7 +71,7 @@ function DiscoverScholarship() {
   }, [fetchScholarships]);
 
   // Mock data
-  const mockScholarship: Scholarship[] = Array(23).fill(null).map((_, i) => ({
+  const mockScholarship: Scholarship[] = Array(23).fill(null).map((_, _i) => ({
     scholarship_id: '1',
     sponsor_id: '1',
     status: 'active',

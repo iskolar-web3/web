@@ -1,4 +1,6 @@
 import { authService } from './auth.service';
+import { handleError, safeParseJSON } from '@/lib/errorHandler';
+import { logger } from '@/lib/logger';
 import type { Scholarship } from '@/types/scholarship.types';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -65,10 +67,11 @@ class ScholarshipApplicationService {
         application: response.data?.application,
       };
     } catch (error) {
-      console.error('Submit application error:', error);
+      const handled = handleError(error, 'Failed to submit application');
+      logger.error('Submit application error:', handled.raw);
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to submit application',
+        message: handled.message,
       };
     }
   }
@@ -124,18 +127,19 @@ class ScholarshipApplicationService {
         }
       );
 
-      const result = await response.json();
+      const result = await safeParseJSON<{ message?: string; file_urls?: string[] }>(response);
 
       return {
         success: response.ok,
-        message: result.message,
-        file_urls: result.file_urls,
+        message: result?.message || (response.ok ? 'Files uploaded successfully' : 'Failed to upload files'),
+        file_urls: result?.file_urls,
       };
     } catch (error) {
-      console.error('File upload error:', error);
+      const handled = handleError(error, 'Failed to upload files');
+      logger.error('File upload error:', handled.raw);
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to upload files',
+        message: handled.message,
       };
     }
   }
@@ -156,10 +160,11 @@ class ScholarshipApplicationService {
         applications: response.data?.applications,
       };
     } catch (error) {
-      console.error('Fetch applications error:', error);
+      const handled = handleError(error, 'Failed to fetch applications');
+      logger.error('Fetch applications error:', handled.raw);
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch applications',
+        message: handled.message,
       };
     }
   }
@@ -183,10 +188,11 @@ class ScholarshipApplicationService {
         application: response.data?.application,
       };
     } catch (error) {
-      console.error('Fetch application error:', error);
+      const handled = handleError(error, 'Failed to fetch application');
+      logger.error('Fetch application error:', handled.raw);
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch application',
+        message: handled.message,
       };
     }
   }
@@ -212,11 +218,12 @@ class ScholarshipApplicationService {
         application: response.data?.application,
       };
     } catch (error) {
-      console.error('Check application error:', error);
+      const handled = handleError(error, 'Failed to check application');
+      logger.error('Check application error:', handled.raw);
       return {
         success: false,
         exists: false,
-        message: error instanceof Error ? error.message : 'Failed to check application',
+        message: handled.message,
       };
     }
   }
@@ -240,10 +247,11 @@ class ScholarshipApplicationService {
         applications: response.data?.applications,
       };
     } catch (error) {
-      console.error('Fetch scholarship applications error:', error);
+      const handled = handleError(error, 'Failed to fetch applications');
+      logger.error('Fetch scholarship applications error:', handled.raw);
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch applications',
+        message: handled.message,
       };
     }
   }
@@ -275,10 +283,11 @@ class ScholarshipApplicationService {
         application: response.data?.application,
       };
     } catch (error) {
-      console.error('Update application status error:', error);
+      const handled = handleError(error, 'Failed to update application status');
+      logger.error('Update application status error:', handled.raw);
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to update application status',
+        message: handled.message,
       };
     }
   }
@@ -313,10 +322,11 @@ class ScholarshipApplicationService {
         applications: response.data?.applications,
       };
     } catch (error) {
-      console.error('Bulk update application status error:', error);
+      const handled = handleError(error, 'Failed to update application statuses');
+      logger.error('Bulk update application status error:', handled.raw);
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to update application statuses',
+        message: handled.message,
       };
     }
   }

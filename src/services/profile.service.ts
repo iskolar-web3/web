@@ -1,6 +1,8 @@
 import { authService } from './auth.service';
+import { logger } from '@/lib/logger';
+import { handleError } from '@/lib/errorHandler';
 
-const API_URL = import.meta.env.VITE_API_URL;
+
 
 export interface StudentProfileData {
   role: string;
@@ -45,80 +47,134 @@ export interface SchoolProfileData {
 
 class ProfileService {
   async setupStudentProfile(profileData: StudentProfileData): Promise<{ success: boolean; message: string; student?: any }> {
-    const response = await authService.authenticatedRequest('/onboarding/setup-student-profile', {
-      method: 'POST',
-      body: JSON.stringify(profileData)
-    });
+    try {
+      const response = await authService.authenticatedRequest('/onboarding/setup-student-profile', {
+        method: 'POST',
+        body: JSON.stringify(profileData)
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      student: response.data?.student
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        student: response.data?.student
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Setup student profile error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async setupIndividualSponsorProfile(profileData: IndividualSponsorProfileData): Promise<{ success: boolean; message: string; individual_sponsor?: any }> {
-    const response = await authService.authenticatedRequest('/onboarding/setup-individual-sponsor-profile', {
-      method: 'POST',
-      body: JSON.stringify(profileData)
-    });
+    try {
+      const response = await authService.authenticatedRequest('/onboarding/setup-individual-sponsor-profile', {
+        method: 'POST',
+        body: JSON.stringify(profileData)
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      individual_sponsor: response.data?.individual_sponsor
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        individual_sponsor: response.data?.individual_sponsor
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Setup individual sponsor profile error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async setupOrganizationSponsorProfile(profileData: OrganizationSponsorProfileData): Promise<{ success: boolean; message: string; organization_sponsor?: any }> {
-    const response = await authService.authenticatedRequest('/onboarding/setup-organization-sponsor-profile', {
-      method: 'POST',
-      body: JSON.stringify(profileData)
-    });
+    try {
+      const response = await authService.authenticatedRequest('/onboarding/setup-organization-sponsor-profile', {
+        method: 'POST',
+        body: JSON.stringify(profileData)
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      organization_sponsor: response.data?.organization_sponsor
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        organization_sponsor: response.data?.organization_sponsor
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Setup organization sponsor profile error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async setupGovernmentSponsorProfile(profileData: GovernmentSponsorProfileData): Promise<{ success: boolean; message: string; government_sponsor?: any }> {
-    const response = await authService.authenticatedRequest('/onboarding/setup-government-sponsor-profile', {
-      method: 'POST',
-      body: JSON.stringify(profileData)
-    });
+    try {
+      const response = await authService.authenticatedRequest('/onboarding/setup-government-sponsor-profile', {
+        method: 'POST',
+        body: JSON.stringify(profileData)
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      government_sponsor: response.data?.government_sponsor
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        government_sponsor: response.data?.government_sponsor
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Setup government sponsor profile error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async setupSchoolProfile(profileData: SchoolProfileData): Promise<{ success: boolean; message: string; school?: any }> {
-    const response = await authService.authenticatedRequest('/onboarding/setup-school-profile', {
-      method: 'POST',
-      body: JSON.stringify(profileData)
-    });
+    try {
+      const response = await authService.authenticatedRequest('/onboarding/setup-school-profile', {
+        method: 'POST',
+        body: JSON.stringify(profileData)
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      school: response.data?.school
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        school: response.data?.school
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Setup school profile error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async getProfileStatus(): Promise<{ success: boolean; message: string; user?: any }> {
-    const response = await authService.authenticatedRequest('/onboarding/profile-status', {
-      method: 'POST'
-    });
+    try {
+      const response = await authService.authenticatedRequest('/onboarding/profile-status', {
+        method: 'POST'
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      user: response.data?.user
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        user: response.data?.user
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Get profile status error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 }
 

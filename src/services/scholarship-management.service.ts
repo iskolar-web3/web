@@ -1,7 +1,9 @@
 import { authService } from './auth.service';
 import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
+import { logger } from '@/lib/logger';
+import { handleError } from '@/lib/errorHandler';
 
-const API_URL = import.meta.env.VITE_API_URL;
+
 
 interface ScholarshipData {
   type?: string;
@@ -22,16 +24,25 @@ class ScholarshipManagementService {
     message: string; 
     scholarship?: any; 
   }> {
-    const response = await authService.authenticatedRequest('/scholarship/create', {
-      method: 'POST',
-      body: JSON.stringify(scholarshipData)
-    });
+    try {
+      const response = await authService.authenticatedRequest('/scholarship/create', {
+        method: 'POST',
+        body: JSON.stringify(scholarshipData)
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      scholarship: response.data?.scholarship,
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        scholarship: response.data?.scholarship,
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Create scholarship error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async updateScholarship(scholarshipId: string, data: Partial<ScholarshipData> & { status?: string; custom_form_fields?: CustomFormField[] }): Promise<{
@@ -39,30 +50,48 @@ class ScholarshipManagementService {
     message: string;
     scholarship?: any;
   }> {
-    const response = await authService.authenticatedRequest(`/scholarship/edit/${scholarshipId}`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    });
+    try {
+      const response = await authService.authenticatedRequest(`/scholarship/edit/${scholarshipId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      scholarship: response.data?.scholarship,
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        scholarship: response.data?.scholarship,
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Update scholarship error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async deleteScholarship(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
   }> {
-    const response = await authService.authenticatedRequest(`/scholarship/delete/${scholarshipId}`, {
-      method: 'DELETE'
-    });
+    try {
+      const response = await authService.authenticatedRequest(`/scholarship/delete/${scholarshipId}`, {
+        method: 'DELETE'
+      });
 
-    return {
-      success: response.success,
-      message: response.message
-    };
+      return {
+        success: response.success,
+        message: response.message
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Delete scholarship error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async archiveScholarship(scholarshipId: string): Promise<{
@@ -70,15 +99,24 @@ class ScholarshipManagementService {
     message: string;
     scholarship?: any;
   }> {
-    const response = await authService.authenticatedRequest(`/scholarship/archive/${scholarshipId}`, {
-      method: 'POST'
-    });
+    try {
+      const response = await authService.authenticatedRequest(`/scholarship/archive/${scholarshipId}`, {
+        method: 'POST'
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      scholarship: response.data?.scholarship,
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        scholarship: response.data?.scholarship,
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Archive scholarship error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async getAllScholarships(): Promise<{ 
@@ -86,15 +124,24 @@ class ScholarshipManagementService {
     message: string;
     scholarships?: Scholarship[]; 
   }> {
-    const response = await authService.authenticatedRequest(`/scholarship/`, {
-      method: 'GET'
-    });
+    try {
+      const response = await authService.authenticatedRequest(`/scholarship/`, {
+        method: 'GET'
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      scholarships: response.data?.scholarships,
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        scholarships: response.data?.scholarships,
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Get all scholarships error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async getScholarshipById(scholarshipId: string): Promise<{
@@ -102,15 +149,24 @@ class ScholarshipManagementService {
     message: string;
     scholarship?: Scholarship;
   }> {
-    const response = await authService.authenticatedRequest(`/scholarship/${scholarshipId}`, {
-      method: 'GET'
-    });
+    try {
+      const response = await authService.authenticatedRequest(`/scholarship/${scholarshipId}`, {
+        method: 'GET'
+      });
 
-    return { 
-      success: response.success, 
-      message: response.message,
-      scholarship: response.data?.scholarship, 
-    };
+      return { 
+        success: response.success, 
+        message: response.message,
+        scholarship: response.data?.scholarship, 
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Get scholarship by id error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 
   async getMyScholarships(): Promise<{ 
@@ -118,15 +174,24 @@ class ScholarshipManagementService {
     message: string;
     scholarships?: Scholarship[]; 
   }> {
-    const response = await authService.authenticatedRequest('/scholarship/my-scholarships', {
-      method: 'GET'
-    });
+    try {
+      const response = await authService.authenticatedRequest('/scholarship/my-scholarships', {
+        method: 'GET'
+      });
 
-    return {
-      success: response.success,
-      message: response.message,
-      scholarships: response.data?.scholarships,
-    };
+      return {
+        success: response.success,
+        message: response.message,
+        scholarships: response.data?.scholarships,
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Get my scholarships error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
   }
 }
 

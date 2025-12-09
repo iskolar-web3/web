@@ -33,7 +33,8 @@ import {
 import Toast from '@/components/Toast';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
-import { scholarshipManagementService } from '@/services/scholarship-management.service';
+import { handleError } from '@/lib/errorHandler';
+import { logger } from "@/lib/logger";
 
 export const Route = createFileRoute('/_sponsor/scholarship/$id/edit')({
   component: EditScholarshipPage,
@@ -191,8 +192,9 @@ function EditScholarshipPage() {
 
       hydrateForm(mockScholarship);
     } catch (error) {
-      console.error('Failed to load scholarship:', error);
-      showToastMessage('error', 'Error', 'Unable to load scholarship details.', 2500);
+      const handled = handleError(error, 'Unable to load scholarship details.');
+      logger.error('Failed to load scholarship:', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
     }
@@ -374,8 +376,9 @@ function EditScholarshipPage() {
 
       showToastMessage('success', 'Mock Update', `"${data.title}" saved.`, 2000);
     } catch (error) {
-      console.error('Failed to update scholarship:', error);
-      showToastMessage('error', 'Error', 'Failed to update scholarship. Please try again.', 2500);
+      const handled = handleError(error, 'Failed to update scholarship. Please try again.');
+      logger.error('Failed to update scholarship:', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setSaving(false);
     }

@@ -10,6 +10,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
+import { handleError } from '@/lib/errorHandler';
+import { logger } from "@/lib/logger";
 // import { authService } from '@/services/auth.service';
 // import { profileService } from '@/services/profile.service';
 
@@ -46,6 +48,12 @@ function LoginPage(): JSX.Element {
     title: "",
     message: "",
   });
+
+  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  };
 
   // useEffect(() => {
   //   const checkAuth = async () => {
@@ -93,42 +101,27 @@ function LoginPage(): JSX.Element {
     //   }
 
     //   if(result.success) {
-    //     setToastConfig({
-    //       type: "success",
-    //       title: "Success",
-    //       message: result.message,
-    //     });
-    //     setShowToast(true);
-
+    //      showToastMessage('success', `Success`, result.message, 1250);
     //     setTimeout(() => {
-    //       setShowToast(false);
     //       setShowPreloader(true);
     //     }, 1000);
     //   } else {
-    //     setToastConfig({
-    //       type: "error",
-    //       title: "Error",
-    //       message: result.error,
-    //     });
-    //     setShowToast(true);
+    //     showToastMessage('error', `Error`, result.error, 2500);
     //   }
     // } catch(error) {
-    //   setToastConfig({
-    //     type: "error",
-    //     title: "Error",
-    //     message: error.message,
-    //   });
-    //   setShowToast(true);
+    //    const handled = handleError(error, 'Unable to load scholarship details.');
+    //    logger.error('Failed to load scholarship:', handled.raw);
+    //    showToastMessage('error', `Error`, error.message, 2500);
     // } finally {
     //   setLoading(false);
     // }
     
-    // Simulate successful login 
     setLoading(true);
+    showToastMessage('success', `Success`, 'Login successful!', 1250);
     setTimeout(() => {
       setLoading(false);
       setShowPreloader(true);
-    }, 500);
+    }, 1000);
   };
 
   const handlePreloaderComplete = () => {
@@ -146,16 +139,7 @@ function LoginPage(): JSX.Element {
   };
 
   const handleGoogleSignIn = () => {
-    setToastConfig({
-      type: "error",
-      title: "Not Available",
-      message: "Google Auth is not available at the moment.",
-    });
-    setShowToast(true);
-    
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
+    showToastMessage('error', `Error`, 'Google Auth is not available at the moment.', 2500);
     
     // Handle Google sign in
   };

@@ -28,6 +28,8 @@ import Toast from '@/components/Toast';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
 import type { ScholarshipApplication } from '@/services/scholarship-application.service';
+import { handleError } from '@/lib/errorHandler';
+import { logger } from '@/lib/logger';
 
 interface Applicant extends ScholarshipApplication {
   rank?: number;
@@ -167,9 +169,10 @@ function ApplicantsListPage() {
 
       setScholarship(mockScholarship);
       setApplicants(mockApplicants);
-    } catch (e) {
-      setError('Failed to load applicants');
-      console.error(e);
+    } catch (error) {
+      const handled = handleError(error, 'Failed to load applicants');
+      setError(handled.message);
+      logger.error('Load applicants error:', handled.raw);
     } finally {
       setLoading(false);
     }
@@ -253,7 +256,9 @@ function ApplicantsListPage() {
       setSelectedApplicantIds(new Set());
       setBulkMode(false);
     } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to update applications', 2500);
+      const handled = handleError(error, 'Failed to update applications');
+      logger.error('Bulk update error:', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setIsBulkUpdating(false);
     }
@@ -310,7 +315,9 @@ function ApplicantsListPage() {
       setConfirmationModal(false);
       setDenialRemarks('');
     } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to update application status', 2500);
+      const handled = handleError(error, 'Failed to update application status');
+      logger.error('Update application status error:', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setIsUpdatingStatus(false);
     }

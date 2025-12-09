@@ -10,6 +10,8 @@ import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from '@/components/Toast';
 // import { scholarshipManagementService } from '@/services/scholarship-management.service';
+import { handleError } from '@/lib/errorHandler';
+import { logger } from "@/lib/logger";
 
 export const Route = createFileRoute('/_sponsor/scholarships')({
   component: Scholarships,
@@ -31,7 +33,6 @@ function Scholarships() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [scholarshipToDelete, setScholarshipToDelete] = useState<Scholarship | null>(null);
@@ -48,14 +49,14 @@ function Scholarships() {
     setTimeout(() => setShowToast(false), duration);
   }, []);
 
-  const handleViewApplicants = (scholarship: Scholarship) => {
+  const handleViewApplicants = (_scholarship: Scholarship) => {
     // navigate({ 
     //   to: "/scholarship/$id/applicants",
     //   params: { id: scholarship.scholarship_id }
     // });
   };
 
-  const handleEdit = (scholarship: Scholarship) => {
+  const handleEdit = (_scholarship: Scholarship) => {
     // navigate({ 
     //   to: "/scholarship/$id/edit",
     //   params: { id: scholarship.scholarship_id }
@@ -81,7 +82,9 @@ function Scholarships() {
       //   fetchMyScholarships(); 
       // }
     } catch (error) {
-      showToastMessage('success', 'Success', 'Failed to delete scholarship.', 2500);
+      const handled = handleError(error, 'Failed to delete scholarship.');
+      logger.error('Delete scholarship error:', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -101,10 +104,11 @@ function Scholarships() {
   //       setScholarships(response.scholarships);
   //     }
     } catch (error) {
-      showToastMessage('success', 'Success', 'Failed to connect to server.', 2500);
+      const handled = handleError(error, 'Failed to connect to server.');
+      logger.error('Fetch scholarships error:', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, []);
   
@@ -181,7 +185,9 @@ function Scholarships() {
     }));
 
   const filteredScholarships = useMemo(() => {
-    return mockScholarship.filter((scholarship) => {
+    const source = scholarships.length ? scholarships : mockScholarship;
+
+    return source.filter((scholarship) => {
       const matchesType =
         scholarshipType === 'All' ||
         scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
@@ -208,7 +214,7 @@ function Scholarships() {
 
       return matchesType && matchesPurpose && matchesApplications && matchesAmount && matchesSlots;
     });
-  }, [mockScholarship, scholarshipType, purpose, applicationsRange, amountRange, slotRange]);
+  }, [scholarships, mockScholarship, scholarshipType, purpose, applicationsRange, amountRange, slotRange]);
 
   return (
     <div className="min-h-screen">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { logger } from "@/lib/logger";
 // import { profileService } from '@/services/profile.service';
 // import { authService } from '@/services/auth.service';
 
@@ -68,7 +68,7 @@ export default function Preloader({ onComplete, minDisplayTime = 2000 }: Preload
           onComplete?.();
         }, 500);
       } catch (error) {
-        console.error('Preloader error:', error);
+        logger.error('Preloader error:', error);
         const elapsed = Date.now() - startTime;
         const remaining = Math.max(0, minDisplayTime - elapsed);
         

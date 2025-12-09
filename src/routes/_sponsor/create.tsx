@@ -33,6 +33,8 @@ import Toast from '@/components/Toast';
 import ScholarshipPreviewCard from '@/components/ScholarshipPreviewCard';
 import ScholarshipFullPreviewModal from '@/components/ScholarshipFullPreviewModal';
 import { normalizeText, normalizeArray } from '@/utils/normalize';
+import { handleError } from '@/lib/errorHandler';
+import { logger } from '@/lib/logger';
 import { scholarshipManagementService } from '@/services/scholarship-management.service';
 
 // Form field types
@@ -315,8 +317,9 @@ function CreateScholarship() {
       //   showToastMessage('error', 'Error', response.message, 2500);
       // }
     } catch(error) {
-      console.error('Profile setup error:', error);
-      showToastMessage('error', 'Error', 'Failed to create scholarship. Please try again.', 2500);
+      const handled = handleError(error, 'Failed to connect to server.');
+      logger.error('Connection Error', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally{
       setLoading(false);
     }

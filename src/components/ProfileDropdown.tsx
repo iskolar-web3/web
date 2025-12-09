@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User as UserIcon } from 'lucide-react';
 import { authService } from '@/services/auth.service';
+import { handleError } from '@/lib/errorHandler'; 
 
 interface ProfileDropdownProps {
   onClose: () => void;
@@ -23,7 +24,8 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
       await authService.removeToken();
       navigate({ to: '/login' });
     } catch (error) {
-      console.error('Logout error:', error);
+      const handled = handleError(error, 'Failed to logout');
+      console.error('Logout error:', handled.raw);
     }
   };
 

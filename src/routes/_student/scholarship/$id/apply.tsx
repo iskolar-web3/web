@@ -27,6 +27,8 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 import { compressFile } from '@/utils/fileCompression';
 import { normalizeText, normalizeEmail, normalizePhone, normalizeNumber } from '@/utils/normalize';
+import { handleError } from '@/lib/errorHandler';
+import { logger } from '@/lib/logger';
 
 export const Route = createFileRoute('/_student/scholarship/$id/apply')({
   component: ApplyScholarshipPage,
@@ -200,8 +202,10 @@ function ApplyScholarshipPage() {
       }, {} as Record<string, any>);
       reset(defaultValues);
     } catch (err) {
-      console.error('Fetch error:', err);
-      setError('Failed to load scholarship details');
+      const handled = handleError(err, 'Failed to connect to server.');
+      logger.error('Fetch scholarships error:', handled.raw);
+      // showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      setError(handled.message);
     } finally {
       setLoading(false);
     }
@@ -264,7 +268,7 @@ function ApplyScholarshipPage() {
         [fieldLabel]: [compressedFile],
       }));
     } catch (error) {
-      console.error('File compression error:', error);
+      logger.error('File compression error:', error);
       showToastMessage('error', 'Compression Failed', 'Using original file', 2000);
       
       setCustomFiles(prev => ({
@@ -427,7 +431,7 @@ function ApplyScholarshipPage() {
         
         const failedUploads = uploadResults.filter(response => !response.success);
         if (failedUploads.length > 0) {
-          console.warn('Some files failed to upload:', failedUploads);
+          logger.warn('Some files failed to upload:', failedUploads);
         }
       }
 
@@ -437,8 +441,9 @@ function ApplyScholarshipPage() {
         window.history.back();
       }, 1500);
     } catch (error) {
-      console.error('Submission error:', error);
-      //   showToastMessage('error', 'Error', error.message, 2500);
+      const handled = handleError(error, 'Failed to submit application.');
+      logger.error('Submission error:', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setSubmitting(false);
     }

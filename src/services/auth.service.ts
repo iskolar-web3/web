@@ -1,3 +1,6 @@
+import { AppError, deriveResponseError, handleError, safeParseJSON } from '@/lib/errorHandler';
+import { logger } from '@/lib/logger';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export interface AuthToken {
@@ -33,8 +36,9 @@ class AuthService {
     try {
       localStorage.setItem(this.TOKEN_KEY, token);
     } catch (error) {
-      console.error('Error storing authentication token:', error);
-      throw new Error('Failed to store authentication token');
+      const handled = handleError(error, 'Failed to store authentication token');
+      logger.error('Error storing authentication token:', handled.raw);
+      throw new AppError(handled.message, handled.code);
     }
   }
 
@@ -42,7 +46,8 @@ class AuthService {
     try {
       return localStorage.getItem(this.TOKEN_KEY);
     } catch (error) {
-      console.error('Error retrieving authentication token:', error);
+      const handled = handleError(error, 'Failed to retrieve authentication token');
+      logger.error('Error retrieving authentication token:', handled.raw);
       return null;
     }
   }
@@ -51,7 +56,8 @@ class AuthService {
     try {
       localStorage.removeItem(this.TOKEN_KEY);
     } catch (error) {
-      console.error('Error removing authentication token:', error);
+      const handled = handleError(error, 'Failed to remove authentication token');
+      logger.error('Error removing authentication token:', handled.raw);
     }
   }
 
@@ -96,20 +102,31 @@ class AuthService {
         },
       });
 
-      const result = await response.json();
+      const result = await safeParseJSON<T & { message?: string; code?: string }>(response);
+
+      if (!response.ok) {
+        const derived = deriveResponseError(response, result || undefined);
+        return {
+          success: false,
+          data: (result === null ? undefined : result) as T | undefined,
+          message: derived.message,
+          status: derived.statusCode ?? response.status,
+        };
+      }
 
       return {
         success: response.ok,
-        data: result,
-        message: result.message || (response.ok ? 'Request successful' : 'Request failed'),
+        data: (result === null ? undefined : result) as T | undefined,
+        message: result?.message || 'Request successful',
         status: response.status
       };
     } catch (error) {
-      console.error('Authenticated request error:', error);
+      const handled = handleError(error, `Failed to connect to server at ${API_URL}`);
+      logger.error('Authenticated request error:', handled.raw);
       return {
         success: false,
-        message: `Failed to connect to server at ${API_URL}`,
-        status: 0
+        message: handled.message,
+        status: handled.statusCode ?? 0
       };
     }
   }
@@ -124,17 +141,26 @@ class AuthService {
         body: JSON.stringify(registerData)
       });
 
-      const result = await response.json();
+      const result = await safeParseJSON<{ message?: string; code?: string }>(response);
+
+      if (!response.ok) {
+        const derived = deriveResponseError(response, result || undefined);
+        return {
+          success: false,
+          message: derived.message,
+        };
+      }
 
       return {
         success: response.ok,
-        message: result.message || (response.ok ? 'Registration successful' : 'Registration failed'),
+        message: result?.message || 'Registration successful',
       };
     } catch (error) {
-      console.error('Registration error:', error);
+      const handled = handleError(error, `Failed to connect to server at ${API_URL}`);
+      logger.error('Registration error:', handled.raw);
       return {
         success: false,
-        message: `Failed to connect to server at ${API_URL}`,
+        message: handled.message,
       };
     }
   } 
@@ -149,18 +175,27 @@ class AuthService {
         body: JSON.stringify(loginData)
       });
 
-      const result = await response.json();
+      const result = await safeParseJSON<{ message?: string; code?: string; token?: string }>(response);
+
+      if (!response.ok) {
+        const derived = deriveResponseError(response, result || undefined);
+        return {
+          success: false,
+          message: derived.message,
+        };
+      }
 
       return {
         success: response.ok,
-        message: result.message || (response.ok ? 'Login successful' : 'Login failed'),
-        token: result.token,
+        message: result?.message || 'Login successful',
+        token: result?.token,
       };
     } catch (error) {
-      console.error('Login error:', error);
+      const handled = handleError(error, `Failed to connect to server at ${API_URL}`);
+      logger.error('Login error:', handled.raw);
       return {
         success: false,
-        message: `Failed to connect to server at ${API_URL}`,
+        message: handled.message,
       };
     }
   } 

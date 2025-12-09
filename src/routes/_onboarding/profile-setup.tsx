@@ -22,6 +22,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { CalendarIcon } from "lucide-react"
+import { handleError } from '@/lib/errorHandler';
+import { logger } from "@/lib/logger";
 // import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute('/_onboarding/profile-setup')({
@@ -120,6 +122,12 @@ function ProfileSetup() {
     title: "",
     message: "",
   })
+
+  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
+    setToastConfig({ type, title, message });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), duration);
+  };
   
   // Student form
   const studentForm = useForm<StudentFormData>({
@@ -435,13 +443,9 @@ function ProfileSetup() {
         }, 1250);
       } 
     } catch(error) {
-      console.error('Profile setup error:', error);
-      setToastConfig({
-        type: 'error',
-        title: 'Connection Error',
-        message: 'Failed to connect to server.',
-      })
-      setShowToast(true)
+      const handled = handleError(error, 'Failed to connect to server.');
+      logger.error('Connection Error', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
     }
@@ -469,12 +473,8 @@ function ProfileSetup() {
   if (roleValidationError || !selectedRole) {
     return (
       <>
-        <Toast
-          visible={showToast}
-          type={toastConfig.type}
-          title={toastConfig.title}
-          message={toastConfig.message}
-        />
+        <Toast visible={showToast}type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+
         <motion.div 
           className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12"
           initial={{ opacity: 0 }}
