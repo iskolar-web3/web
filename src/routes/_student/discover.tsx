@@ -11,6 +11,10 @@ import ScholarshipDetailsModal from '@/components/ScholarshipDetailsModal';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
+import { mockScholarships, mockApiDelay } from '@/mocks/scholarships.mock';
+import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
+
+const USE_MOCK_DATA = true;
 
 export const Route = createFileRoute('/_student/discover')({
   component: DiscoverScholarship,
@@ -27,10 +31,9 @@ function DiscoverScholarship() {
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  const [_scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
   const [loading, setLoading] = useState(false);
-  // const [refreshing, setRefreshing] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: 'success' as 'success' | 'error',
@@ -47,55 +50,35 @@ function DiscoverScholarship() {
   const fetchScholarships = useCallback(async () => {
     try {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setScholarships(mockScholarship);
-      // const response = await scholarshipManagementService.getAllScholarships();
       
-      // if (response.success) {
-      //   setScholarships(response.scholarships);
-      // } else {
-      //   showToastMessage('error', 'Error', response.message, 2500);
-      // }
+      if (USE_MOCK_DATA) {
+        // Mock data path
+        await mockApiDelay(2000);
+        setScholarships(mockScholarships);
+      } else {
+        const response = await scholarshipManagementService.getAllScholarships();
+        
+        if (response.success && response.scholarships) {
+          setScholarships(response.scholarships);
+        } else {
+          showToastMessage('error', 'Error', response.message, 2500);
+        }
+      }
     } catch (error) {
       const handled = handleError(error, 'Failed to connect to server.');
       logger.error('Fetch scholarships error:', handled.raw);
       showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
-      // setRefreshing(false);
     }
-  }, []);
+  }, [showToastMessage]);
 
   useEffect(() => {
     fetchScholarships();
   }, [fetchScholarships]);
 
-  // Mock data
-  const mockScholarship: Scholarship[] = Array(23).fill(null).map((_, _i) => ({
-    scholarship_id: '1',
-    sponsor_id: '1',
-    status: 'active',
-    title: 'CHED Merit Scholarship Program',
-    type: 'Merit-Based',
-    purpose: 'Tuition',
-    sponsor: { 
-      name: 'Sponsor name',
-      email: 'sponsor@example.com',
-      profile_url: 'src/logo.svg'
-    },
-    application_deadline: 'September 21, 2025',
-    total_amount: 10000000,
-    total_slot: 400,
-    criteria: ['3rd Year', 'Male', 'BSCS', 'BSIT', 'BSIS', '1st Year'],
-    required_documents: ['Certificate of Enrollment', 'Latest Report of Grades', 'Birth Certificate', 'Barangay ID', 'School ID', 'Government ID'],
-    image_url: 'src/logo.svg',
-    description: "The Commission on Higher Education (CHED) Merit Scholarship Program awards full or half merit scholarships to high-performing incoming college students in CHED-priority courses. It's designed to help academically excellent but financially needy students access tertiary education.",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }));
-
   const filteredScholarships = useMemo(() => {
-    return mockScholarship.filter((scholarship) => {
+    return scholarships.filter((scholarship) => {
       const matchesType =
         scholarshipType === 'All' ||
         scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
@@ -121,7 +104,7 @@ function DiscoverScholarship() {
 
       return matchesType && matchesPurpose && matchesSponsorType && matchesAmount && matchesSlots;
     });
-  }, [mockScholarship, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
+  }, [scholarships, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
 
   return (
     <div className="min-h-screen">
@@ -378,7 +361,7 @@ function DiscoverScholarship() {
             ) : (
               filteredScholarships.map((scholarship, index) => (
                 <ScholarshipCard
-                  key={`${scholarship.title}-${index}`}
+                  key={`${scholarship.scholarship_id}-${index}`}
                   scholarship={scholarship}
                   index={index}
                   onClick={() => setSelectedScholarship(scholarship)}

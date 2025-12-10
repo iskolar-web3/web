@@ -27,7 +27,7 @@ import { useScholarshipForm, type ScholarshipFormData, type CustomFieldType } fr
 import { useScholarshipPreview } from '@/hooks/useScholarshipPreview';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
-import { scholarshipManagementService } from '@/services/scholarship-management.service';
+import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
 
 export const Route = createFileRoute('/_sponsor/create')({
   component: CreateScholarship,
@@ -128,30 +128,28 @@ function CreateScholarship() {
     setLoading(true);
     
     try {
-      // const scholarshipData = {
-      //   type: data.type || undefined,
-      //   purpose: data.purpose || undefined,
-      //   title: data.title.trim(),
-      //   description: data.description?.trim() || undefined,
-      //   total_amount: parseFloat(data.totalAmount),
-      //   total_slot: parseInt(data.totalSlot),
-      //   application_deadline: data.applicationDeadline || undefined,
-      //   criteria: data.criteria,
-      //   required_documents: data.requiredDocuments,
-      //   custom_form_fields: data.customFormFields && data.customFormFields.length > 0 ? data.customFormFields : undefined,
-      // };
+      const scholarshipData = {
+        type: data.type,
+        purpose: data.purpose,
+        title: data.title.trim(),
+        description: data.description?.trim(),
+        total_amount: parseFloat(data.totalAmount),
+        total_slot: parseInt(data.totalSlot),
+        application_deadline: data.applicationDeadline.toISOString(),
+        criteria: data.criteria,
+        required_documents: data.requiredDocuments,
+        custom_form_fields: data.customFormFields || [],
+      };
 
-      // const response = await scholarshipManagementService.createScholarship(scholarshipData);
+      const response = await scholarshipManagementService.createScholarship(scholarshipData);
 
-      // if (response.success) {
-      //   const scholarshipId = response.scholarship.scholarship_id;
+      if (response.success && response.scholarship) {
+        showToastMessage('success', 'Success', response.message, 2000);
 
-      //   showToastMessage('success', 'Success', response.message, 2000);
-
-      //   resetForm();
-      // } else {
-      //   showToastMessage('error', 'Error', response.message, 2500);
-      // }
+        resetForm();
+      } else {
+        showToastMessage('error', 'Error', response.message, 2500);
+      }
     } catch(error) {
       const handled = handleError(error, 'Failed to connect to server.');
       logger.error('Connection Error', handled.raw);

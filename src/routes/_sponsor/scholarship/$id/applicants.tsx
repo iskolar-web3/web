@@ -22,15 +22,23 @@ import {
   Mail,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-// import { scholarshipManagementService } from '@/services/scholarship-management.service';
-// import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 import Toast from '@/components/Toast';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
-import type { ScholarshipApplication } from '@/services/scholarship-application.service';
+import type { ScholarshipApplication } from '@/services/scholarshipApplication.service';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
 import { formatDateTime } from '@/utils/formatting';
+import { 
+  mockScholarshipForApplicants, 
+  mockGetScholarshipApplications,
+  mockUpdateApplicationStatus,
+  mockBulkUpdateApplicationStatus
+} from '@/mocks/scholarshipApplicants.mock';
+import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
+import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
+
+const USE_MOCK_DATA = true;
 
 interface Applicant extends ScholarshipApplication {
   rank?: number;
@@ -86,11 +94,11 @@ function ApplicantsListPage() {
   const [denialRemarks, setDenialRemarks] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
+  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
     setToastConfig({ type, title, message });
     setShowToast(true);
     setTimeout(() => setShowToast(false), duration);
-  };
+  }, []);
 
   const fetchApplicants = useCallback(async () => {
     if (!id) return;
@@ -99,77 +107,29 @@ function ApplicantsListPage() {
       setError(null);
       setLoading(true);
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // const scholarshipRes = await scholarshipManagementService.getScholarshipById(id);
-      // if (scholarshipRes.success && scholarshipRes.scholarship) {
-      //   setScholarship(scholarshipRes.scholarship);
-      // }
+      if (USE_MOCK_DATA) {
+        // Use mock data
+        const response = await mockGetScholarshipApplications(id);
+        
+        if (response.success && response.applications) {
+          setScholarship(mockScholarshipForApplicants);
+          setApplicants(response.applications);
+        } else {
+          setError(response.message || 'Failed to load applicants');
+        }
+      } else {
+        const scholarshipRes = await scholarshipManagementService.getScholarshipById(id);
+        if (scholarshipRes.success && scholarshipRes.scholarship) {
+          setScholarship(scholarshipRes.scholarship);
+        }
 
-      // const response = await scholarshipApplicationService.getScholarshipApplications(id);
-      // if (response.success && response.applications) {
-      //   setApplicants(response.applications);
-      // } else {
-      //   setError(response.message || 'Failed to load applicants');
-      // }
-
-      // Mocked applicants data
-      const mockScholarship: Scholarship = {
-        scholarship_id: id,
-        sponsor_id: '1',
-        status: 'active',
-        type: 'merit_based',
-        purpose: 'tuition',
-        title: 'CHED Merit Scholarship Program',
-        description: 'A sample description for the scholarship program.',
-        total_amount: 250000,
-        total_slot: 25,
-        application_deadline: new Date(Date.now() + 86400000 * 30).toISOString(),
-        criteria: ['Minimum GWA of 1.75', 'STEM Strand Graduate'],
-        required_documents: ['Birth Certificate', 'Report Card'],
-        custom_form_fields: [
-          { type: 'text', label: 'Full Name', required: true },
-          { type: 'email', label: 'Email Address', required: true },
-          { type: 'file', label: 'Upload Transcript', required: true },
-        ],
-        image_url: '/src/logo.svg',
-        sponsor: {
-          name: 'Sponsor Name',
-          email: 'sponsor@example.com',
-          profile_url: 'src/logo.svg',
-        },
-        applications_count: 120,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const mockApplicants: Applicant[] = Array.from({ length: 76 }, (_, index) => ({
-        scholarship_application_id: `${index + 1}`,
-        student_id: `${index + 1}`,
-        scholarship_id: id,
-        status: 'pending' as const,
-        custom_form_response: [
-          { label: 'Full Name', value: 'John Doe' },
-          { label: 'Email Address', value: 'john.doe@example.com' },
-          { label: 'Upload Transcript', value: ['https://example.com/transcript.pdf'] as string[] },
-        ],
-        applied_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        student: {
-          student_id: `${index + 1}`,
-          full_name: 'John Doe',
-          gender: 'male',
-          date_of_birth: '2000-01-01',
-          contact_number: '+1234567890',
-          user: {
-            email: 'john.doe@example.com',
-            profile_url: undefined,
-          },
-        },
-        scholarship: mockScholarship,
-      }));
-
-      setScholarship(mockScholarship);
-      setApplicants(mockApplicants);
+        const response = await scholarshipApplicationService.getScholarshipApplications(id);
+        if (response.success && response.applications) {
+          setApplicants(response.applications);
+        } else {
+          setError(response.message || 'Failed to load applicants');
+        }
+      }
     } catch (error) {
       const handled = handleError(error, 'Failed to load applicants');
       setError(handled.message);
@@ -221,41 +181,56 @@ function ApplicantsListPage() {
 
     try {
       setIsBulkUpdating(true);
-      // const response = await scholarshipApplicationService.bulkUpdateApplicationStatus(
-      //   Array.from(selectedApplicantIds),
-      //   bulkAction,
-      //   bulkRemarks.trim() || undefined
-      // );
+      
+      if (USE_MOCK_DATA) {
+        // Use mock bulk update
+        const response = await mockBulkUpdateApplicationStatus(
+          Array.from(selectedApplicantIds),
+          bulkAction,
+          bulkRemarks.trim() || undefined
+        );
 
-      // if (response.success) {
-      //   showToastMessage('success', 'Success', `${selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
-      //   setBulkActionModal(false);
-      //   setBulkRemarks('');
-      //   setSelectedApplicantIds(new Set());
-      //   setBulkMode(false);
-      //   fetchApplicants();
-      // } else {
-      //   showToastMessage('error', 'Error', response.message, 2500);
-      // }
+        if (response.success) {
+          // Update local state
+          setApplicants((prev) =>
+            prev.map((app) =>
+              selectedApplicantIds.has(app.scholarship_application_id)
+                ? {
+                    ...app,
+                    status: bulkAction,
+                    remarks: bulkRemarks.trim() || undefined,
+                    updated_at: new Date().toISOString(),
+                  }
+                : app
+            )
+          );
+          showToastMessage('success', 'Success', response.message, 2000);
+          setBulkActionModal(false);
+          setBulkRemarks('');
+          setSelectedApplicantIds(new Set());
+          setBulkMode(false);
+        } else {
+          showToastMessage('error', 'Error', response.message, 2500);
+        }
+      } else {
+        // Real API call (commented out for reference)
+        // const response = await scholarshipApplicationService.bulkUpdateApplicationStatus(
+        //   Array.from(selectedApplicantIds),
+        //   bulkAction,
+        //   bulkRemarks.trim() || undefined
+        // );
 
-      // Mock behavior
-      setApplicants((prev) =>
-        prev.map((app) =>
-          selectedApplicantIds.has(app.scholarship_application_id)
-            ? {
-                ...app,
-                status: bulkAction,
-                remarks: bulkRemarks.trim() || undefined,
-                updated_at: new Date().toISOString(),
-              }
-            : app
-        )
-      );
-      showToastMessage('success', 'Success', `${selectedApplicantIds.size} applicant(s) ${bulkAction}`, 2000);
-      setBulkActionModal(false);
-      setBulkRemarks('');
-      setSelectedApplicantIds(new Set());
-      setBulkMode(false);
+        // if (response.success) {
+        //   showToastMessage('success', 'Success', `${selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
+        //   setBulkActionModal(false);
+        //   setBulkRemarks('');
+        //   setSelectedApplicantIds(new Set());
+        //   setBulkMode(false);
+        //   fetchApplicants();
+        // } else {
+        //   showToastMessage('error', 'Error', response.message, 2500);
+        // }
+      }
     } catch (error) {
       const handled = handleError(error, 'Failed to update applications');
       logger.error('Bulk update error:', handled.raw);
@@ -274,47 +249,63 @@ function ApplicantsListPage() {
 
     try {
       setIsUpdatingStatus(true);
-      // const response = await scholarshipApplicationService.updateApplicationStatus(
-      //   applicationId,
-      //   newStatus,
-      //   remarks
-      // );
+      
+      if (USE_MOCK_DATA) {
+        // Use mock update
+        const response = await mockUpdateApplicationStatus(
+          applicationId,
+          newStatus,
+          remarks
+        );
 
-      // if (response.success) {
-      //   showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
-      //   setModalVisible(false);
-      //   setConfirmationModal(false);
-      //   setDenialRemarks('');
-      //   fetchApplicants();
-      // } else {
-      //   showToastMessage('error', 'Error', response.message, 2500);
-      // }
+        if (response.success) {
+          setApplicants((prev) =>
+            prev.map((app) =>
+              app.scholarship_application_id === applicationId
+                ? {
+                    ...app,
+                    status: newStatus,
+                    remarks: remarks || undefined,
+                    updated_at: new Date().toISOString(),
+                  }
+                : app
+            )
+          );
+          
+          if (selectedApplicant && selectedApplicant.scholarship_application_id === applicationId) {
+            setSelectedApplicant({
+              ...selectedApplicant,
+              status: newStatus,
+              remarks: remarks || undefined,
+              updated_at: new Date().toISOString(),
+            });
+          }
+          
+          showToastMessage('success', 'Success', response.message, 2000);
+          handleCloseModal();
+          setConfirmationModal(false);
+          setDenialRemarks('');
+        } else {
+          showToastMessage('error', 'Error', response.message, 2500);
+        }
+      } else {
+        // Real API call (commented out for reference)
+        // const response = await scholarshipApplicationService.updateApplicationStatus(
+        //   applicationId,
+        //   newStatus,
+        //   remarks
+        // );
 
-      // Mock update
-      setApplicants((prev) =>
-        prev.map((app) =>
-          app.scholarship_application_id === applicationId
-            ? {
-                ...app,
-                status: newStatus,
-                remarks: remarks || undefined,
-                updated_at: new Date().toISOString(),
-              }
-            : app
-        )
-      );
-      if (selectedApplicant && selectedApplicant.scholarship_application_id === applicationId) {
-        setSelectedApplicant({
-          ...selectedApplicant,
-          status: newStatus,
-          remarks: remarks || undefined,
-          updated_at: new Date().toISOString(),
-        });
+        // if (response.success) {
+        //   showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
+        //   setModalVisible(false);
+        //   setConfirmationModal(false);
+        //   setDenialRemarks('');
+        //   fetchApplicants();
+        // } else {
+        //   showToastMessage('error', 'Error', response.message, 2500);
+        // }
       }
-      showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
-      handleCloseModal();
-      setConfirmationModal(false);
-      setDenialRemarks('');
     } catch (error) {
       const handled = handleError(error, 'Failed to update application status');
       logger.error('Update application status error:', handled.raw);
@@ -429,14 +420,11 @@ function ApplicantsListPage() {
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 className="bg-[#F9FAFB] rounded-lg shadow-sm p-5 relative"
               >
-                {/* Status Icon Skeleton */}
                 <Skeleton className="w-5 h-5 rounded-full bg-muted-foreground absolute top-4 right-4" />
                 
                 <div className="flex items-center gap-4">
-                  {/* Avatar Skeleton */}
                   <Skeleton className="w-14 h-14 rounded-full bg-muted-foreground flex-shrink-0" />
 
-                  {/* Info Skeleton */}
                   <div className="flex-1">
                     <Skeleton className="h-5 w-32 mb-2 bg-muted-foreground" />
                     <Skeleton className="h-4 w-48 mb-2 bg-muted-foreground" />

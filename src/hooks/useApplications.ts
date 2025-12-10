@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import type { Application } from '@/types/application.types';
-// import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 
 type FilterType = 'applied' | 'past' | 'granted';
 
@@ -23,7 +22,7 @@ export function useApplications(initialApplications: Application[] = []) {
     }
 
     setFilteredApplications(filtered);
-  }, [selectedFilter]);
+  }, [selectedFilter, applications]);  
 
   return {
     applications,
@@ -33,5 +32,3 @@ export function useApplications(initialApplications: Application[] = []) {
     setSelectedFilter,
   };
 }
-
-

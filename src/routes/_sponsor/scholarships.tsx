@@ -9,9 +9,12 @@ import SponsorScholarshipDetailsModal from '@/components/SponsorScholarshipDetai
 import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from '@/components/Toast';
-// import { scholarshipManagementService } from '@/services/scholarship-management.service';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
+import { mockSponsorScholarships, mockApiDelay } from '@/mocks/scholarships.mock';
+import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
+
+const USE_MOCK_DATA = true;
 
 export const Route = createFileRoute('/_sponsor/scholarships')({
   component: Scholarships,
@@ -32,7 +35,7 @@ function Scholarships() {
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [scholarshipToDelete, setScholarshipToDelete] = useState<Scholarship | null>(null);
@@ -73,14 +76,22 @@ function Scholarships() {
 
     try {
       setIsDeleting(true);
-      // const response = await scholarshipManagementService.deleteScholarship(scholarshipToDelete.scholarship_id);
       
-      // if(response.success) {
-      //   showToastMessage('success', 'Success', response.message, 2000);
+      if (USE_MOCK_DATA) {
+        // Mock delete
+        await mockApiDelay(1000);
+        showToastMessage('success', 'Success', 'Scholarship deleted successfully', 2000);
+
+        fetchMyScholarships();
+      } else {
+        const response = await scholarshipManagementService.deleteScholarship(scholarshipToDelete.scholarship_id);
         
-      //   Refresh scholarships list
-      //   fetchMyScholarships(); 
-      // }
+        if(response.success) {
+          showToastMessage('success', 'Success', response.message, 2000);
+
+          fetchMyScholarships(); 
+        }
+      }
     } catch (error) {
       const handled = handleError(error, 'Failed to delete scholarship.');
       logger.error('Delete scholarship error:', handled.raw);
@@ -96,13 +107,17 @@ function Scholarships() {
     try {
       setLoading(true);
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setScholarships(mockScholarship);
-  //     const response = await scholarshipManagementService.getMyScholarships();
-  //
-  //     if (response.success) {
-  //       setScholarships(response.scholarships);
-  //     }
+      if (USE_MOCK_DATA) {
+        // Mock data path
+        await mockApiDelay(2000);
+        setScholarships(mockSponsorScholarships);
+      } else {
+        const response = await scholarshipManagementService.getMyScholarships();
+        
+        if (response.success && response.scholarships) {
+          setScholarships(response.scholarships);
+        }
+      }
     } catch (error) {
       const handled = handleError(error, 'Failed to connect to server.');
       logger.error('Fetch scholarships error:', handled.raw);
@@ -110,84 +125,14 @@ function Scholarships() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToastMessage]);
   
   useEffect(() => {
     fetchMyScholarships();
   }, [fetchMyScholarships]);
 
-  // Mock data - simulate loading delay
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const mockScholarship: Scholarship[] = Array(5)
-    .fill(null)
-    .map(() => ({
-      scholarship_id: '1',
-      sponsor_id: '1',
-      status: 'active',
-      title: 'CHED Merit Scholarship Program',
-      type: 'Merit-Based',
-      purpose: 'Tuition',
-      sponsor: {
-        name: 'Sponsor name',
-        email: 'sponsor@example.com',
-        profile_url: 'src/logo.svg',
-      },
-      application_deadline: 'September 21, 2025',
-      total_amount: 40000000,
-      total_slot: 400,
-      criteria: ['1st Year', 'LGU', 'Male', 'BSCS', 'BSIT', 'BSIS'],
-      required_documents: ["Voter's Certificate", 'Birth Certificate', 'COR', 'Barangay ID'],
-      image_url: 'src/logo.svg',
-      description:
-        "The Commission on Higher Education (CHED) Merit Scholarship Program awards full or half merit scholarships to high-performing incoming college students in CHED-priority courses. It's designed to help academically excellent but financially needy students access tertiary education.",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      applications_count: 800,
-      custom_form_fields: [
-        {
-          type: 'text',
-          label: 'Full Name',
-          required: true,
-        },
-        {
-          type: 'email',
-          label: 'Email Address',
-          required: true,
-        },
-        {
-          type: 'phone',
-          label: 'Contact Number',
-          required: true,
-        },
-        {
-          type: 'dropdown',
-          label: 'Year Level',
-          required: true,
-          options: ['1st Year', '2nd Year', '3rd Year', '4th Year'],
-        },
-        {
-          type: 'textarea',
-          label: 'Why do you deserve this scholarship?',
-          required: true,
-        },
-        {
-          type: 'file',
-          label: 'Upload Transcript of Records',
-          required: true,
-        },
-      ],
-    }));
-
   const filteredScholarships = useMemo(() => {
-    const source = scholarships.length ? scholarships : mockScholarship;
-
-    return source.filter((scholarship) => {
+    return scholarships.filter((scholarship) => {
       const matchesType =
         scholarshipType === 'All' ||
         scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
@@ -214,7 +159,7 @@ function Scholarships() {
 
       return matchesType && matchesPurpose && matchesApplications && matchesAmount && matchesSlots;
     });
-  }, [scholarships, mockScholarship, scholarshipType, purpose, applicationsRange, amountRange, slotRange]);
+  }, [scholarships, scholarshipType, purpose, applicationsRange, amountRange, slotRange]);
 
   return (
     <div className="min-h-screen">
@@ -558,7 +503,7 @@ function Scholarships() {
               ) : (
                 filteredScholarships.map((scholarship, index) => (
                   <SponsorScholarshipCard
-                    key={`${scholarship.title}-${index}`}
+                    key={`${scholarship.scholarship_id}-${index}`}
                     scholarship={scholarship}
                     index={index}
                     onClick={() => setSelectedScholarship(scholarship)}

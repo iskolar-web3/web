@@ -35,6 +35,10 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
+import { mockScholarshipEdit, mockApiDelay } from '@/mocks/scholarshipEdit.mock';
+import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
+
+const USE_MOCK_DATA = true;
 
 export const Route = createFileRoute('/_sponsor/scholarship/$id/edit')({
   component: EditScholarshipPage,
@@ -150,56 +154,6 @@ function EditScholarshipPage() {
     setTimeout(() => setShowToast(false), duration);
   }, []);
 
-  const loadScholarshipDetails = useCallback(async () => {
-    try {
-      setLoading(true);
-      // const response = await scholarshipManagementService.getScholarshipById(id);
-      // if (response.success && response.scholarship) {
-      //   hydrateForm(response.scholarship);
-      //   return;
-      // }
-
-      // Mock scholarship data
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const mockScholarship: Scholarship = {
-        scholarship_id: '1',
-        sponsor_id: '1',
-        status: 'active',
-        type: 'merit_based',
-        purpose: 'tuition',
-        title: 'CHED Merit Scholarship Program',
-        description: 'A sample description for the scholarship program.',
-        total_amount: 250000,
-        total_slot: 25,
-        application_deadline: new Date(Date.now() + 86400000 * 30).toISOString(),
-        criteria: ['Minimum GWA of 1.75', 'STEM Strand Graduate'],
-        required_documents: ['Birth Certificate', 'Report Card'],
-        custom_form_fields: [
-          { type: 'text', label: 'Full Name', required: true },
-          { type: 'email', label: 'Email Address', required: true },
-          { type: 'file', label: 'Upload Transcript', required: true },
-        ],
-        image_url: '/src/logo.svg',
-        sponsor: {
-          name: 'Sponsor Name',
-          email: 'sponsor@example.com',
-          profile_url: 'src/logo.svg',
-        },
-        applications_count: 120,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      hydrateForm(mockScholarship);
-    } catch (error) {
-      const handled = handleError(error, 'Unable to load scholarship details.');
-      logger.error('Failed to load scholarship:', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
-    } finally {
-      setLoading(false);
-    }
-  }, [id, reset, showToastMessage]);
-
   const hydrateForm = useCallback((scholarship: Scholarship) => {
     reset({
       type: (scholarship.type as 'merit_based' | 'skill_based') ?? 'merit_based',
@@ -217,6 +171,29 @@ function EditScholarshipPage() {
     });
     setImagePreview(scholarship.image_url || null);
   }, [reset]);
+
+  const loadScholarshipDetails = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      if (USE_MOCK_DATA) {
+        // Mock data path
+        await mockApiDelay(2000);
+        hydrateForm(mockScholarshipEdit);
+      } else {
+        const response = await scholarshipManagementService.getScholarshipById(id);
+        if (response.success && response.scholarship) {
+          hydrateForm(response.scholarship);
+        }
+      }
+    } catch (error) {
+      const handled = handleError(error, 'Unable to load scholarship details.');
+      logger.error('Failed to load scholarship:', handled.raw);
+      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, hydrateForm, showToastMessage]);
 
   useEffect(() => {
     loadScholarshipDetails();
@@ -351,30 +328,34 @@ function EditScholarshipPage() {
   const onSubmit = async (data: EditScholarshipFormData) => {
     setSaving(true);
     try {
-      // const updatePayload = {
-      //   type: data.type,
-      //   purpose: data.purpose,
-      //   status: data.status,
-      //   title: data.title.trim(),
-      //   description: data.description?.trim(),
-      //   total_amount: parseFloat(data.totalAmount),
-      //   total_slot: parseInt(data.totalSlot, 10),
-      //   application_deadline: data.applicationDeadline,
-      //   criteria: data.criteria,
-      //   required_documents: data.requiredDocuments,
-      //   custom_form_fields: data.customFormFields,
-      // };
-      //
-      // const result = await scholarshipManagementService.updateScholarship(id, updatePayload);
-      //
-      // if (result.success) {
-      //   showToastMessage('success', 'Updated', result.message', 2000);
-      //   return;
-      // }
-      //
-      // showToastMessage('error', 'Error', result.message || 'Failed to update scholarship.');
-
-      showToastMessage('success', 'Mock Update', `"${data.title}" saved.`, 2000);
+      if (USE_MOCK_DATA) {
+        // Mock submission
+        await mockApiDelay(1500);
+        showToastMessage('success', 'Mock Update', `"${data.title}" saved.`, 2000);
+      } else {
+        const updatePayload = {
+          type: data.type,
+          purpose: data.purpose,
+          status: data.status,
+          title: data.title.trim(),
+          description: data.description?.trim(),
+          total_amount: parseFloat(data.totalAmount),
+          total_slot: parseInt(data.totalSlot, 10),
+          application_deadline: data.applicationDeadline.toISOString(),
+          criteria: data.criteria,
+          required_documents: data.requiredDocuments,
+          custom_form_fields: data.customFormFields,
+        };
+        
+        const result = await scholarshipManagementService.updateScholarship(id, updatePayload);
+        
+        if (result.success) {
+          showToastMessage('success', 'Updated', result.message, 2000);
+          return;
+        }
+        
+        showToastMessage('error', 'Error', result.message || 'Failed to update scholarship.', 2500);
+      }
     } catch (error) {
       const handled = handleError(error, 'Failed to update scholarship. Please try again.');
       logger.error('Failed to update scholarship:', handled.raw);

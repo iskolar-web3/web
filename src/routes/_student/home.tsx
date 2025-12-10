@@ -4,84 +4,23 @@ import { Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useApplications } from '@/hooks/useApplications';
-import type { Scholarship } from '@/types/scholarship.types';
-import type { Application } from '@/types/application.types';
 import { ApplicationDetailsModal, statusStyles } from '@/components/ApplicationDetailsModal';
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
 import { Skeleton } from '@/components/ui/skeleton';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
+import type { Application } from '@/types/application.types';
 import { formatDate, formatTime, formatAmountPerScholar } from '@/utils/formatting';
-// import { scholarshipApplicationService } from '@/services/scholarship-application.service';
+import { mockApplications, mockApiDelay } from '@/mocks/applications.mock';
+import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
+
+const USE_MOCK_DATA = true;
 
 export const Route = createFileRoute('/_student/home')({
   component: Home,
 });
 
 type FilterType = 'applied' | 'past' | 'granted';
-
-const createMockScholarship = (overrides: Partial<Scholarship> = {}): Scholarship => ({
-  scholarship_id: '1',
-  sponsor_id: '1',
-  status: 'active',
-  type: 'Merit-Based',
-  purpose: 'Tuition',
-  title: 'CHED Merit Scholarship Program',
-  description:
-    'The CHED Merit Scholarship Program supports academically excellent students pursuing tertiary education in priority programs.',
-  total_amount: 10000000,
-  total_slot: 400,
-  application_deadline: 'September 21, 2025',
-  criteria: ['1st Year', 'LGU', 'Male', 'BSCS', 'BSIT', 'BSIS'],
-  required_documents: ['Voters Certificate', 'Birth Certificate', 'COR', 'Report of Grades'],
-  custom_form_fields: [],
-  image_url: 'src/logo.svg',
-  applications_count: 0,
-  sponsor: {
-    name: 'Sponsor name',
-    email: 'sponsor@example.com',
-    profile_url: 'src/logo.svg',
-  },
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  ...overrides,
-});
-
-const mockApplications: Application[] = [
-  {
-    scholarship_application_id: 'app-1',
-    status: 'pending',
-    applied_at: '2025-09-01T07:00:00Z',
-    updated_at: '2025-09-01T07:00:00Z',
-    scholarship: createMockScholarship(),
-  },
-  {
-    scholarship_application_id: 'app-2',
-    status: 'shortlisted',
-    applied_at: '2025-08-15T06:00:00Z',
-    updated_at: '2025-08-20T04:30:00Z',
-    scholarship: createMockScholarship({
-      scholarship_id: '2',
-      title: 'STEM Excellence Grant',
-      purpose: 'Allowance',
-      total_amount: 5000000,
-      total_slot: 150,
-    }),
-  },
-  {
-    scholarship_application_id: 'app-3',
-    status: 'granted',
-    applied_at: '2025-07-10T09:30:00Z',
-    updated_at: '2025-07-25T03:15:00Z',
-    scholarship: createMockScholarship({
-      scholarship_id: '3',
-      title: 'Local Government Scholarship',
-      purpose: 'Tuition',
-      total_amount: 2500000,
-      total_slot: 80,
-    }),
-  },
-];
 
 function Home() {
   usePageTitle('Home');
@@ -102,44 +41,37 @@ function Home() {
     const loadApplications = async () => {
       setLoading(true);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        setApplications(
-          mockApplications.sort(
-            (a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
-          ),
-        );
+        if (USE_MOCK_DATA) {
+          // Mock data path
+          await mockApiDelay(2000);
+          setApplications(
+            mockApplications.sort(
+              (a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
+            ),
+          );
+        } else {
+          const response = await scholarshipApplicationService.getMyApplications();
+          if (response.success && response.applications) {
+            const appsWithScholarship = response.applications.filter(
+              (application) => application.scholarship,
+            );
+            setApplications(
+              appsWithScholarship.sort(
+                (a, b) =>
+                  new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
+              ) as Application[],
+            );
+          }
+        }
+      } catch (error) {
+        const handled = handleError(error, 'Failed to connect to server.');
+        logger.error('Fetch applications error:', handled.raw);
       } finally {
         setLoading(false);
       }
     };
     loadApplications();
   }, [setApplications]);
-
-  // useEffect(() => {
-  //   const loadApplications = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const response = await scholarshipApplicationService.getMyApplications();
-  //       if (response.success && response.applications) {
-  //         const appsWithScholarship = response.applications.filter(
-  //           (application) => application.scholarship,
-  //         );
-  //         setApplications(
-  //           appsWithScholarship.sort(
-  //             (a, b) =>
-  //               new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
-  //           ) as Application[],
-  //         );
-  //       }
-  //     } catch (error) {
-  //       const handled = handleError(error, 'Failed to connect to server.');
-  //       logger.error('Fetch applications error:', handled.raw);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   loadApplications();
-  // }, [setApplications]);
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'applied', label: 'Applied' },

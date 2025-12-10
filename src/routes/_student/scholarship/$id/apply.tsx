@@ -24,11 +24,14 @@ import Toast from '@/components/Toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 import { compressFile } from '@/utils/fileCompression';
 import { normalizeText, normalizeEmail, normalizePhone, normalizeNumber } from '@/utils/normalize';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
+import { mockScholarshipDetails, mockApiDelay } from '@/mocks/scholarshipDetails.mock';
+import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
+
+const USE_MOCK_DATA = true;
 
 export const Route = createFileRoute('/_student/scholarship/$id/apply')({
   component: ApplyScholarshipPage,
@@ -144,35 +147,6 @@ function ApplyScholarshipPage() {
     setTimeout(() => setShowToast(false), duration);
   }, []);
 
-  // Mock scholarship data
-  const mockScholarship: Partial<Scholarship> = {
-    scholarship_id: '1',
-    title: 'CHED Merit Scholarship Program 2024',
-    description: 'This scholarship program aims to support outstanding students who demonstrate academic excellence and financial need.',
-    total_amount: 50000,
-    total_slot: 100,
-    application_deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    criteria: ['Minimum GWA of 1.75', 'STEM Strand Graduate', 'Filipino Citizen'],
-    required_documents: ['Birth Certificate', 'Report Card', 'Certificate of Enrollment'],
-    custom_form_fields: [
-      { type: 'text', label: 'Full Name', required: true },
-      { type: 'email', label: 'Email Address', required: true },
-      { type: 'phone', label: 'Contact Number', required: true },
-      { type: 'textarea', label: 'Why do you deserve this scholarship?', required: false },
-      { type: 'number', label: 'Current GWA', required: true },
-      { type: 'date', label: 'Date of Birth', required: true },
-      { type: 'dropdown', label: 'Year Level', required: true, options: ['1st Year', '2nd Year', '3rd Year', '4th Year'] },
-      { type: 'multiple_choice', label: 'Preferred Contact Method', required: true, options: ['Email', 'Phone', 'SMS'] },
-      { type: 'checkbox', label: 'Extracurricular Activities', required: false, options: ['Sports', 'Arts', 'Leadership', 'Community Service'] },
-      { type: 'file', label: 'Transcript of Records', required: true },
-      { type: 'file', label: 'Certificate of Registration', required: true },
-    ],
-    sponsor: {
-      name: 'Commission on Higher Education',
-      profile_url: '/src/logo.svg',
-    },
-  };
-
   const customFields = scholarship?.custom_form_fields || [];
   const validationSchema = buildValidationSchema(customFields);
 
@@ -193,18 +167,30 @@ function ApplyScholarshipPage() {
   const fetchScholarshipDetails = useCallback(async () => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setScholarship(mockScholarship);
-      
-      const defaultValues = mockScholarship.custom_form_fields?.reduce((acc, field) => {
-        acc[field.label] = field.type === 'checkbox' ? [] : '';
-        return acc;
-      }, {} as Record<string, any>);
-      reset(defaultValues);
+      if (USE_MOCK_DATA) {
+        // Mock data path
+        await mockApiDelay(2000);
+        setScholarship(mockScholarshipDetails);
+        
+        const defaultValues = mockScholarshipDetails.custom_form_fields?.reduce((acc, field) => {
+          acc[field.label] = field.type === 'checkbox' ? [] : '';
+          return acc;
+        }, {} as Record<string, any>);
+        reset(defaultValues);
+      } else {
+        // const response = await scholarshipService.getScholarshipDetails(id);
+        // if (response.success) {
+        //   setScholarship(response.scholarship);
+        //   const defaultValues = response.scholarship.custom_form_fields?.reduce((acc, field) => {
+        //     acc[field.label] = field.type === 'checkbox' ? [] : '';
+        //     return acc;
+        //   }, {} as Record<string, any>);
+        //   reset(defaultValues);
+        // }
+      }
     } catch (err) {
       const handled = handleError(err, 'Failed to connect to server.');
-      logger.error('Fetch scholarships error:', handled.raw);
-      // showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      logger.error('Fetch scholarship details error:', handled.raw);
       setError(handled.message);
     } finally {
       setLoading(false);
@@ -368,78 +354,83 @@ function ApplyScholarshipPage() {
     setShowConfirmation(false);
 
     try {
-      // const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
-
-      // if (response.success) {
-      //   showToastMessage('error', 'Already Applied', response.message, 2500);
-      //   return;
-      // }
-
-      // if (isClosed()) {
-      //   showToastMessage('error', 'Scholarship Closed', response.message, 2500);
-      //   return;
-      // }
-
-      // Transform form data into custom_form_response format
-      const customFormResponse = Object.entries(pendingData).map(([label, value]) => ({
-        label,
-        value,
-      }));
-
-      // Submit application (without files first)
-      const submitResult = await scholarshipApplicationService.submitApplication(
-        id,
-        customFormResponse
-      );
-
-      if (!submitResult.success) {
-        throw new Error(submitResult.message);
-      }
-
-      const applicationId = submitResult.application?.scholarship_application_id;
-
-      if (!applicationId) {
-        throw new Error('Application ID not returned from server');
-      }
-
-      // Upload files if any exist
-      const fileUploadPromises: Promise<any>[] = [];
-
-      for (const [fieldKey, files] of Object.entries(customFiles)) {
-        if (files.length > 0) {
-          const filesData = await Promise.all(
-            files.map(async (file) => ({
-              uri: await fileToBase64(file),
-              name: file.name,
-              mimeType: file.type,
-              size: file.size,
-            }))
-          );
-
-          fileUploadPromises.push(
-            scholarshipApplicationService.uploadApplicationFiles(
-              applicationId,
-              fieldKey,
-              filesData
-            )
-          );
-        }
-      }
-
-      if (fileUploadPromises.length > 0) {
-        const uploadResults = await Promise.all(fileUploadPromises);
+      if (USE_MOCK_DATA) {
+        // Mock submission
+        await mockApiDelay(2000);
+        showToastMessage('success', 'Success', 'Application submitted successfully', 2000);
         
-        const failedUploads = uploadResults.filter(response => !response.success);
-        if (failedUploads.length > 0) {
-          logger.warn('Some files failed to upload:', failedUploads);
-        }
-      }
+        setTimeout(() => {
+          window.history.back();
+        }, 1500);
+      } else {
+        const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship?.scholarship_id));
 
-      // showToastMessage('success', 'Success', response.message, 2000);
-      
-      setTimeout(() => {
-        window.history.back();
-      }, 1500);
+        if (response.success) {
+          showToastMessage('error', 'Already Applied', response.message, 2500);
+          return;
+        }
+
+        // Transform form data into custom_form_response format
+        const customFormResponse = Object.entries(pendingData).map(([label, value]) => ({
+          label,
+          value,
+        }));
+
+        // Submit application (without files first)
+        const submitResult = await scholarshipApplicationService.submitApplication(
+          id,
+          customFormResponse
+        );
+
+        if (!submitResult.success) {
+          throw new Error(submitResult.message);
+        }
+
+        const applicationId = submitResult.application?.scholarship_application_id;
+
+        if (!applicationId) {
+          throw new Error('Application ID not returned from server');
+        }
+
+        // Upload files if any exist
+        const fileUploadPromises: Promise<any>[] = [];
+
+        for (const [fieldKey, files] of Object.entries(customFiles)) {
+          if (files.length > 0) {
+            const filesData = await Promise.all(
+              files.map(async (file) => ({
+                uri: await fileToBase64(file),
+                name: file.name,
+                mimeType: file.type,
+                size: file.size,
+              }))
+            );
+
+            fileUploadPromises.push(
+              scholarshipApplicationService.uploadApplicationFiles(
+                applicationId,
+                fieldKey,
+                filesData
+              )
+            );
+          }
+        }
+
+        if (fileUploadPromises.length > 0) {
+          const uploadResults = await Promise.all(fileUploadPromises);
+          
+          const failedUploads = uploadResults.filter(response => !response.success);
+          if (failedUploads.length > 0) {
+            logger.warn('Some files failed to upload:', failedUploads);
+          }
+        }
+
+        showToastMessage('success', 'Success', 'Application submitted successfully', 2000);
+        
+        setTimeout(() => {
+          window.history.back();
+        }, 1500);
+      }
     } catch (error) {
       const handled = handleError(error, 'Failed to submit application.');
       logger.error('Submission error:', handled.raw);
