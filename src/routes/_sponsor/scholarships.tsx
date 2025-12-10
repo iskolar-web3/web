@@ -1,19 +1,21 @@
-import { useState, useMemo, useEffect, useCallback  } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSponsorScholarships } from '@/hooks/queries/useSponsorScholarships';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Filter, AlertCircle, Loader2, X, GraduationCap, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SponsorFilterSelect from '@/components/SponsorFilters';
-import SponsorScholarshipCard from '@/components/SponsorScholarshipCard';
+import FilterSelect from '@/components/sponsor/Filters';
+import ScholarshipCard from '@/components/sponsor/ScholarshipCard';
 import ScholarshipCardSkeleton from '@/components/ScholarshipCardSkeleton';
-import SponsorScholarshipDetailsModal from '@/components/SponsorScholarshipDetailsModal';
+import ScholarshipDetailsModal from '@/components/sponsor/ScholarshipDetailsModal';
 import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { handleError } from '@/lib/errorHandler';
-import { logger } from "@/lib/logger";
-import { mockSponsorScholarships, mockApiDelay } from '@/mocks/scholarships.mock';
 import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
+import { logger } from "@/lib/logger";
+import { mockApiDelay } from '@/mocks/scholarships.mock';
 
 const USE_MOCK_DATA = true;
 
@@ -25,6 +27,7 @@ function Scholarships() {
   usePageTitle("Scholarships")
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [sortBy, setSortBy] = useState('Newest');
   const [scholarshipType, setScholarshipType] = useState('All');
@@ -34,9 +37,9 @@ function Scholarships() {
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
-  const [loading, setLoading] = useState(false);
+  const { data: scholarships = [], isLoading: loading, error, isError } = useSponsorScholarships();
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [scholarshipToDelete, setScholarshipToDelete] = useState<Scholarship | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -73,15 +76,17 @@ function Scholarships() {
         await mockApiDelay(1000);
         showSuccess('Success', 'Scholarship deleted successfully', 2000);
 
-        fetchMyScholarships();
+        queryClient.invalidateQueries({ queryKey: ['my-scholarships'] });
+
       } else {
         const response = await scholarshipManagementService.deleteScholarship(scholarshipToDelete.scholarship_id);
         
         if(response.success) {
           showSuccess('Success', response.message, 2000);
 
-          fetchMyScholarships(); 
+          queryClient.invalidateQueries({ queryKey: ['my-scholarships'] });
         }
+
       }
     } catch (error) {
       const handled = handleError(error, 'Failed to delete scholarship.');
@@ -94,33 +99,12 @@ function Scholarships() {
     }
   };
 
-  const fetchMyScholarships = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      if (USE_MOCK_DATA) {
-        // Mock data path
-        await mockApiDelay(2000);
-        setScholarships(mockSponsorScholarships);
-      } else {
-        const response = await scholarshipManagementService.getMyScholarships();
-        
-        if (response.success && response.scholarships) {
-          setScholarships(response.scholarships);
-        }
-      }
-    } catch (error) {
-      const handled = handleError(error, 'Failed to connect to server.');
-      logger.error('Fetch scholarships error:', handled.raw);
-      showError(`Error ${handled.code}`, handled.message, 2500);
-    } finally {
-      setLoading(false);
-    }
-  }, [showError, showSuccess]);
-  
   useEffect(() => {
-    fetchMyScholarships();
-  }, [fetchMyScholarships]);
+    if (isError && error) {
+      showError('Error', error.message, 2500);
+    }
+  }, [isError, error, showError]);
+
 
   const filteredScholarships = useMemo(() => {
     return scholarships.filter((scholarship) => {
@@ -220,7 +204,7 @@ function Scholarships() {
 
               {/* Filters Content */}
               <div className="overflow-y-auto p-4 pb-6 max-h-[calc(85vh-72px)]">
-                <SponsorFilterSelect
+                <FilterSelect
                   title="Sort By"
                   options={[
                     'Newest',
@@ -238,14 +222,14 @@ function Scholarships() {
                   onChange={setSortBy}
                 />
 
-                <SponsorFilterSelect
+                <FilterSelect
                   title="Scholarship Type"
                   options={['All', 'Merit-Based', 'Skill-Based']}
                   value={scholarshipType}
                   onChange={setScholarshipType}
                 />
 
-                <SponsorFilterSelect
+                <FilterSelect
                   title="Scholarship Purpose"
                   options={['All', 'Allowance', 'Tuition']}
                   value={purpose}
@@ -354,7 +338,7 @@ function Scholarships() {
                     <h2 className="text-md text-primary">Filters</h2>
                   </div>
 
-                  <SponsorFilterSelect
+                  <FilterSelect
                     title="Sort By"
                     options={[
                       'Newest',
@@ -372,14 +356,14 @@ function Scholarships() {
                     onChange={setSortBy}
                   />
 
-                  <SponsorFilterSelect
+                  <FilterSelect
                     title="Scholarship Type"
                     options={['All', 'Merit-Based', 'Skill-Based']}
                     value={scholarshipType}
                     onChange={setScholarshipType}
                   />
 
-                  <SponsorFilterSelect
+                  <FilterSelect
                     title="Scholarship Purpose"
                     options={['All', 'Allowance', 'Tuition']}
                     value={purpose}
@@ -493,7 +477,7 @@ function Scholarships() {
                 </div>
               ) : (
                 filteredScholarships.map((scholarship, index) => (
-                  <SponsorScholarshipCard
+                  <ScholarshipCard
                     key={`${scholarship.scholarship_id}-${index}`}
                     scholarship={scholarship}
                     index={index}
@@ -510,7 +494,7 @@ function Scholarships() {
       </div>
 
       {selectedScholarship && (
-        <SponsorScholarshipDetailsModal
+        <ScholarshipDetailsModal
           scholarship={selectedScholarship}
           onClose={() => setSelectedScholarship(null)}
           onEdit={handleEdit}

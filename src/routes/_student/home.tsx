@@ -4,19 +4,14 @@ import { Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useApplications } from '@/hooks/useApplications';
-import { ApplicationDetailsModal, statusStyles } from '@/components/ApplicationDetailsModal';
+import { ApplicationDetailsModal, statusStyles } from '@/components/student/ApplicationDetailsModal';
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
 import { Skeleton } from '@/components/ui/skeleton';
-import { handleError } from '@/lib/errorHandler';
-import { logger } from "@/lib/logger";
 import { useToast } from '@/hooks/useToast';
 import Toast from '@/components/Toast';
 import type { Application } from '@/types/application.types';
 import { formatDate, formatTime, formatAmountPerScholar } from '@/utils/formatting';
-import { mockApplications, mockApiDelay } from '@/mocks/applications.mock';
-import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
-
-const USE_MOCK_DATA = true;
+import { useMyApplications } from '@/hooks/queries/useMyApplications';
 
 export const Route = createFileRoute('/_student/home')({
   component: Home,
@@ -29,8 +24,9 @@ function Home() {
 
   const navigate = useNavigate();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
-  const [loading, setLoading] = useState(false);
   const { toast, showError } = useToast();
+  const { data: fetchedApplications, isLoading: loading, error, isError } = useMyApplications();
+
 
   const {
     applications,
@@ -41,41 +37,16 @@ function Home() {
   } = useApplications();
 
   useEffect(() => {
-    const loadApplications = async () => {
-      setLoading(true);
-      try {
-        if (USE_MOCK_DATA) {
-          // Mock data path
-          await mockApiDelay(2000);
-          setApplications(
-            mockApplications.sort(
-              (a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
-            ),
-          );
-        } else {
-          const response = await scholarshipApplicationService.getMyApplications();
-          if (response.success && response.applications) {
-            const appsWithScholarship = response.applications.filter(
-              (application) => application.scholarship,
-            );
-            setApplications(
-              appsWithScholarship.sort(
-                (a, b) =>
-                  new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
-              ) as Application[],
-            );
-          }
-        }
-      } catch (error) {
-        const handled = handleError(error, 'Failed to connect to server.');
-        logger.error('Fetch applications error:', handled.raw);
-        showError(`Error ${handled.code}`, handled.message, 2500);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadApplications();
-  }, [setApplications]);
+    if (fetchedApplications) {
+      setApplications(fetchedApplications);
+    }
+  }, [fetchedApplications, setApplications]);
+
+  useEffect(() => {
+    if (isError && error) {
+      showError('Error', error.message, 2500);
+    }
+  }, [isError, error, showError]);
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'applied', label: 'Applied' },

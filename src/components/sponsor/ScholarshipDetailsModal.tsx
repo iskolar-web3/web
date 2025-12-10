@@ -30,7 +30,7 @@ interface SponsorScholarshipDetailsModalProps {
   onViewApplicants?: (scholarship: Scholarship) => void;
 }
 
-export default function SponsorScholarshipDetailsModal({
+export default function ScholarshipDetailsModal({
   scholarship,
   onClose,
   onEdit,

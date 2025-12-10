@@ -31,6 +31,7 @@ import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
 import { mockScholarshipDetails, mockApiDelay } from '@/mocks/scholarshipDetails.mock';
 import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
+import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
 
 const USE_MOCK_DATA = true;
 
@@ -168,15 +169,15 @@ function ApplyScholarshipPage() {
         }, {} as Record<string, any>);
         reset(defaultValues);
       } else {
-        // const response = await scholarshipService.getScholarshipDetails(id);
-        // if (response.success) {
-        //   setScholarship(response.scholarship);
-        //   const defaultValues = response.scholarship.custom_form_fields?.reduce((acc, field) => {
-        //     acc[field.label] = field.type === 'checkbox' ? [] : '';
-        //     return acc;
-        //   }, {} as Record<string, any>);
-        //   reset(defaultValues);
-        // }
+        const response = await scholarshipManagementService.getScholarshipById(id);
+        if (response.success && response.scholarship) {
+          setScholarship(response.scholarship);
+          const defaultValues = response.scholarship.custom_form_fields?.reduce((acc, field) => {
+            acc[field.label] = field.type === 'checkbox' ? [] : '';
+            return acc;
+          }, {} as Record<string, any>);
+          reset(defaultValues);
+        }
       }
     } catch (err) {
       const handled = handleError(err, 'Failed to connect to server.');

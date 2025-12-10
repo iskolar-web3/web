@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -25,19 +26,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import type { Scholarship } from '@/types/scholarship.types';
 import type { ScholarshipApplication } from '@/services/scholarshipApplication.service';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
 import { formatDateTime } from '@/utils/formatting';
+import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
 import { 
-  mockScholarshipForApplicants, 
-  mockGetScholarshipApplications,
   mockUpdateApplicationStatus,
   mockBulkUpdateApplicationStatus
 } from '@/mocks/scholarshipApplicants.mock';
-import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
-import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
+import { useScholarshipApplicants } from '@/hooks/queries/useScholarshipApplicants';
 
 const USE_MOCK_DATA = true;
 
@@ -61,11 +59,28 @@ function ApplicantsListPage() {
   usePageTitle("Applicants")
 
   const { id } = Route.useParams();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [applicants, setApplicants] = useState<Applicant[]>([]);
-  const [scholarship, setScholarship] = useState<Scholarship | null>(null);
+  const queryClient = useQueryClient();
+
+  // Query Hooks
+  const { applicantsQuery, scholarshipQuery } = useScholarshipApplicants(id || '');
+  const { 
+    data: applicants = [], 
+    isLoading: applicantsLoading, 
+    error: applicantsError,
+    isError: isApplicantsError
+  } = applicantsQuery;
+
+  const {
+    data: scholarship = null,
+    isLoading: scholarshipLoading,
+    error: scholarshipError
+  } = scholarshipQuery;
+
+  const loading = applicantsLoading || scholarshipLoading;
+  const error = (isApplicantsError ? applicantsError?.message : null) || (scholarshipError ? scholarshipError?.message : null);
+
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'shortlisted' | 'approved' | 'denied'>('all');
@@ -90,49 +105,12 @@ function ApplicantsListPage() {
   const [denialRemarks, setDenialRemarks] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  const fetchApplicants = useCallback(async () => {
-    if (!id) return;
-
-    try {
-      setError(null);
-      setLoading(true);
-
-      if (USE_MOCK_DATA) {
-        // Use mock data
-        const response = await mockGetScholarshipApplications(id);
-        
-        if (response.success && response.applications) {
-          setScholarship(mockScholarshipForApplicants);
-          setApplicants(response.applications);
-        } else {
-          setError(response.message || 'Failed to load applicants');
-        }
-      } else {
-        const scholarshipRes = await scholarshipManagementService.getScholarshipById(id);
-        if (scholarshipRes.success && scholarshipRes.scholarship) {
-          setScholarship(scholarshipRes.scholarship);
-        }
-
-        const response = await scholarshipApplicationService.getScholarshipApplications(id);
-        if (response.success && response.applications) {
-          setApplicants(response.applications);
-        } else {
-          setError(response.message || 'Failed to load applicants');
-        }
-      }
-    } catch (error) {
-      const handled = handleError(error, 'Failed to load applicants');
-      setError(handled.message);
-      logger.error('Load applicants error:', handled.raw);
-      showError(`Error ${handled.code}`, handled.message, 2500);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
-    fetchApplicants();
-  }, [fetchApplicants]);
+    if (error) {
+      showError('Error', error, 2500);
+    }
+  }, [error, showError]);
+
 
   const toggleBulkMode = () => {
     setBulkMode(!bulkMode);
@@ -182,9 +160,10 @@ function ApplicantsListPage() {
         );
 
         if (response.success) {
-          // Update local state
-          setApplicants((prev) =>
-            prev.map((app) =>
+          // Update Cache
+          queryClient.setQueryData(['scholarship-applicants', id], (oldData: Applicant[] | undefined) => {
+            if (!oldData) return [];
+            return oldData.map((app) =>
               selectedApplicantIds.has(app.scholarship_application_id)
                 ? {
                     ...app,
@@ -193,8 +172,9 @@ function ApplicantsListPage() {
                     updated_at: new Date().toISOString(),
                   }
                 : app
-            )
-          );
+            );
+          });
+
           showSuccess('Success', response.message, 2000);
           setBulkActionModal(false);
           setBulkRemarks('');
@@ -216,7 +196,9 @@ function ApplicantsListPage() {
           setBulkRemarks('');
           setSelectedApplicantIds(new Set());
           setBulkMode(false);
-          fetchApplicants();
+          setBulkMode(false);
+          queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
+
         } else {
           showError('Error', response.message, 2500);
         }
@@ -249,8 +231,9 @@ function ApplicantsListPage() {
         );
 
         if (response.success) {
-          setApplicants((prev) =>
-            prev.map((app) =>
+          queryClient.setQueryData(['scholarship-applicants', id], (oldData: Applicant[] | undefined) => {
+            if (!oldData) return [];
+            return oldData.map((app) =>
               app.scholarship_application_id === applicationId
                 ? {
                     ...app,
@@ -259,8 +242,9 @@ function ApplicantsListPage() {
                     updated_at: new Date().toISOString(),
                   }
                 : app
-            )
-          );
+            );
+          });
+
           
           if (selectedApplicant && selectedApplicant.scholarship_application_id === applicationId) {
             setSelectedApplicant({
@@ -290,7 +274,9 @@ function ApplicantsListPage() {
           setModalVisible(false);
           setConfirmationModal(false);
           setDenialRemarks('');
-          fetchApplicants();
+          setDenialRemarks('');
+          queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
+
         } else {
           showError('Error', response.message, 2500);
         }
@@ -429,7 +415,8 @@ function ApplicantsListPage() {
           <AlertCircle className="w-12 h-12 text-[#FF6B6B]" />
           <p className="mt-4 text-[#5D6673] text-center">{error}</p>
           <button
-            onClick={fetchApplicants}
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] })}
+
             className="mt-4 px-6 py-3 bg-[#3A52A6] text-tertiary rounded-md hover:bg-[#2A4296] transition-colors"
           >
             Retry

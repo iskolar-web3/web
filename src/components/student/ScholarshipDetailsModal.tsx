@@ -206,7 +206,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             ) : (
               <button
                 onClick={handleApply} 
-                className="w-full bg-[#3A52A6] cursor-pointer text-tertiary py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:bg-[#2F4189] hover:shadow-lg hover:shadow-[#3A52A6]/30 active:scale-[0.98] shadow-md mt-1.5 mb-2"
+                className="w-full bg-[#3A52A6] cursor-pointer text-tertiary py-3.5 rounded-lg text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:bg-[#2F4189] hover:shadow-lg hover:shadow-[#3A52A6]/30 active:scale-[0.98] shadow-md mt-1.5 mb-2"
               >
                 Apply Now
                 <span>→</span>

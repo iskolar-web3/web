@@ -2,19 +2,19 @@ import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface SponsorFilterSelectProps {
+interface FilterSelectProps {
   title: string;
   options: string[];
   value: string;
   onChange: (value: string) => void;
 }
 
-export default function SponsorFilterSelect({
+export default function FilterSelect({
   title,
   options,
   value,
   onChange,
-}: SponsorFilterSelectProps) {
+}: FilterSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (

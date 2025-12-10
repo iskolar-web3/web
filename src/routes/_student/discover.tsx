@@ -1,21 +1,16 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import ScholarshipCard from "@/components/ScholarshipCard"; 
+import ScholarshipCard from "@/components/student/ScholarshipCard"; 
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton"; 
-import Filters from "@/components/Filters"; 
+import Filters from "@/components/student/Filters"; 
 import { Filter, X, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import type { Scholarship } from '@/types/scholarship.types';
-import ScholarshipDetailsModal from '@/components/ScholarshipDetailsModal';
+import ScholarshipDetailsModal from '@/components/student/ScholarshipDetailsModal';
 import { usePageTitle } from "@/hooks/usePageTitle"
-import { handleError } from '@/lib/errorHandler';
-import { logger } from "@/lib/logger";
-import { mockScholarships, mockApiDelay } from '@/mocks/scholarships.mock';
-import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
-
-const USE_MOCK_DATA = true;
+import { useScholarships } from '@/hooks/queries/useScholarships';
 
 export const Route = createFileRoute('/_student/discover')({
   component: DiscoverScholarship,
@@ -32,40 +27,16 @@ function DiscoverScholarship() {
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
-  const [loading, setLoading] = useState(false);
-  const { toast, showSuccess, showError } = useToast();
+  const { toast, showError } = useToast();
 
-  const fetchScholarships = useCallback(async () => {
-    try {
-      setLoading(true);
-      
-      if (USE_MOCK_DATA) {
-        // Mock data path
-        await mockApiDelay(2000);
-        setScholarships(mockScholarships);
-      } else {
-        const response = await scholarshipManagementService.getAllScholarships();
-        
-        if (response.success && response.scholarships) {
-          setScholarships(response.scholarships);
-        } else {
-          showError('Error', response.message, 2500);
-        }
-      }
-    } catch (error) {
-      const handled = handleError(error, 'Failed to connect to server.');
-      logger.error('Fetch scholarships error:', handled.raw);
-      showError(`Error ${handled.code}`, handled.message, 2500);
-    } finally {
-      setLoading(false);
-    }
-  }, [showSuccess, showError]);
-
+  const { data: scholarships = [], isLoading: loading, error, isError } = useScholarships();
+  
   useEffect(() => {
-    fetchScholarships();
-  }, [fetchScholarships]);
+    if (isError && error) {
+      showError('Error', error.message, 2500);
+    }
+  }, [isError, error, showError]);
 
   const filteredScholarships = useMemo(() => {
     return scholarships.filter((scholarship) => {
