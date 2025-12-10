@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
 import type { ScholarshipApplication } from '@/services/scholarshipApplication.service';
@@ -78,12 +79,7 @@ function ApplicantsListPage() {
   const [bulkRemarks, setBulkRemarks] = useState('');
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
-  const [showToast, setShowToast] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
+  const { toast, showSuccess, showError } = useToast();
 
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState(false);
@@ -93,12 +89,6 @@ function ApplicantsListPage() {
   } | null>(null);
   const [denialRemarks, setDenialRemarks] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  }, []);
 
   const fetchApplicants = useCallback(async () => {
     if (!id) return;
@@ -134,6 +124,7 @@ function ApplicantsListPage() {
       const handled = handleError(error, 'Failed to load applicants');
       setError(handled.message);
       logger.error('Load applicants error:', handled.raw);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
     }
@@ -169,7 +160,7 @@ function ApplicantsListPage() {
 
   const handleBulkAction = (action: 'shortlisted' | 'approved' | 'denied') => {
     if (selectedApplicantIds.size === 0) {
-      showToastMessage('error', 'Error', 'Please select at least one applicant', 2500);
+      showError('Error', 'Please select at least one applicant', 2500);
       return;
     }
     setBulkAction(action);
@@ -204,37 +195,36 @@ function ApplicantsListPage() {
                 : app
             )
           );
-          showToastMessage('success', 'Success', response.message, 2000);
+          showSuccess('Success', response.message, 2000);
           setBulkActionModal(false);
           setBulkRemarks('');
           setSelectedApplicantIds(new Set());
           setBulkMode(false);
         } else {
-          showToastMessage('error', 'Error', response.message, 2500);
+          showError(`Error`, response.message, 2500);
         }
       } else {
-        // Real API call (commented out for reference)
-        // const response = await scholarshipApplicationService.bulkUpdateApplicationStatus(
-        //   Array.from(selectedApplicantIds),
-        //   bulkAction,
-        //   bulkRemarks.trim() || undefined
-        // );
+        const response = await scholarshipApplicationService.bulkUpdateApplicationStatus(
+          Array.from(selectedApplicantIds),
+          bulkAction,
+          bulkRemarks.trim() || undefined
+        );
 
-        // if (response.success) {
-        //   showToastMessage('success', 'Success', `${selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
-        //   setBulkActionModal(false);
-        //   setBulkRemarks('');
-        //   setSelectedApplicantIds(new Set());
-        //   setBulkMode(false);
-        //   fetchApplicants();
-        // } else {
-        //   showToastMessage('error', 'Error', response.message, 2500);
-        // }
+        if (response.success) {
+          showSuccess('Success', `${selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
+          setBulkActionModal(false);
+          setBulkRemarks('');
+          setSelectedApplicantIds(new Set());
+          setBulkMode(false);
+          fetchApplicants();
+        } else {
+          showError('Error', response.message, 2500);
+        }
       }
     } catch (error) {
       const handled = handleError(error, 'Failed to update applications');
       logger.error('Bulk update error:', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setIsBulkUpdating(false);
     }
@@ -281,35 +271,34 @@ function ApplicantsListPage() {
             });
           }
           
-          showToastMessage('success', 'Success', response.message, 2000);
+          showSuccess('Success', response.message, 2000);
           handleCloseModal();
           setConfirmationModal(false);
           setDenialRemarks('');
         } else {
-          showToastMessage('error', 'Error', response.message, 2500);
+          showError(`Error`, response.message, 2500);
         }
       } else {
-        // Real API call (commented out for reference)
-        // const response = await scholarshipApplicationService.updateApplicationStatus(
-        //   applicationId,
-        //   newStatus,
-        //   remarks
-        // );
+        const response = await scholarshipApplicationService.updateApplicationStatus(
+          applicationId,
+          newStatus,
+          remarks
+        );
 
-        // if (response.success) {
-        //   showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
-        //   setModalVisible(false);
-        //   setConfirmationModal(false);
-        //   setDenialRemarks('');
-        //   fetchApplicants();
-        // } else {
-        //   showToastMessage('error', 'Error', response.message, 2500);
-        // }
+        if (response.success) {
+          showSuccess('Success', `Applicant ${newStatus}`, 2000);
+          setModalVisible(false);
+          setConfirmationModal(false);
+          setDenialRemarks('');
+          fetchApplicants();
+        } else {
+          showError('Error', response.message, 2500);
+        }
       }
     } catch (error) {
       const handled = handleError(error, 'Failed to update application status');
       logger.error('Update application status error:', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -393,7 +382,7 @@ function ApplicantsListPage() {
   
   return (
     <div className="min-h-screen bg-[#F8F9FC]">
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      {toast && <Toast {...toast} />}
 
       {loading ? (
         <div className="max-w-3xl mx-auto">
@@ -493,7 +482,7 @@ function ApplicantsListPage() {
             {!bulkMode && (
               <button
                 onClick={() => {
-                  showToastMessage('error', 'Feature Unavailable', 'This feature is not available yet.', 2500);
+                  showError('Feature Unavailable', 'This feature is not available yet.', 2500);
                 }}
                 className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#EFA508] text-tertiary rounded-md hover:bg-[#D89407] transition-colors text-[11px] md:text-xs"
               >

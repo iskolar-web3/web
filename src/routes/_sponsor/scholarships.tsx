@@ -9,6 +9,7 @@ import SponsorScholarshipDetailsModal from '@/components/SponsorScholarshipDetai
 import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
 import { mockSponsorScholarships, mockApiDelay } from '@/mocks/scholarships.mock';
@@ -36,21 +37,11 @@ function Scholarships() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
   const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [scholarshipToDelete, setScholarshipToDelete] = useState<Scholarship | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
 
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  }, []);
+  const { toast, showSuccess, showError } = useToast();
 
   const handleViewApplicants = (_scholarship: Scholarship) => {
     // navigate({ 
@@ -80,14 +71,14 @@ function Scholarships() {
       if (USE_MOCK_DATA) {
         // Mock delete
         await mockApiDelay(1000);
-        showToastMessage('success', 'Success', 'Scholarship deleted successfully', 2000);
+        showSuccess('Success', 'Scholarship deleted successfully', 2000);
 
         fetchMyScholarships();
       } else {
         const response = await scholarshipManagementService.deleteScholarship(scholarshipToDelete.scholarship_id);
         
         if(response.success) {
-          showToastMessage('success', 'Success', response.message, 2000);
+          showSuccess('Success', response.message, 2000);
 
           fetchMyScholarships(); 
         }
@@ -95,7 +86,7 @@ function Scholarships() {
     } catch (error) {
       const handled = handleError(error, 'Failed to delete scholarship.');
       logger.error('Delete scholarship error:', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -121,11 +112,11 @@ function Scholarships() {
     } catch (error) {
       const handled = handleError(error, 'Failed to connect to server.');
       logger.error('Fetch scholarships error:', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
     }
-  }, [showToastMessage]);
+  }, [showError, showSuccess]);
   
   useEffect(() => {
     fetchMyScholarships();
@@ -163,7 +154,7 @@ function Scholarships() {
 
   return (
     <div className="min-h-screen">
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      {toast && <Toast {...toast} />}
 
       {/* Mobile/Tablet Layout */}
       <div className="lg:hidden space-y-2">

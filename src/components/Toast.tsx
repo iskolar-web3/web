@@ -4,7 +4,7 @@ import type { JSX } from "react";
 
 interface ToastProps {
   visible: boolean;
-  type: "success" | "error";
+  type: "success" | "error" | 'info' | 'warning';
   title: string;
   message: string;
 }

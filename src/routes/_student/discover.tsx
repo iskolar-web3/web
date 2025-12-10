@@ -6,6 +6,7 @@ import Filters from "@/components/Filters";
 import { Filter, X, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 import type { Scholarship } from '@/types/scholarship.types';
 import ScholarshipDetailsModal from '@/components/ScholarshipDetailsModal';
 import { usePageTitle } from "@/hooks/usePageTitle"
@@ -34,18 +35,7 @@ function DiscoverScholarship() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
   const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
-
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  }, []);
+  const { toast, showSuccess, showError } = useToast();
 
   const fetchScholarships = useCallback(async () => {
     try {
@@ -61,17 +51,17 @@ function DiscoverScholarship() {
         if (response.success && response.scholarships) {
           setScholarships(response.scholarships);
         } else {
-          showToastMessage('error', 'Error', response.message, 2500);
+          showError('Error', response.message, 2500);
         }
       }
     } catch (error) {
       const handled = handleError(error, 'Failed to connect to server.');
       logger.error('Fetch scholarships error:', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
     }
-  }, [showToastMessage]);
+  }, [showSuccess, showError]);
 
   useEffect(() => {
     fetchScholarships();
@@ -108,7 +98,7 @@ function DiscoverScholarship() {
 
   return (
     <div className="min-h-screen">
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} /> 
+      {toast && <Toast {...toast} />}
       
       {/* Mobile/Tablet Layout */}
       <motion.div

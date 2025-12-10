@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
 import { handleError } from '@/lib/errorHandler';
@@ -133,12 +134,7 @@ function EditScholarshipPage() {
   const [dropdownOptionInput, setDropdownOptionInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
-  const [showToast, setShowToast] = useState(false);
+  const { toast, showSuccess, showError } = useToast();
 
   const criteria = watch('criteria');
   const requiredDocuments = watch('requiredDocuments');
@@ -147,12 +143,6 @@ function EditScholarshipPage() {
   const type = watch('type');
   const purpose = watch('purpose');
   const status = watch('status');
-
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  }, []);
 
   const hydrateForm = useCallback((scholarship: Scholarship) => {
     reset({
@@ -189,11 +179,11 @@ function EditScholarshipPage() {
     } catch (error) {
       const handled = handleError(error, 'Unable to load scholarship details.');
       logger.error('Failed to load scholarship:', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message);
     } finally {
       setLoading(false);
     }
-  }, [id, hydrateForm, showToastMessage]);
+  }, [id, hydrateForm, showSuccess, showError]);
 
   useEffect(() => {
     loadScholarshipDetails();
@@ -331,7 +321,7 @@ function EditScholarshipPage() {
       if (USE_MOCK_DATA) {
         // Mock submission
         await mockApiDelay(1500);
-        showToastMessage('success', 'Mock Update', `"${data.title}" saved.`, 2000);
+        showSuccess('Mock Update', `"${data.title}" saved.`, 2000);
       } else {
         const updatePayload = {
           type: data.type,
@@ -350,16 +340,16 @@ function EditScholarshipPage() {
         const result = await scholarshipManagementService.updateScholarship(id, updatePayload);
         
         if (result.success) {
-          showToastMessage('success', 'Updated', result.message, 2000);
+          showSuccess('Updated', result.message, 2000);
           return;
         }
         
-        showToastMessage('error', 'Error', result.message || 'Failed to update scholarship.', 2500);
+        showError('Error', result.message, 2500);
       }
     } catch (error) {
       const handled = handleError(error, 'Failed to update scholarship. Please try again.');
       logger.error('Failed to update scholarship:', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setSaving(false);
     }
@@ -449,7 +439,7 @@ function EditScholarshipPage() {
 
   return (
     <div className="min-h-screen">
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      {toast && <Toast {...toast} />}
       
       <div className="max-w-[40rem] mx-auto">
         <div className="space-y-4">

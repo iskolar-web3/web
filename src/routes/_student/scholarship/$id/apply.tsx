@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -134,18 +135,7 @@ function ApplyScholarshipPage() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingData, setPendingData] = useState<Record<string, any> | null>(null);
   const [customFiles, setCustomFiles] = useState<Record<string, File[]>>({});
-  const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
-  const [showToast, setShowToast] = useState(false);
-
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  }, []);
+  const { toast, showSuccess, showError } = useToast();
 
   const customFields = scholarship?.custom_form_fields || [];
   const validationSchema = buildValidationSchema(customFields);
@@ -217,7 +207,7 @@ function ApplyScholarshipPage() {
     // Validate file size 
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      showToastMessage('error', 'File Too Large', `Maximum file size is 10MB.`, 2500);
+      showError('File Too Large', `Maximum file size is 10MB.`, 2500);
       event.target.value = ''; 
       return;
     }
@@ -231,7 +221,7 @@ function ApplyScholarshipPage() {
     ];
     
     if (!allowedTypes.includes(file.type)) {
-      showToastMessage('error', 'Invalid File Type', 'Only PDF and image files (JPEG, PNG) are allowed', 2500);
+      showError('Invalid File Type', 'Only PDF and image files are allowed', 2500);
       event.target.value = ''; 
       return;
     }
@@ -240,7 +230,7 @@ function ApplyScholarshipPage() {
     const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
     
     if (!allowedExtensions.includes(fileExtension)) {
-      showToastMessage('error', 'Invalid File Extension', 'File extension does not match allowed types', 2500);
+      showError('Invalid File Extension', 'File extension does not match allowed types', 2500);
       event.target.value = '';
       return;
     }
@@ -255,7 +245,7 @@ function ApplyScholarshipPage() {
       }));
     } catch (error) {
       logger.error('File compression error:', error);
-      showToastMessage('error', 'Compression Failed', 'Using original file', 2000);
+      showError('Compression Failed', 'Using original file', 2000);
       
       setCustomFiles(prev => ({
         ...prev,
@@ -339,7 +329,7 @@ function ApplyScholarshipPage() {
     });
 
     if (fileErrors.length > 0) {
-      showToastMessage('error', 'Missing Required Files', fileErrors.join(', '), 2500);
+      showError('Missing Required Files', fileErrors.join(', '), 2500);
       return;
     }
 
@@ -357,7 +347,7 @@ function ApplyScholarshipPage() {
       if (USE_MOCK_DATA) {
         // Mock submission
         await mockApiDelay(2000);
-        showToastMessage('success', 'Success', 'Application submitted successfully', 2000);
+        showSuccess('Success', 'Application submitted successfully', 2000);
         
         setTimeout(() => {
           window.history.back();
@@ -366,7 +356,7 @@ function ApplyScholarshipPage() {
         const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship?.scholarship_id));
 
         if (response.success) {
-          showToastMessage('error', 'Already Applied', response.message, 2500);
+          showError('Already Applied', response.message, 2500);
           return;
         }
 
@@ -425,7 +415,7 @@ function ApplyScholarshipPage() {
           }
         }
 
-        showToastMessage('success', 'Success', 'Application submitted successfully', 2000);
+        showSuccess('Success', 'Application submitted successfully', 2000);
         
         setTimeout(() => {
           window.history.back();
@@ -434,7 +424,7 @@ function ApplyScholarshipPage() {
     } catch (error) {
       const handled = handleError(error, 'Failed to submit application.');
       logger.error('Submission error:', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setSubmitting(false);
     }
@@ -797,7 +787,7 @@ function ApplyScholarshipPage() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FC]">
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      {toast && <Toast {...toast} />}
 
       <div className="max-w-[40rem] mx-auto space-y-4">
         {/* Scholarship Details */}

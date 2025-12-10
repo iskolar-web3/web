@@ -9,6 +9,8 @@ import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
 import { Skeleton } from '@/components/ui/skeleton';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
+import { useToast } from '@/hooks/useToast';
+import Toast from '@/components/Toast';
 import type { Application } from '@/types/application.types';
 import { formatDate, formatTime, formatAmountPerScholar } from '@/utils/formatting';
 import { mockApplications, mockApiDelay } from '@/mocks/applications.mock';
@@ -28,6 +30,7 @@ function Home() {
   const navigate = useNavigate();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(false);
+  const { toast, showError } = useToast();
 
   const {
     applications,
@@ -66,6 +69,7 @@ function Home() {
       } catch (error) {
         const handled = handleError(error, 'Failed to connect to server.');
         logger.error('Fetch applications error:', handled.raw);
+        showError(`Error ${handled.code}`, handled.message, 2500);
       } finally {
         setLoading(false);
       }
@@ -81,6 +85,8 @@ function Home() {
 
   return (
     <div className="min-h-screen">
+      {toast && <Toast {...toast} />}
+      
       <div className="max-w-[44rem] mx-auto space-y-12">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">

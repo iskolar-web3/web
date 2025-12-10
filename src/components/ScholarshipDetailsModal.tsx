@@ -4,25 +4,15 @@ import { useNavigate } from "@tanstack/react-router";
 import { Calendar, Users, Coins, ChevronsRight, LockKeyhole } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
-// import { scholarshipApplicationService } from '@/services/scholarship-application.service';
+import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
 
 export default function ScholarshipDetailsModal({ scholarship, onClose }: { scholarship: Scholarship; onClose: () => void }) {4
   const navigate = useNavigate();
 
   const [isExiting, setIsExiting] = useState(false);
-   const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
-  const [showToast, setShowToast] = useState(false);
-
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  }, []);
+  const { toast, showError } = useToast();
 
   const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
@@ -36,24 +26,24 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
   };
 
   const handleApply = useCallback(async () => {
-    // const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
+    const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
 
-    // if (response.success) {
-    //   showToastMessage('error', 'Already Applied', response.message, 2500);
-    //   return;
-    // }
+    if (response.success) {
+      showError('Already Applied', response.message, 2500);
+      return;
+    }
 
-    // if (isClosed()) {
-    //   showToastMessage('error', 'Scholarship Closed', response.message, 2500);
-    //   return;
-    // }
+    if (isClosed()) {
+      showError('Scholarship Closed', response.message, 2500);
+      return;
+    }
 
-    // navigate({ to: `/scholarship/${scholarship.scholarship_id}/apply` });
+    navigate({ to: `/scholarship/${scholarship.scholarship_id}/apply` });
   }, [scholarship, isClosed, navigate]);
 
   return (
     <AnimatePresence>
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      {toast && <Toast {...toast} />}
       
       <div className="fixed inset-0 z-50 flex items-center justify-end p-2">
         {/* Backdrop */}

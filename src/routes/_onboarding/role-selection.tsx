@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { HiAcademicCap, HiHeart, HiBuildingOffice2, HiUser, HiUserGroup, HiBuildingLibrary, HiArrowLeft } from "react-icons/hi2";
 import Toast from "@/components/Toast";
+import { useToast } from '@/hooks/useToast';
 import { z } from 'zod';
 import { Loader2 } from "lucide-react";
 // import { profileService } from '@/services/profile.service';
@@ -35,18 +36,7 @@ function RoleSelection() {
   const [showSponsorTypes, setShowSponsorTypes] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: "success" as "success" | "error",
-    title: "",
-    message: "",
-  });
-
-  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  };
+  const { toast, showSuccess, showError } = useToast();
 
   const roles = [
     {
@@ -186,7 +176,7 @@ function RoleSelection() {
     const validation = validateSelection();
     
     if (!validation.isValid) {
-      showToastMessage('error', `Validation Error`, validation.errorMessage || 'Please make a valid selection', 2500);
+      showError(`Validation Error`, 'Please make a valid selection', 2500);
       return;
     }
 
@@ -218,24 +208,20 @@ function RoleSelection() {
     
     setLoading(false);
 
-    showToastMessage('success', `Success`, roleMessage, 1250);
+    showSuccess(`Success`, roleMessage, 1250);
 
-    navigate({ 
-      to: '/profile-setup',
-      search: { role: role }
-    });
+    setTimeout(() => {
+      navigate({ 
+        to: '/profile-setup',
+        search: { role: role } })
+    }, 1300)
   };
 
   const canContinue = selectedRole && (selectedRole !== 'sponsor' || selectedSubRole);
 
   return (
     <>
-      <Toast
-        visible={showToast}
-        type={toastConfig.type}
-        title={toastConfig.title}
-        message={toastConfig.message}
-      />
+      {toast && <Toast {...toast} />}
 
       <motion.div 
         className="text-center px-8 md:px-10 py-8 sm:py-10 md:py-12 relative"

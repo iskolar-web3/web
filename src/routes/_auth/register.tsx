@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Toast from "@/components/Toast";
+import { useToast } from '@/hooks/useToast';
 import { SiGoogle } from "react-icons/si";
 import type { JSX } from "react";
 import { useForm } from "react-hook-form";
@@ -50,18 +51,7 @@ function RegisterPage(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: "success" as "success" | "error",
-    title: "",
-    message: "",
-  });
-
-  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  };
+  const { toast, showSuccess, showError } = useToast();
 
   // useEffect(() => {
   //   const checkAuth = async () => {
@@ -106,43 +96,41 @@ function RegisterPage(): JSX.Element {
     //   })
 
     //   if(result.success) {
-    //     showToastMessage('success', `Success`, result.message, 1250); 
+    //     showSuccess(`Success`, result.message, 1250); 
+    
     //     setTimeout(() => {
     //       navigate({ to: "/login" });
-    //     }, 1000);
+    //     }, 1300);
     //   } else {
-    //     showToastMessage('error', `Error`, result.error, 2500);
+    //     showError(`Error`, result.error, 2500);
     //   }
     // } catch(error) {
     //   const handled = handleError(error, 'Unable to load scholarship details.');
     //   logger.error('Failed to load scholarship:', handled.raw);
-    //   showToastMessage('error', `Error`, error.message, 2500);
+    //   showError(`Error`, error.message, 2500);
     // } finally {
     //   setLoading(false);
     // }
 
+    // Simulate
     setLoading(true);
-    showToastMessage('success', `Success`, 'Login successful!', 1250);
+    showSuccess(`Success`, 'Login successful', 1250);
+
     setTimeout(() => {
       setLoading(false);
       navigate({ to: "/login" });
-    }, 1000);
+    }, 1300);
   };
 
   const handleGoogleSignUp = () => {
-    showToastMessage('error', `Error`, "Google Auth is not available at the moment.", 2500);
+    showError(`Error`, "Google Auth is not available at the moment.", 2500);
     
     // Handle Google sign up
   };
 
   return (
     <>
-      <Toast
-        visible={showToast}
-        type={toastConfig.type}
-        title={toastConfig.title}
-        message={toastConfig.message}
-      />
+      {toast && <Toast {...toast} />}
 
       <motion.div 
         className="rounded-3xl py-6 px-10 md:py-8 md:px-12 lg:py-6 lg:px-10 sm:py-5 sm:px-6 shadow-[1px_1px_4px_1px_rgba(96,126,242,0.5)] bg-[#F0F7FF] min-h-[520px] sm:min-h-[480px] w-full max-w-md mx-auto"

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from "@/components/Toast"
+import { useToast } from '@/hooks/useToast';
 import Preloader from "@/components/Preloader"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -115,19 +116,8 @@ function ProfileSetup() {
   const [roleValidationError, setRoleValidationError] = useState(false)
   
   const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false)
   const [showPreloader, setShowPreloader] = useState(false)
-  const [toastConfig, setToastConfig] = useState({
-    type: "success" as "success" | "error",
-    title: "",
-    message: "",
-  })
-
-  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  };
+  const { toast, showSuccess, showError } = useToast();
   
   // Student form
   const studentForm = useForm<StudentFormData>({
@@ -193,16 +183,12 @@ function ProfileSetup() {
   useEffect(() => {
     if (!role || !VALID_ROLES.includes(role as Role)) {
       setRoleValidationError(true)
-      setToastConfig({
-        type: 'error',
-        title: 'Invalid Role',
-        message: 'Please select a valid role to continue.',
-      })
-      setShowToast(true)
+
+      showError('Invalid Role', 'Please select a valid role to continue.', 2500);
       
       setTimeout(() => {
         navigate({ to: '/role-selection' })
-      }, 2000)
+      }, 2050)
       return
     }
     
@@ -251,14 +237,8 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'individual_sponsor') {
@@ -299,14 +279,8 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'organization_sponsor') {
@@ -343,14 +317,8 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'government_sponsor') {
@@ -387,14 +355,8 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'school') {
@@ -431,21 +393,15 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } 
     } catch(error) {
       const handled = handleError(error, 'Failed to connect to server.');
       logger.error('Connection Error', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
     }
@@ -473,7 +429,7 @@ function ProfileSetup() {
   if (roleValidationError || !selectedRole) {
     return (
       <>
-        <Toast visible={showToast}type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+        {toast && <Toast {...toast} />}
 
         <motion.div 
           className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12"
@@ -518,12 +474,7 @@ function ProfileSetup() {
         />
       )}
       
-      <Toast
-        visible={showToast}
-        type={toastConfig.type}
-        title={toastConfig.title}
-        message={toastConfig.message}
-      />
+      {toast && <Toast {...toast} />}
 
       {!showPreloader && (
       <motion.div 

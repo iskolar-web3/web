@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Toast from "@/components/Toast";
+import { useToast } from '@/hooks/useToast';
 import Preloader from "@/components/Preloader";
 import { SiGoogle } from "react-icons/si";
 import type { JSX } from "react";
@@ -41,19 +42,8 @@ function LoginPage(): JSX.Element {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showToast, setShowToast] = useState(false);
   const [showPreloader, setShowPreloader] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: "success" as "success" | "error",
-    title: "",
-    message: "",
-  });
-
-  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  };
+  const { toast, showSuccess, showError } = useToast();
 
   // useEffect(() => {
   //   const checkAuth = async () => {
@@ -101,27 +91,29 @@ function LoginPage(): JSX.Element {
     //   }
 
     //   if(result.success) {
-    //      showToastMessage('success', `Success`, result.message, 1250);
+    //      showSuccess(`Success`, result.message, 1250);
     //     setTimeout(() => {
     //       setShowPreloader(true);
-    //     }, 1000);
+    //     }, 1300);
     //   } else {
-    //     showToastMessage('error', `Error`, result.error, 2500);
+    //     showError(`Error`, result.error, 2500);
     //   }
     // } catch(error) {
     //    const handled = handleError(error, 'Unable to load scholarship details.');
     //    logger.error('Failed to load scholarship:', handled.raw);
-    //    showToastMessage('error', `Error`, error.message, 2500);
+    //    showError(`Error`, error.message, 2500);
     // } finally {
     //   setLoading(false);
     // }
     
+    // Simulate
     setLoading(true);
-    showToastMessage('success', `Success`, 'Login successful!', 1250);
+
+    showSuccess(`Success`, 'Login successful', 1250);
     setTimeout(() => {
       setLoading(false);
       setShowPreloader(true);
-    }, 1000);
+    }, 1300);
   };
 
   const handlePreloaderComplete = () => {
@@ -139,7 +131,7 @@ function LoginPage(): JSX.Element {
   };
 
   const handleGoogleSignIn = () => {
-    showToastMessage('error', `Error`, 'Google Auth is not available at the moment.', 2500);
+    showError( `Error`, 'Google Auth is not available at the moment.', 2500);
     
     // Handle Google sign in
   };
@@ -153,12 +145,7 @@ function LoginPage(): JSX.Element {
         />
       )}
       
-      <Toast
-        visible={showToast}
-        type={toastConfig.type}
-        title={toastConfig.title}
-        message={toastConfig.message}
-      />
+      {toast && <Toast {...toast} />}
       
       {!showPreloader && (
       <motion.div 

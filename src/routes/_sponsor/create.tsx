@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { Controller } from 'react-hook-form';
 import {
@@ -25,6 +25,7 @@ import CustomFormFieldsList from '@/components/CustomFormFieldsList';
 import DescriptionModal from '@/components/DescriptionModal';
 import { useScholarshipForm, type ScholarshipFormData, type CustomFieldType } from '@/hooks/useScholarshipForm';
 import { useScholarshipPreview } from '@/hooks/useScholarshipPreview';
+import { useToast } from '@/hooks/useToast';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
 import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
@@ -51,17 +52,13 @@ function CreateScholarship() {
   } = useScholarshipForm();
 
   const { control, handleSubmit, setValue, watch, formState: { errors } } = form;
+  const { toast, showSuccess, showError } = useToast();
+  
   const [showDescriptionModal, setShowDescriptionModal] = useState(false);
   const [showCustomFieldModal, setShowCustomFieldModal] = useState(false);
   const [editingFieldIndex, setEditingFieldIndex] = useState<number | null>(null);
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
 
   const criteria = watch('criteria');
   const requiredDocuments = watch('requiredDocuments');
@@ -87,12 +84,6 @@ function CreateScholarship() {
     criteria,
     requiredDocuments,
   });
-
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  }, []);
 
   const openCustomFormModal = (index?: number) => {
     setEditingFieldIndex(index ?? null);
@@ -144,16 +135,15 @@ function CreateScholarship() {
       const response = await scholarshipManagementService.createScholarship(scholarshipData);
 
       if (response.success && response.scholarship) {
-        showToastMessage('success', 'Success', response.message, 2000);
-
+        showSuccess('Success', response.message, 2000);
         resetForm();
       } else {
-        showToastMessage('error', 'Error', response.message, 2500);
+        showError('Error', response.message);
       }
     } catch(error) {
       const handled = handleError(error, 'Failed to connect to server.');
       logger.error('Connection Error', handled.raw);
-      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally{
       setLoading(false);
     }
@@ -161,7 +151,7 @@ function CreateScholarship() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      {toast && <Toast {...toast} />}
       
       <div className="grid grid-cols-1 lg:grid-cols-2">
         {/* Scholarship Details */}
@@ -515,7 +505,6 @@ function CreateScholarship() {
         editingField={editingFieldIndex !== null ? customFormFields[editingFieldIndex] : null}
       />
 
-      {/* Full Preview Modal */}
       {showFullPreview && (
         <ScholarshipFullPreviewModal
           scholarship={previewScholarship}
