@@ -4,6 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Calendar, Users, Coins, ChevronsRight, LockKeyhole } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import Toast from '@/components/Toast';
+import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
 // import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 
 export default function ScholarshipDetailsModal({ scholarship, onClose }: { scholarship: Scholarship; onClose: () => void }) {4
@@ -23,16 +24,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
     setTimeout(() => setShowToast(false), duration);
   }, []);
 
-  const amountPerScholar = (() => {
-    if (scholarship.total_amount && scholarship.total_slot) {
-      const total = scholarship.total_amount;
-      const slots = scholarship.total_slot;
-      if (slots > 0) {
-        return total / slots;
-      }
-    }
-    return null;
-  })();
+  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
   const isClosed = useCallback(() => {
     return scholarship.status === 'closed';
@@ -159,7 +151,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
                 </div>
                 <p className="text-base text-primary mb-0.5">
                   {amountPerScholar !== null
-                    ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    ? formatCurrency(amountPerScholar, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                     : '₱0.00'}
                 </p>
                 <p className="text-xs text-[#6B7280]">per scholar</p>

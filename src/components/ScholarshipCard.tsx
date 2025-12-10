@@ -1,18 +1,10 @@
 import { Calendar, Users, Coins } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { motion } from 'framer-motion';
+import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
 
 export default function ScholarshipCard({ scholarship, index, onClick }: { scholarship: Scholarship; index: number; onClick?: () => void }) {
-  const amountPerScholar = (() => {
-    if (scholarship.total_amount && scholarship.total_slot) {
-      const total = scholarship.total_amount;
-      const slots = scholarship.total_slot;
-      if (slots > 0) {
-        return total / slots;
-      }
-    }
-    return null;
-  })();
+  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
   
   return (
     <motion.div
@@ -102,7 +94,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: { schol
             </div>
             <p className="text-sm md:text-base text-primary">
               {amountPerScholar !== null
-                ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                ? formatCurrency(amountPerScholar, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                 : '₱0.00'}
             </p>
             <p className="text-xs text-[#6B7280]">per scholar</p>

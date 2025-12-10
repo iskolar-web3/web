@@ -103,15 +103,23 @@ class ScholarshipApplicationService {
       const formData = new FormData();
       formData.append('field_key', fieldKey);
 
-      // Append all files
+      // Convert base64 to Blob and append to FormData
       files.forEach((file, index) => {
         const filename = file.name || `file_${index}.${file.mimeType?.split('/')[1] || 'bin'}`;
         
-        formData.append('files', {
-          uri: file.uri,
-          type: file.mimeType || 'application/octet-stream',
-          name: filename,
-        } as any);
+        // Convert base64 to Blob
+        const byteString = atob(file.uri); // Decode base64
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        
+        const blob = new Blob([ab], { type: file.mimeType || 'application/octet-stream' });
+        
+        // Append as File to FormData
+        formData.append('files', blob, filename);
       });
 
       console.log(`Uploading ${files.length} file(s) for field: ${fieldKey}`);

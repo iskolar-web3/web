@@ -30,6 +30,7 @@ import type { Scholarship } from '@/types/scholarship.types';
 import type { ScholarshipApplication } from '@/services/scholarship-application.service';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
+import { formatDateTime } from '@/utils/formatting';
 
 interface Applicant extends ScholarshipApplication {
   rank?: number;
@@ -141,7 +142,7 @@ function ApplicantsListPage() {
         updated_at: new Date().toISOString(),
       };
 
-      const mockApplicants: Applicant[] = Array.from({ length: 0 }, (_, index) => ({
+      const mockApplicants: Applicant[] = Array.from({ length: 76 }, (_, index) => ({
         scholarship_application_id: `${index + 1}`,
         student_id: `${index + 1}`,
         scholarship_id: id,
@@ -366,17 +367,6 @@ function ApplicantsListPage() {
       setModalVisible(false);
       setIsExiting(false);
     }, 200);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   const handleFileOpen = (url: string) => {
@@ -686,7 +676,7 @@ function ApplicantsListPage() {
                         <p className="text-sm text-[#6B7280] mb-2">{applicant.student.user.email}</p>
 
                         <div className="flex items-center gap-2 text-xs text-[#6B7280]">
-                          <span>{formatDate(applicant.applied_at)}</span>
+                          <span>{formatDateTime(applicant.applied_at)}</span>
                         </div>
                       </div>
                     </div>
@@ -807,7 +797,7 @@ function ApplicantsListPage() {
                       <Calendar size={17} className="flex-shrink-0" />
                        <div className={`${selectedApplicant.student.gender ? 'col-span-1' : 'col-span-2'} flex items-start gap-2`}>
                         <span className="text-xs md:text-sm">
-                          {formatDate(selectedApplicant.applied_at)}
+                          {formatDateTime(selectedApplicant.applied_at)}
                         </span>
                       </div>
                     </div>

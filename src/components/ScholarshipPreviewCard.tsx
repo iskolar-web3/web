@@ -1,5 +1,6 @@
 import { Calendar, Users, Coins, Images } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
+import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
 
 interface ScholarshipPreviewCardProps {
   scholarship: Partial<Scholarship>;
@@ -7,16 +8,7 @@ interface ScholarshipPreviewCardProps {
 }
 
 export default function ScholarshipPreviewCard({ scholarship, onClick }: ScholarshipPreviewCardProps) {
-  const amountPerScholar = (() => {
-    if (scholarship.total_amount && scholarship.total_slot) {
-      const total = scholarship.total_amount;
-      const slots = scholarship.total_slot;
-      if (slots > 0) {
-        return total / slots;
-      }
-    }
-    return null;
-  })();
+  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
   return (
     <div
@@ -73,13 +65,7 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
             <div className="flex items-center gap-2 text-xs">
               <Calendar size={16} />
               <span>
-                {scholarship.application_deadline
-                  ? new Date(scholarship.application_deadline).toLocaleDateString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })
-                  : 'Application deadline'}
+                {formatDeadline(scholarship.application_deadline)}
               </span>
             </div>
           </div>
@@ -96,15 +82,16 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
             </div>
             <p className="text-base text-primary">
               {amountPerScholar !== null
-                ? `₱ ${amountPerScholar.toLocaleString(undefined, {
+                ? formatCurrency(amountPerScholar, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                  })}`
+                    showSpace: true,
+                  })
                 : scholarship.total_amount
-                ? `₱${scholarship.total_amount.toLocaleString(undefined, {
+                ? formatCurrency(scholarship.total_amount, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                  })}`
+                  })
                 : '₱0.00'}
             </p>
             <p className="text-xs text-[#6B7280]">per scholar</p>

@@ -10,6 +10,7 @@ import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
 import { Skeleton } from '@/components/ui/skeleton';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
+import { formatDate, formatTime, formatAmountPerScholar } from '@/utils/formatting';
 // import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 
 export const Route = createFileRoute('/_student/home')({
@@ -158,32 +159,6 @@ function Home() {
 
     setFilteredApplications(filtered);
   }, [applications, selectedFilter]);
-
-  const formatDate = (value: string) => {
-    const date = new Date(value);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatTime = (value: string) => {
-    const date = new Date(value);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatAmount = (totalAmount: number, totalSlot: number) => {
-    if (!totalAmount || !totalSlot || totalSlot <= 0) return '₱0.00';
-    const perScholar = totalAmount / totalSlot;
-    return `₱${perScholar.toLocaleString('en-PH', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'applied', label: 'Applied' },
@@ -419,9 +394,10 @@ function Home() {
                                 <span>Amount</span>
                               </div>
                               <p className="text-sm text-primary">
-                                {formatAmount(
+                                {formatAmountPerScholar(
                                   application.scholarship.total_amount,
                                   application.scholarship.total_slot,
+                                  { locale: 'en-PH' }
                                 )}
                               </p>
                               <p className="text-[11px] text-[#6B7280]">per scholar</p>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronsRight, Calendar, Coins, Users, Info, Check, Clock } from 'lucide-react';
 import type { Application, ApplicationStatus } from '@/types/application.types';
+import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting';
 
 interface ApplicationDetailsModalProps {
   application: Application;
@@ -49,34 +50,10 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
 
   const statusStyle = statusStyles[application.status];
 
-  const amountPerScholar = (() => {
-    const total = application.scholarship.total_amount;
-    const slots = application.scholarship.total_slot;
-    if (!total || !slots || slots <= 0) return 0;
-    return total / slots;
-  })();
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'No date';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatDateTime = (dateString?: string) => {
-    if (!dateString) return 'No date';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const amountPerScholar = calculateAmountPerScholar(
+    application.scholarship.total_amount,
+    application.scholarship.total_slot
+  ) ?? 0;
 
   const handleClose = () => {
     setIsExiting(true);
@@ -189,10 +166,11 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
                 <span className="text-xs">Amount</span>
               </div>
               <p className="text-base text-[#111827] mb-0.5">
-                {`₱${amountPerScholar.toLocaleString('en-PH', {
+                {formatCurrency(amountPerScholar, {
+                  locale: 'en-PH',
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
-                })}`}
+                })}
               </p>
               <p className="text-xs text-[#6B7280]">per scholar</p>
             </div>

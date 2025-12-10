@@ -20,6 +20,7 @@ import {
   AlertCircle, 
   Loader2 } from 'lucide-react';
 import { useState, useCallback } from 'react';
+import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
 
 interface SponsorScholarshipDetailsModalProps {
   scholarship: Scholarship;
@@ -41,16 +42,7 @@ export default function SponsorScholarshipDetailsModal({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const amountPerScholar = (() => {
-    if (scholarship.total_amount && scholarship.total_slot) {
-      const total = scholarship.total_amount;
-      const slots = scholarship.total_slot;
-      if (slots > 0) {
-        return total / slots;
-      }
-    }
-    return null;
-  })();
+  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
   const getFieldTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
@@ -230,13 +222,7 @@ export default function SponsorScholarshipDetailsModal({
               <div className="flex items-center gap-2">
                 <Calendar size={22} />
                 <span className="text-sm">
-                  {scholarship.application_deadline
-                    ? new Date(scholarship.application_deadline).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })
-                    : 'Application deadline'}
+                  {formatDeadline(scholarship.application_deadline)}
                 </span>
               </div>
             </div>
@@ -259,10 +245,10 @@ export default function SponsorScholarshipDetailsModal({
                 </div>
                 <p className="text-base text-primary mb-0.5">
                   {amountPerScholar !== null
-                    ? `₱${amountPerScholar.toLocaleString(undefined, {
+                    ? formatCurrency(amountPerScholar, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                      })}`
+                      })
                     : '₱0.00'}
                 </p>
                 <p className="text-xs text-[#6B7280]">per scholar</p>

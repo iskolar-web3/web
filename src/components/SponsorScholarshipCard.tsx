@@ -2,6 +2,7 @@ import { Calendar, Users, Coins, Edit2, Trash2 } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
+import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
 
 export default function SponsorScholarshipCard({ 
   scholarship, 
@@ -23,16 +24,7 @@ export default function SponsorScholarshipCard({
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const amountPerScholar = (() => {
-    if (scholarship.total_amount && scholarship.total_slot) {
-      const total = scholarship.total_amount;
-      const slots = scholarship.total_slot;
-      if (slots > 0) {
-        return total / slots;
-      }
-    }
-    return null;
-  })();
+  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
   // Handle right-click
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -229,7 +221,7 @@ export default function SponsorScholarshipCard({
             </div>
             <p className="text-primary text-sm md:text-base">
               {amountPerScholar !== null
-                ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                ? formatCurrency(amountPerScholar, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
                 : '₱0.00'}
             </p>
             <p className="text-xs text-[#6B7280]">per scholar</p>
