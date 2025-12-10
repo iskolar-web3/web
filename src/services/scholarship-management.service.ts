@@ -3,8 +3,6 @@ import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/lib/errorHandler';
 
-
-
 interface ScholarshipData {
   type?: string;
   purpose?: string;
@@ -18,17 +16,33 @@ interface ScholarshipData {
   custom_form_fields: CustomFormField[];
 }
 
+interface ScholarshipResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    scholarship?: Scholarship;
+  };
+}
+
+interface ScholarshipsResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    scholarships?: Scholarship[];
+  };
+}
+
 class ScholarshipManagementService {
   async createScholarship(scholarshipData: ScholarshipData): Promise<{ 
     success: boolean; 
     message: string; 
-    scholarship?: any; 
+    scholarship?: Scholarship; 
   }> {
     try {
       const response = await authService.authenticatedRequest('/scholarship/create', {
         method: 'POST',
         body: JSON.stringify(scholarshipData)
-      });
+      }) as ScholarshipResponse;
 
       return {
         success: response.success,
@@ -48,13 +62,13 @@ class ScholarshipManagementService {
   async updateScholarship(scholarshipId: string, data: Partial<ScholarshipData> & { status?: string; custom_form_fields?: CustomFormField[] }): Promise<{
     success: boolean;
     message: string;
-    scholarship?: any;
+    scholarship?: Scholarship;
   }> {
     try {
       const response = await authService.authenticatedRequest(`/scholarship/edit/${scholarshipId}`, {
         method: 'PUT',
         body: JSON.stringify(data)
-      });
+      }) as ScholarshipResponse;
 
       return {
         success: response.success,
@@ -97,12 +111,12 @@ class ScholarshipManagementService {
   async archiveScholarship(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
-    scholarship?: any;
+    scholarship?: Scholarship;
   }> {
     try {
       const response = await authService.authenticatedRequest(`/scholarship/archive/${scholarshipId}`, {
         method: 'POST'
-      });
+      }) as ScholarshipResponse;
 
       return {
         success: response.success,
@@ -127,7 +141,7 @@ class ScholarshipManagementService {
     try {
       const response = await authService.authenticatedRequest(`/scholarship/`, {
         method: 'GET'
-      });
+      }) as ScholarshipsResponse;
 
       return {
         success: response.success,
@@ -152,7 +166,7 @@ class ScholarshipManagementService {
     try {
       const response = await authService.authenticatedRequest(`/scholarship/${scholarshipId}`, {
         method: 'GET'
-      });
+      }) as ScholarshipResponse;
 
       return { 
         success: response.success, 
@@ -177,7 +191,7 @@ class ScholarshipManagementService {
     try {
       const response = await authService.authenticatedRequest('/scholarship/my-scholarships', {
         method: 'GET'
-      });
+      }) as ScholarshipsResponse;
 
       return {
         success: response.success,

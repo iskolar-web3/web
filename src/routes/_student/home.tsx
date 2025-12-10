@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useApplications } from '@/hooks/useApplications';
 import type { Scholarship } from '@/types/scholarship.types';
 import type { Application } from '@/types/application.types';
 import { ApplicationDetailsModal, statusStyles } from '@/components/ApplicationDetailsModal';
@@ -86,79 +87,59 @@ function Home() {
   usePageTitle('Home');
 
   const navigate = useNavigate();
-
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [filteredApplications, setFilteredApplications] = useState<Application[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<FilterType>('applied');
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const fetchApplicationsMock = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setApplications(
-        mockApplications.sort(
-          (a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
-        ),
-      );
-    } finally {
-      setIsLoading(false);
-      // setIsRefreshing(false);
-    }
-  }, []);
+  const {
+    applications,
+    setApplications,
+    filteredApplications,
+    selectedFilter,
+    setSelectedFilter,
+  } = useApplications();
 
   useEffect(() => {
-    fetchApplicationsMock();
-  }, [fetchApplicationsMock]);
+    const loadApplications = async () => {
+      setLoading(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        setApplications(
+          mockApplications.sort(
+            (a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
+          ),
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadApplications();
+  }, [setApplications]);
 
-  // TODO: Fetch applications from service instead of using mock data
-  // const fetchApplications = useCallback(async () => {
-  //   try {
-  //     setIsLoading(true);
-  //     const response = await scholarshipApplicationService.getMyApplications();
-  //
-  //     if (response.success && response.applications) {
-  //       const appsWithScholarship = response.applications.filter(
-  //         (application) => application.scholarship,
-  //       );
-  //       setApplications(
-  //         appsWithScholarship.sort(
-  //           (a, b) =>
-  //             new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
-  //         ) as Application[],
-  //       );
-  //     }
-  //   } catch (error) {
-  //      const handled = handleError(error, 'Failed to connect to server.');
-  //      logger.error('Fetch applications error:', handled.raw);
-  //      showToastMessage('error', `Error ${handled.code}`, handled.message, 2500);
-  //   } finally {
-  //     setIsLoading(false);
-  //     setIsRefreshing(false);
-  //   }
-  // }, []);
-  //
   // useEffect(() => {
-  //   fetchApplications();
-  // }, [fetchApplications]);
-
-  useEffect(() => {
-    let filtered = [...applications];
-
-    if (selectedFilter === 'applied') {
-      filtered = filtered.filter(
-        (app) => app.status === 'pending' || app.status === 'shortlisted',
-      );
-    } else if (selectedFilter === 'past') {
-      filtered = filtered.filter((app) => app.status === 'approved' || app.status === 'denied');
-    } else if (selectedFilter === 'granted') {
-      filtered = filtered.filter((app) => app.status === 'granted');
-    }
-
-    setFilteredApplications(filtered);
-  }, [applications, selectedFilter]);
+  //   const loadApplications = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const response = await scholarshipApplicationService.getMyApplications();
+  //       if (response.success && response.applications) {
+  //         const appsWithScholarship = response.applications.filter(
+  //           (application) => application.scholarship,
+  //         );
+  //         setApplications(
+  //           appsWithScholarship.sort(
+  //             (a, b) =>
+  //               new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
+  //           ) as Application[],
+  //         );
+  //       }
+  //     } catch (error) {
+  //       const handled = handleError(error, 'Failed to connect to server.');
+  //       logger.error('Fetch applications error:', handled.raw);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   loadApplications();
+  // }, [setApplications]);
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'applied', label: 'Applied' },
@@ -202,7 +183,7 @@ function Home() {
 
         {/* List / States */}
         <div>
-          {isLoading ? (
+          {loading ? (
             // Show skeleton loaders when loading
             Array.from({ length: 4 }).map((_, index) => (
               <div key={`skeleton-${index}`} className="flex gap-4 md:gap-6">

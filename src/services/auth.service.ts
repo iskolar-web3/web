@@ -1,7 +1,9 @@
 import { AppError, deriveResponseError, handleError, safeParseJSON } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
+import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const DEFAULT_TIMEOUT = 10000; // 10 seconds
 
 export interface AuthToken {
   token: string;
@@ -11,7 +13,7 @@ export interface AuthToken {
   };
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success?: boolean;
   message: string;
   data?: T;
@@ -74,7 +76,7 @@ class AuthService {
     }
   }
 
-  async authenticatedRequest<T = any>(
+  async authenticatedRequest<T = unknown>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<{ success: boolean; data?: T; message: string; status: number }> {
@@ -94,13 +96,17 @@ class AuthService {
         'Authorization': `Bearer ${token}`,
       };
 
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        ...options,
-        headers: {
-          ...defaultHeaders,
-          ...options.headers,
+      const response = await fetchWithTimeout(
+        `${API_URL}${endpoint}`,
+        {
+          ...options,
+          headers: {
+            ...defaultHeaders,
+            ...options.headers,
+          },
         },
-      });
+        DEFAULT_TIMEOUT
+      );
 
       const result = await safeParseJSON<T & { message?: string; code?: string }>(response);
 
@@ -133,13 +139,17 @@ class AuthService {
 
   async register(registerData: RegisterData): Promise<{ success: boolean; message: string; }> {
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchWithTimeout(
+        `${API_URL}/auth/register`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(registerData)
         },
-        body: JSON.stringify(registerData)
-      });
+        DEFAULT_TIMEOUT
+      );
 
       const result = await safeParseJSON<{ message?: string; code?: string }>(response);
 
@@ -167,13 +177,17 @@ class AuthService {
 
   async login(loginData: LoginData): Promise<{ success: boolean; message: string; token?: string; }> {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchWithTimeout(
+        `${API_URL}/auth/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(loginData)
         },
-        body: JSON.stringify(loginData)
-      });
+        DEFAULT_TIMEOUT
+      );
 
       const result = await safeParseJSON<{ message?: string; code?: string; token?: string }>(response);
 

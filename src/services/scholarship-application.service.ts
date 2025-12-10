@@ -2,12 +2,15 @@ import { authService } from './auth.service';
 import { handleError, safeParseJSON } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
 import type { Scholarship } from '@/types/scholarship.types';
+import type { FormFieldResponse } from '@/types/form.types';
+import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const DEFAULT_TIMEOUT = 10000;
 
 export interface ApplicationFormData {
   scholarship_id: string;
-  custom_form_response: Array<{ label: string; value: any }>; 
+  custom_form_response: FormFieldResponse[]; 
 }
 
 export interface ApplicationFileUpload {
@@ -26,7 +29,7 @@ export interface ScholarshipApplication {
   scholarship_id: string;
   status: 'pending' | 'shortlisted' | 'approved' | 'denied' | 'granted';
   remarks?: string;
-  custom_form_response: Array<{ label: string; value: any }>; 
+  custom_form_response: FormFieldResponse[]; 
   applied_at: string;
   updated_at: string;
   student: {
@@ -43,10 +46,26 @@ export interface ScholarshipApplication {
   scholarship: Scholarship;
 }
 
+interface ApplicationResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    application?: ScholarshipApplication;
+  };
+}
+
+interface ApplicationsResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    applications?: ScholarshipApplication[];
+  };
+}
+
 class ScholarshipApplicationService {
   async submitApplication(
     scholarshipId: string,
-    customFormResponse: Array<{ label: string; value: any }> 
+    customFormResponse: FormFieldResponse[] 
   ): Promise<{
     success: boolean;
     message: string;
@@ -59,7 +78,7 @@ class ScholarshipApplicationService {
           scholarship_id: scholarshipId,
           custom_form_response: customFormResponse,
         }),
-      });
+      }) as ApplicationResponse;
 
       return {
         success: response.success,
@@ -124,7 +143,7 @@ class ScholarshipApplicationService {
 
       console.log(`Uploading ${files.length} file(s) for field: ${fieldKey}`);
 
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${API_URL}/scholarship-application/${applicationId}/upload-files`,
         {
           method: 'POST',
@@ -132,7 +151,8 @@ class ScholarshipApplicationService {
             'Authorization': `Bearer ${token}`,
           },
           body: formData,
-        }
+        },
+        DEFAULT_TIMEOUT
       );
 
       const result = await safeParseJSON<{ message?: string; file_urls?: string[] }>(response);
@@ -160,7 +180,7 @@ class ScholarshipApplicationService {
     try {
       const response = await authService.authenticatedRequest('/scholarship-application/my-applications', {
         method: 'GET',
-      });
+      }) as ApplicationsResponse;
 
       return {
         success: response.success,
@@ -188,7 +208,7 @@ class ScholarshipApplicationService {
         {
           method: 'GET',
         }
-      );
+      ) as ApplicationResponse;
 
       return {
         success: response.success,
@@ -208,7 +228,6 @@ class ScholarshipApplicationService {
   async checkApplicationExists(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
-    exists: boolean;
     application?: ScholarshipApplication;
   }> {
     try {
@@ -217,12 +236,11 @@ class ScholarshipApplicationService {
         {
           method: 'GET',
         }
-      );
+      ) as ApplicationResponse;
 
       return {
         success: response.success,
         message: response.message,
-        exists: response.data?.exists || false,
         application: response.data?.application,
       };
     } catch (error) {
@@ -230,7 +248,6 @@ class ScholarshipApplicationService {
       logger.error('Check application error:', handled.raw);
       return {
         success: false,
-        exists: false,
         message: handled.message,
       };
     }
@@ -247,7 +264,7 @@ class ScholarshipApplicationService {
         {
           method: 'GET',
         }
-      );
+      ) as ApplicationsResponse;
 
       return {
         success: response.success,
@@ -283,7 +300,7 @@ class ScholarshipApplicationService {
             remarks,
           }),
         }
-      );
+      ) as ApplicationResponse;
 
       return {
         success: response.success,
@@ -307,8 +324,7 @@ class ScholarshipApplicationService {
   ): Promise<{
     success: boolean;
     message: string;
-    updated_count?: number;
-    applications?: any[];
+    applications?: ScholarshipApplication[];
   }> {
     try {
       const response = await authService.authenticatedRequest(
@@ -321,12 +337,11 @@ class ScholarshipApplicationService {
             remarks,
           }),
         }
-      );
+      ) as ApplicationsResponse;
 
       return {
         success: response.success,
         message: response.message,
-        updated_count: response.data?.updated_count,
         applications: response.data?.applications,
       };
     } catch (error) {

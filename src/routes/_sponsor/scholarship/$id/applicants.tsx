@@ -146,11 +146,11 @@ function ApplicantsListPage() {
         scholarship_application_id: `${index + 1}`,
         student_id: `${index + 1}`,
         scholarship_id: id,
-        status: 'pending',
+        status: 'pending' as const,
         custom_form_response: [
           { label: 'Full Name', value: 'John Doe' },
           { label: 'Email Address', value: 'john.doe@example.com' },
-          { label: 'Upload Transcript', value: ['https://example.com/transcript.pdf'] },
+          { label: 'Upload Transcript', value: ['https://example.com/transcript.pdf'] as string[] },
         ],
         applied_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -228,7 +228,7 @@ function ApplicantsListPage() {
       // );
 
       // if (response.success) {
-      //   showToastMessage('success', 'Success', `${response.updated_count || selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
+      //   showToastMessage('success', 'Success', `${selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
       //   setBulkActionModal(false);
       //   setBulkRemarks('');
       //   setSelectedApplicantIds(new Set());
@@ -407,7 +407,7 @@ function ApplicantsListPage() {
       {loading ? (
         <div className="max-w-3xl mx-auto">
           {/* Scholarship Info Header Skeleton */}
-          <div className="bg-[#FEFEFD] rounded-lg shadow-sm p-4 md:p-5 mb-3">
+          <div className="bg-[#F9FAFB] rounded-lg shadow-sm p-4 md:p-5 mb-3">
             <Skeleton className="h-8 w-full mb-2 bg-muted-foreground" />
             <Skeleton className="h-4 w-32 bg-muted-foreground" />
           </div>
@@ -427,7 +427,7 @@ function ApplicantsListPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="bg-white rounded-xl shadow-sm p-5 relative"
+                className="bg-[#F9FAFB] rounded-lg shadow-sm p-5 relative"
               >
                 {/* Status Icon Skeleton */}
                 <Skeleton className="w-5 h-5 rounded-full bg-muted-foreground absolute top-4 right-4" />
@@ -461,7 +461,7 @@ function ApplicantsListPage() {
       ) : (
         <div className="max-w-3xl mx-auto">
           {/* Scholarship Info Header */}
-          <div className="bg-[#FEFEFD] rounded-lg shadow-sm p-4 md:p-5 mb-3">
+          <div className="bg-card rounded-lg shadow-sm p-4 md:p-5 mb-3">
             <div className="flex-1">
               <h1 className="text-2xl text-primary mb-1">{scholarship?.title}</h1>
               <p className="text-[11px] md:text-xs text-[#6B7280]">
@@ -488,13 +488,13 @@ function ApplicantsListPage() {
               <>
                 <button
                   onClick={selectAll}
-                  className="px-4 py-2 bg-[#FEFEFD] cursor-pointer border border-[#E5E7EB] rounded-md text-xs text-[#6B7280] hover:bg-[#F9FAFB] transition-colors"
+                  className="px-4 py-2 bg-card cursor-pointer border border-[#E5E7EB] rounded-md text-xs text-[#6B7280] hover:bg-[#F9FAFB] transition-colors"
                 >
                   Select All
                 </button>
                 <button
                   onClick={deselectAll}
-                  className="px-4 py-2 bg-[#FEFEFD] cursor-pointer border border-[#E5E7EB] rounded-md text-xs text-[#6B7280] hover:bg-[#F9FAFB] transition-colors"
+                  className="px-4 py-2 bg-card cursor-pointer border border-[#E5E7EB] rounded-md text-xs text-[#6B7280] hover:bg-[#F9FAFB] transition-colors"
                 >
                   Deselect
                 </button>
@@ -518,7 +518,7 @@ function ApplicantsListPage() {
             <div className="relative ml-auto">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#F8F9FC] border border-[#E5E7EB] rounded-md hover:border-[#3A52A6] transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-card border border-[#E5E7EB] rounded-md hover:border-[#3A52A6] transition-colors"
               >
                 <span className="text-[11px] md:text-xs text-primary capitalize">{filterStatus}</span>
                 <span className="px-1  bg-[#3A52A6] text-tertiary text-[9px] md:text-[10px] rounded-full">
@@ -530,7 +530,7 @@ function ApplicantsListPage() {
               </button>
 
               {showDropdown && (
-                <div className="absolute top-full right-0 mt-2 bg-white border border-[#E5E7EB] rounded-md shadow-lg z-10 min-w-[140px]">
+                <div className="absolute top-full right-0 mt-2 bg-white border bg-card rounded-md shadow-lg z-10 min-w-[140px]">
                   {(['all', 'pending', 'shortlisted', 'approved', 'denied'] as const).map((status) => (
                     <button
                       key={status}
@@ -563,7 +563,7 @@ function ApplicantsListPage() {
 
           {/* Bulk Action Buttons */}
           {bulkMode && selectedApplicantIds.size > 0 && (
-            <div className="flex items-center justify-between gap-4 mb-4 bg-white rounded-md shadow-sm p-4">
+            <div className="flex items-center justify-between gap-4 mb-4 bg-card rounded-md shadow-sm p-4">
               <span className="text-xs text-primary">{selectedApplicantIds.size} selected</span>
               <div className="flex items-center gap-2">
                 {filteredApplicants
@@ -607,7 +607,7 @@ function ApplicantsListPage() {
 
           {/* Applicants List */}
           {filteredApplicants.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm">
+            <div className="flex flex-col items-center justify-center py-16 bg-card rounded-lg shadow-sm">
               <Users className="w-14 h-14 text-[#D1D5DB]" />
               <p className="mt-4 text-[#9CA3AF]">No applicants found</p>
             </div>
@@ -631,8 +631,8 @@ function ApplicantsListPage() {
                         openApplicantModal(applicant);
                       }
                     }}
-                    className={`bg-white rounded-xl shadow-sm p-5 cursor-pointer transition-all relative ${
-                      isSelected ? 'ring-2 ring-[#3A52A6] bg-[#EFF6FF]' : 'hover:shadow-md'
+                    className={`bg-card rounded-lg shadow-sm p-5 cursor-pointer transition-all relative ${
+                      isSelected ? 'ring-2 ring-[#3A52A6] bg-background' : 'hover:shadow-md'
                     }`}
                   >
                     {/* Status Icon */}
@@ -932,7 +932,7 @@ function ApplicantsListPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <div className="bg-[#F0F7FF] rounded-xl p-5 max-w-md w-full shadow-xl">
+              <div className="bg-background rounded-lg p-5 max-w-md w-full shadow-xl">
                 <h3 className="text-lg text-primary mb-1">
                   Bulk {bulkAction?.charAt(0).toUpperCase()}
                   {bulkAction?.slice(1)} Applications
@@ -1021,7 +1021,7 @@ function ApplicantsListPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-2"
             >
-              <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-md w-full shadow-xl">
+              <div className="bg-background rounded-lg p-6 max-w-md w-full shadow-xl">
                 <h3 className="text-lg text-primary mb-1">
                   {pendingAction.type === 'approved'
                     ? 'Approve Application'

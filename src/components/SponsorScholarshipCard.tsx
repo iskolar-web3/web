@@ -4,6 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
 
+export interface SponsorScholarshipCardProps {
+  scholarship: Scholarship;
+  index: number;
+  onClick?: () => void;
+  onEdit?: (scholarship: Scholarship) => void;
+  onDelete?: (scholarship: Scholarship) => void;
+  onViewApplicants?: (scholarship: Scholarship) => void;
+}
+
 export default function SponsorScholarshipCard({ 
   scholarship, 
   index, 
@@ -11,14 +20,7 @@ export default function SponsorScholarshipCard({
   onEdit,
   onDelete,
   onViewApplicants
-}: { 
-  scholarship: Scholarship; 
-  index: number; 
-  onClick?: () => void;
-  onEdit?: (scholarship: Scholarship) => void;
-  onDelete?: (scholarship: Scholarship) => void;
-  onViewApplicants?: (scholarship: Scholarship) => void;
-}) {
+}: SponsorScholarshipCardProps) {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const contextMenuRef = useRef<HTMLDivElement>(null);

@@ -38,7 +38,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
   const handleApply = useCallback(async () => {
     // const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
 
-    // if (response.success && response.exists) {
+    // if (response.success) {
     //   showToastMessage('error', 'Already Applied', response.message, 2500);
     //   return;
     // }

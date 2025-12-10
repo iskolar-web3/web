@@ -3,7 +3,13 @@ import type { Scholarship } from '@/types/scholarship.types';
 import { motion } from 'framer-motion';
 import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
 
-export default function ScholarshipCard({ scholarship, index, onClick }: { scholarship: Scholarship; index: number; onClick?: () => void }) {
+export interface ScholarshipCardProps {
+  scholarship: Scholarship;
+  index: number;
+  onClick?: () => void;
+}
+
+export default function ScholarshipCard({ scholarship, index, onClick }: ScholarshipCardProps) {
   const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
   
   return (
