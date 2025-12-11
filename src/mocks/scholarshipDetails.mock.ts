@@ -48,6 +48,6 @@ export const mockScholarshipDetails: Partial<Scholarship> = {
   ],
   sponsor: {
     name: 'Commission on Higher Education',
-    profile_url: '/src/logo.svg',
+    profile_url: 'src/logo.svg',
   },
 };

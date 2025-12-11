@@ -8,7 +8,7 @@ export const mockApiDelay = (ms: number = 1500): Promise<void> => {
 };
 
 /**
- * Mock scholarship data for discover and scholarships page
+ * Mock scholarship data for discover page
  */
 export const mockScholarships: Scholarship[] = Array(23).fill(null).map((_, i) => ({
   scholarship_id: `scholarship-${i + 1}`,
@@ -20,7 +20,7 @@ export const mockScholarships: Scholarship[] = Array(23).fill(null).map((_, i) =
   sponsor: { 
     name: 'Sponsor name',
     email: 'sponsor@example.com',
-    profile_url: 'src/logo.svg'
+    profile_url: 'src/logo.svg',
   },
   application_deadline: 'September 21, 2025',
   total_amount: 10000000,
@@ -40,7 +40,7 @@ export const mockScholarships: Scholarship[] = Array(23).fill(null).map((_, i) =
   updated_at: new Date().toISOString()
 }));
 
-// Mock scholarships for sponsor page
+// Mock scholarships for scholarships page
 export const mockSponsorScholarships: Scholarship[] = Array(5).fill(null).map((_, i) => ({
   scholarship_id: `sponsor-scholarship-${i + 1}`,
   sponsor_id: `sponsor-${i + 1}`,

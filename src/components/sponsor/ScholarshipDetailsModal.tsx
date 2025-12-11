@@ -18,6 +18,7 @@ import {
   Trash2, 
   Archive,
   AlertCircle, 
+  UserIcon,
   Loader2 } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
@@ -256,11 +257,17 @@ export default function ScholarshipDetailsModal({
             {/* Sponsor and Deadline */}
             <div className="space-y-3 mb-4 text-[#6B7280]">
               <div className="flex items-center gap-2">
-                <img
-                  src={scholarship.sponsor?.profile_url || 'src/logo.svg'}
-                  alt="Sponsor Profile"
-                  className="w-5.5 h-5.5 bg-white/20 rounded-full flex-shrink-0 object-cover overflow-hidden block"
-                />
+                <div className="w-5.5 h-5.5 rounded-full flex items-center justify-center flex-shrink-0">
+                  {scholarship.sponsor.profile_url ? (
+                    <img
+                      src={scholarship.sponsor.profile_url}
+                      alt={scholarship.sponsor.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="w-full h-full" />
+                  )}
+                </div>
                 <span className="text-sm">{scholarship.sponsor?.name || 'iSkolar'}</span>
               </div>
               <div className="flex items-center gap-2">

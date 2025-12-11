@@ -1,4 +1,4 @@
-import { Calendar, Users, Coins, Edit2, Trash2 } from 'lucide-react';
+import { Calendar, Users, Coins, Edit2, Trash2, UserIcon } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
@@ -211,11 +211,17 @@ export default function ScholarshipCard({
             {/* Sponsor and Deadline */}
             <div className="space-y-1.5 text-xs opacity-90">
               <div className="flex items-center gap-2">
-               <img
-                  src={scholarship.sponsor.profile_url || "src/logo.svg"}
-                  alt="Sponsor Profile"
-                  className="w-4 h-4 bg-white/20 rounded-full flex-shrink-0 object-cover overflow-hidden block"
-                />
+                <div className="w-4 h-4 rounded-full bg-card flex items-center justify-center flex-shrink-0">
+                  {scholarship.sponsor.profile_url ? (
+                    <img
+                      src={scholarship.sponsor.profile_url}
+                      alt={scholarship.sponsor.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="w-full h-full text-secondary" />
+                  )}
+                </div>
                 <span>{scholarship.sponsor.name}</span>
               </div>
               <div className="flex items-center gap-2">
