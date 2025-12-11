@@ -8,30 +8,56 @@ import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
 const API_URL = import.meta.env.VITE_API_URL;
 const DEFAULT_TIMEOUT = 10000;
 
+/**
+ * Application form data structure for submitting a scholarship application
+ */
 export interface ApplicationFormData {
+  /** ID of the scholarship being applied to */
   scholarship_id: string;
+  /** Custom form field responses */
   custom_form_response: FormFieldResponse[]; 
 }
 
+/**
+ * File upload data structure for application documents
+ */
 export interface ApplicationFileUpload {
+  /** Form field key for the file upload */
   fieldKey: string;
+  /** Array of files to upload */
   files: Array<{
+    /** Base64 encoded file data */
     uri: string;
+    /** File name */
     name: string;
+    /** MIME type of the file */
     mimeType: string;
+    /** File size in bytes (optional) */
     size?: number;
   }>;
 }
 
+/**
+ * Scholarship application data structure
+ */
 export interface ScholarshipApplication {
+  /** Unique application ID */
   scholarship_application_id: string;
+  /** ID of the student who applied */
   student_id: string;
+  /** ID of the scholarship */
   scholarship_id: string;
+  /** Application status */
   status: 'pending' | 'shortlisted' | 'approved' | 'denied' | 'granted';
+  /** Optional remarks from the sponsor */
   remarks?: string;
+  /** Custom form field responses */
   custom_form_response: FormFieldResponse[]; 
+  /** Timestamp when application was submitted */
   applied_at: string;
+  /** Timestamp when application was last updated */
   updated_at: string;
+  /** Student information */
   student: {
     student_id: string;
     full_name: string;
@@ -43,6 +69,7 @@ export interface ScholarshipApplication {
       profile_url?: string;
     };
   };
+  /** Scholarship information */
   scholarship: Scholarship;
 }
 
@@ -62,7 +89,17 @@ interface ApplicationsResponse {
   };
 }
 
+/**
+ * Service for managing scholarship applications
+ * Handles application submission, file uploads, and status management
+ */
 class ScholarshipApplicationService {
+  /**
+   * Submits a new scholarship application
+   * @param scholarshipId - ID of the scholarship to apply for
+   * @param customFormResponse - Array of custom form field responses
+   * @returns Promise resolving to success status, message, and optional application data
+   */
   async submitApplication(
     scholarshipId: string,
     customFormResponse: FormFieldResponse[] 
@@ -95,6 +132,14 @@ class ScholarshipApplicationService {
     }
   }
 
+  /**
+   * Uploads files for a specific application field
+   * Converts base64 encoded files to Blob and uploads via multipart/form-data
+   * @param applicationId - ID of the application
+   * @param fieldKey - Form field key for the file upload
+   * @param files - Array of files with base64 encoded data
+   * @returns Promise resolving to success status, message, and optional file URLs
+   */
   async uploadApplicationFiles(
     applicationId: string,
     fieldKey: string,
@@ -172,6 +217,10 @@ class ScholarshipApplicationService {
     }
   }
 
+  /**
+   * Retrieves all applications submitted by the current student
+   * @returns Promise resolving to success status, message, and array of applications
+   */
   async getMyApplications(): Promise<{
     success: boolean;
     message: string;
@@ -197,6 +246,11 @@ class ScholarshipApplicationService {
     }
   }
 
+  /**
+   * Retrieves a specific application by ID
+   * @param applicationId - ID of the application to retrieve
+   * @returns Promise resolving to success status, message, and application data
+   */
   async getApplicationById(applicationId: string): Promise<{
     success: boolean;
     message: string;
@@ -225,6 +279,11 @@ class ScholarshipApplicationService {
     }
   }
 
+  /**
+   * Checks if an application exists for a specific scholarship
+   * @param scholarshipId - ID of the scholarship to check
+   * @returns Promise resolving to success status, message, and optional existing application
+   */
   async checkApplicationExists(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
@@ -253,6 +312,11 @@ class ScholarshipApplicationService {
     }
   }
 
+  /**
+   * Retrieves all applications for a specific scholarship (sponsor view)
+   * @param scholarshipId - ID of the scholarship
+   * @returns Promise resolving to success status, message, and array of applications
+   */
   async getScholarshipApplications(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
@@ -281,6 +345,13 @@ class ScholarshipApplicationService {
     }
   }
 
+  /**
+   * Updates the status of a single application
+   * @param applicationId - ID of the application to update
+   * @param status - New status for the application
+   * @param remarks - Optional remarks from the sponsor
+   * @returns Promise resolving to success status, message, and updated application data
+   */
   async updateApplicationStatus(
     applicationId: string,
     status: 'shortlisted' |'approved' | 'denied',
@@ -317,6 +388,13 @@ class ScholarshipApplicationService {
     }
   }
 
+  /**
+   * Updates the status of multiple applications at once
+   * @param applicationIds - Array of application IDs to update
+   * @param status - New status for all applications
+   * @param remarks - Optional remarks to apply to all applications
+   * @returns Promise resolving to success status, message, and array of updated applications
+   */
   async bulkUpdateApplicationStatus(
     applicationIds: string[],
     status: 'shortlisted' | 'approved' | 'denied' | 'granted',

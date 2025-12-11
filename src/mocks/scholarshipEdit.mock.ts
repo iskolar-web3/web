@@ -7,6 +7,9 @@ export const mockApiDelay = (ms: number = 1500): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+/**
+ * Mock scholarship data for editing
+ */
 export const mockScholarshipEdit: Scholarship = {
   scholarship_id: '1',
   sponsor_id: '1',

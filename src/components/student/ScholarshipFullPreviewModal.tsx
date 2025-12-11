@@ -4,12 +4,24 @@ import { useState } from 'react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
 
+/**
+ * Props for the ScholarshipFullPreviewModal component
+ */
 interface ScholarshipFullPreviewModalProps {
+  /** Partial scholarship data to display in preview */
   scholarship: Partial<Scholarship>;
+  /** Callback function to close the modal */
   onClose: () => void;
+  /** Whether this is a preview mode (hides apply button) */
   isPreview?: boolean;
 }
 
+/**
+ * Full scholarship preview modal component
+ * Displays comprehensive scholarship details in preview or view mode
+ * @param props - Component props
+ * @returns Animated side panel modal with full scholarship preview
+ */
 export default function ScholarshipFullPreviewModal({
   scholarship,
   onClose,
@@ -19,6 +31,9 @@ export default function ScholarshipFullPreviewModal({
 
   const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
+  /**
+   * Handles modal close with exit animation
+   */
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200);

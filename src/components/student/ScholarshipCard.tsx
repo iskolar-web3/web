@@ -3,12 +3,24 @@ import type { Scholarship } from '@/types/scholarship.types';
 import { motion } from 'framer-motion';
 import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
 
+/**
+ * Props for the ScholarshipCard component (student view)
+ */
 export interface ScholarshipCardProps {
+  /** Scholarship data to display */
   scholarship: Scholarship;
+  /** Index for staggered animation delay */
   index: number;
+  /** Optional callback when card is clicked */
   onClick?: () => void;
 }
 
+/**
+ * Scholarship card component for student view
+ * Displays scholarship information with animations and interactive hover effects
+ * @param props - Component props
+ * @returns Animated scholarship card component
+ */
 export default function ScholarshipCard({ scholarship, index, onClick }: ScholarshipCardProps) {
   const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
   

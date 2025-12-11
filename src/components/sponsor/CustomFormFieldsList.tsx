@@ -12,20 +12,39 @@ import {
   CalendarIcon,
 } from 'lucide-react';
 
+/**
+ * Custom form field structure
+ */
 interface CustomFormField {
+  /** Field type */
   type: CustomFieldType;
+  /** Field label */
   label: string;
+  /** Whether the field is required */
   required: boolean;
+  /** Options for dropdown/checkbox/multiple choice fields */
   options?: string[];
 }
 
+/**
+ * Props for the CustomFormFieldsList component
+ */
 interface CustomFormFieldsListProps {
+  /** Array of custom form fields */
   fields: CustomFormField[];
+  /** Callback when edit button is clicked */
   onEdit: (index: number) => void;
+  /** Callback when remove button is clicked */
   onRemove: (index: number) => void;
+  /** Whether the list is disabled */
   disabled?: boolean;
 }
 
+/**
+ * Renders the appropriate icon for a given field type
+ * @param fieldType - The custom field type
+ * @returns Icon component for the field type
+ */
 const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
   const iconProps = { size: 18, className: "text-secondary" };
   const icons = {
@@ -43,6 +62,11 @@ const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
   return icons[fieldType] || icons.text;
 };
 
+/**
+ * Gets the human-readable label for a field type
+ * @param fieldType - The custom field type
+ * @returns Display label for the field type
+ */
 const getFieldTypeLabel = (fieldType: CustomFieldType) => {
   const labels = {
     text: 'Short answer',
@@ -59,6 +83,12 @@ const getFieldTypeLabel = (fieldType: CustomFieldType) => {
   return labels[fieldType] || fieldType;
 };
 
+/**
+ * Custom form fields list component
+ * Displays a list of custom form fields with edit and remove actions
+ * @param props - Component props
+ * @returns List of custom form fields or null if empty
+ */
 export default function CustomFormFieldsList({
   fields,
   onEdit,

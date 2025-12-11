@@ -46,18 +46,18 @@ function Scholarships() {
 
   const { toast, showSuccess, showError } = useToast();
 
-  const handleViewApplicants = (_scholarship: Scholarship) => {
-    // navigate({ 
-    //   to: "/scholarship/$id/applicants",
-    //   params: { id: scholarship.scholarship_id }
-    // });
+  const handleViewApplicants = (scholarship: Scholarship) => {
+    navigate({ 
+      to: "/scholarship/$id/applicants",
+      params: { id: scholarship.scholarship_id }
+    });
   };
 
-  const handleEdit = (_scholarship: Scholarship) => {
-    // navigate({ 
-    //   to: "/scholarship/$id/edit",
-    //   params: { id: scholarship.scholarship_id }
-    // });
+  const handleEdit = (scholarship: Scholarship) => {
+    navigate({ 
+      to: "/scholarship/$id/edit",
+      params: { id: scholarship.scholarship_id }
+    });
   };
 
   const handleDelete = (scholarship: Scholarship) => {

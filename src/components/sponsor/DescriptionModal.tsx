@@ -1,13 +1,26 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
+/**
+ * Props for the DescriptionModal component
+ */
 interface DescriptionModalProps {
+  /** Whether the modal is open */
   isOpen: boolean;
+  /** Callback function to close the modal */
   onClose: () => void;
+  /** Current description text */
   description: string;
+  /** Callback function when description is saved */
   onSave: (description: string) => void;
 }
 
+/**
+ * Description modal component for editing scholarship descriptions
+ * Provides a textarea for entering detailed scholarship information
+ * @param props - Component props
+ * @returns Modal dialog with textarea for description editing
+ */
 export default function DescriptionModal({
   isOpen,
   onClose,

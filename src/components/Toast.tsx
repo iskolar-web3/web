@@ -2,13 +2,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { HiCheckCircle, HiXCircle } from "react-icons/hi2";
 import type { JSX } from "react";
 
+/**
+ * Props for the Toast component
+ */
 interface ToastProps {
+  /** Whether the toast is visible */
   visible: boolean;
+  /** Type of toast notification */
   type: "success" | "error" | 'info' | 'warning';
+  /** Title text for the toast */
   title: string;
+  /** Message text for the toast */
   message: string;
 }
 
+/**
+ * Toast notification component
+ * Displays animated success or error messages with icons
+ * @param props - Component props
+ * @returns Animated toast notification component
+ */
 export default function Toast({ visible, type, title, message }: ToastProps): JSX.Element {
   return (
     <AnimatePresence>

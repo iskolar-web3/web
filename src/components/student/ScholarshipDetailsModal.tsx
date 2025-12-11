@@ -8,6 +8,14 @@ import { useToast } from '@/hooks/useToast';
 import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
 import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
 
+/**
+ * Scholarship details modal component for students
+ * Displays detailed scholarship information with apply functionality
+ * @param props - Component props
+ * @param props.scholarship - Scholarship data to display
+ * @param props.onClose - Callback function to close the modal
+ * @returns Animated side panel modal with scholarship details and apply button
+ */
 export default function ScholarshipDetailsModal({ scholarship, onClose }: { scholarship: Scholarship; onClose: () => void }) {4
   const navigate = useNavigate();
 
@@ -16,15 +24,26 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
 
   const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
+  /**
+   * Checks if the scholarship is closed
+   * @returns True if scholarship status is 'closed'
+   */
   const isClosed = useCallback(() => {
     return scholarship.status === 'closed';
   }, [scholarship?.status]);
 
+  /**
+   * Handles modal close with exit animation
+   */
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200); 
   };
 
+  /**
+   * Handles scholarship application
+   * Checks if user has already applied and navigates to application form
+   */
   const handleApply = useCallback(async () => {
     const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
 
@@ -38,7 +57,10 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
       return;
     }
 
-    navigate({ to: `/scholarship/${scholarship.scholarship_id}/apply` });
+    navigate({ 
+      to: '/scholarship/$id/apply', 
+      params: { id: scholarship.scholarship_id }
+    });
   }, [scholarship, isClosed, navigate]);
 
   return (

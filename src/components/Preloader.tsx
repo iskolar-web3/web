@@ -4,11 +4,19 @@ import { logger } from "@/lib/logger";
 // import { profileService } from '@/services/profile.service';
 // import { authService } from '@/services/auth.service';
 
+/**
+ * Props for the Preloader component
+ */
 interface PreloaderProps {
+  /** Callback function to execute when preloading completes */
   onComplete?: () => void;
+  /** Minimum time to display the preloader in milliseconds */
   minDisplayTime?: number;
 }
 
+/**
+ * Array of motivational messages to display during loading
+ */
 const loadingMessages = [
   'Unlocking Opportunities',
   'Getting Your Scholarships Ready',
@@ -20,6 +28,12 @@ const loadingMessages = [
   'Discovering Opportunities',
 ];
 
+/**
+ * Preloader component with animated logo and progress bar
+ * Displays loading messages and ensures minimum display time before completing
+ * @param props - Component props
+ * @returns Animated preloader component
+ */
 export default function Preloader({ onComplete, minDisplayTime = 2000 }: PreloaderProps) {
   const [currentMessage, setCurrentMessage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);

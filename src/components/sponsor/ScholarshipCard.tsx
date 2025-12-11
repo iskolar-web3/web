@@ -4,15 +4,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
 
+/**
+ * Props for the ScholarshipCard component (sponsor view)
+ */
 export interface ScholarshipCardProps {
+  /** Scholarship data to display */
   scholarship: Scholarship;
+  /** Index for staggered animation delay */
   index: number;
+  /** Optional callback when card is clicked */
   onClick?: () => void;
+  /** Optional callback when edit is selected */
   onEdit?: (scholarship: Scholarship) => void;
+  /** Optional callback when delete is selected */
   onDelete?: (scholarship: Scholarship) => void;
+  /** Optional callback when view applicants is selected */
   onViewApplicants?: (scholarship: Scholarship) => void;
 }
 
+/**
+ * Scholarship card component for sponsor view
+ * Displays scholarship information with context menu for actions (edit, delete, view applicants)
+ * @param props - Component props
+ * @returns Animated scholarship card with context menu
+ */
 export default function ScholarshipCard({ 
   scholarship, 
   index, 
@@ -28,7 +43,10 @@ export default function ScholarshipCard({
 
   const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
-  // Handle right-click
+  /**
+   * Handles right-click context menu
+   * @param e - Mouse event
+   */
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -60,18 +78,30 @@ export default function ScholarshipCard({
     };
   }, [showContextMenu]);
 
+  /**
+   * Handles edit action from context menu
+   * @param e - Mouse event
+   */
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowContextMenu(false);
     onEdit?.(scholarship);
   };
 
+  /**
+   * Handles delete action from context menu
+   * @param e - Mouse event
+   */
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowContextMenu(false);
     onDelete?.(scholarship);
   };
 
+  /**
+   * Handles view applicants action from context menu
+   * @param e - Mouse event
+   */
   const handleViewApplicants = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowContextMenu(false);

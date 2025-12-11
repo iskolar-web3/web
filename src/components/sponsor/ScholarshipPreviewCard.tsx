@@ -2,11 +2,22 @@ import { Calendar, Users, Coins, Images } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
 
+/**
+ * Props for the ScholarshipPreviewCard component
+ */
 interface ScholarshipPreviewCardProps {
+  /** Partial scholarship data to display in preview */
   scholarship: Partial<Scholarship>;
+  /** Optional callback when card is clicked */
   onClick?: () => void;
 }
 
+/**
+ * Scholarship preview card component for sponsors
+ * Displays a preview of scholarship information during creation/editing
+ * @param props - Component props
+ * @returns Preview card component with scholarship details
+ */
 export default function ScholarshipPreviewCard({ scholarship, onClick }: ScholarshipPreviewCardProps) {
   const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 

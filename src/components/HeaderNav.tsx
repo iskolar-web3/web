@@ -4,30 +4,55 @@ import { Search, Home, Compass, WalletCards, Plus, Repeat, Bell, User, X } from 
 import { AnimatePresence, motion } from 'framer-motion';
 import ProfileDropdown from './ProfileDropdown';
 
+/**
+ * User role type for navigation context
+ */
 type UserRole = 'student' | 'sponsor';
 
+/**
+ * Navigation item structure
+ */
 interface NavItem {
+  /** Display label for the navigation item */
   label: string;
+  /** Route path for navigation */
   path: string;
+  /** Icon component to display */
   icon: React.ComponentType<{ className?: string }>;
 }
 
+/**
+ * Props for the HeaderNav component
+ */
 interface HeaderNavProps {
+  /** Current user's role (student or sponsor) */
   role: UserRole;
 }
 
+/**
+ * Navigation items for student users
+ */
 const studentNavItems: NavItem[] = [
   { label: 'Home', path: '/home', icon: Home },
   { label: 'Discover', path: '/discover', icon: Compass },
   { label: 'Transactions', path: '/transactions', icon: Repeat },
 ];
 
+/**
+ * Navigation items for sponsor users
+ */
 const sponsorNavItems: NavItem[] = [
   { label: 'Scholarships', path: '/scholarships', icon: WalletCards },
   { label: 'Create', path: '/create', icon: Plus },
   { label: 'Transactions', path: '/transactions', icon: Repeat },
 ];
 
+/**
+ * Main navigation header component
+ * Provides role-based navigation, search functionality, notifications, and profile access
+ * @param props - Component props
+ * @returns Header navigation component
+ */
 export default function HeaderNav({ role }: HeaderNavProps) {
   const router = useRouterState();
   const navigate = useNavigate();
@@ -77,25 +102,43 @@ export default function HeaderNav({ role }: HeaderNavProps) {
     }
   }, [isSearchExpanded]);
 
+  /**
+   * Handles logo click to navigate to role-specific home page
+   */
   const handleLogoClick = () => {
     navigate({ to: logoRedirectPath });
   };
 
+  /**
+   * Handles search form submission
+   * @param e - Form event
+   */
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement search functionality
     console.log('Search query:', searchQuery);
   };
 
+  /**
+   * Expands the search bar on mobile devices
+   */
   const handleSearchIconClick = () => {
     setIsSearchExpanded(true);
   };
 
+  /**
+   * Closes the expanded search bar and clears the query
+   */
   const handleSearchClose = () => {
     setIsSearchExpanded(false);
     setSearchQuery('');
   };
 
+  /**
+   * Determines if a navigation route is currently active
+   * @param path - Route path to check
+   * @returns True if the route is active
+   */
   const isActiveRoute = (path: string) => {
     // Handle exact matches
     if (path === '/home') {

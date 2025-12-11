@@ -4,34 +4,56 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { User as UserIcon } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { handleError } from '@/lib/errorHandler'; 
+import { logger } from "@/lib/logger";
 
+/**
+ * Props for the ProfileDropdown component
+ */
 interface ProfileDropdownProps {
+  /** Callback function to close the dropdown */
   onClose: () => void;
 }
 
-// Mock user data - TODO: Replace with actual user data from context/store
+/**
+ * Mock user data for profile display
+ * TODO: Replace with actual user data from context/store
+ */
 const mockUser = {
   name: 'Louigie Caminoy',
   profileImage: null, // or a default image URL
 };
 
+/**
+ * Profile dropdown component
+ * Displays user profile information with account and logout options
+ * @param props - Component props
+ * @returns Animated dropdown menu with profile actions
+ */
 export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
   const navigate = useNavigate();
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
+  /**
+   * Handles user logout
+   * Removes authentication token and redirects to login page
+   */
   const handleLogout = async () => {
     try {
       await authService.removeToken();
       navigate({ to: '/login' });
     } catch (error) {
       const handled = handleError(error, 'Failed to logout');
-      console.error('Logout error:', handled.raw);
+      logger.error('Logout error:', handled.raw);
     }
   };
 
+  /**
+   * Handles account navigation
+   * Closes dropdown and navigates to account page (currently disabled)
+   */
   const handleAccountClick = () => {
     onClose();
-    // TODO: Navigate to account page when it's created
+
     // navigate({ to: '/account' });
   };
 

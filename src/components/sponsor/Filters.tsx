@@ -2,13 +2,26 @@ import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * Props for the FilterSelect component (sponsor view)
+ */
 interface FilterSelectProps {
+  /** Title/label for the filter dropdown */
   title: string;
+  /** Array of available filter options */
   options: string[];
+  /** Currently selected value */
   value: string;
+  /** Callback function when selection changes */
   onChange: (value: string) => void;
 }
 
+/**
+ * Animated dropdown filter component for sponsor view
+ * Provides a filterable dropdown with smooth animations for option selection
+ * @param props - Component props
+ * @returns Animated filter dropdown component
+ */
 export default function FilterSelect({
   title,
   options,

@@ -4,6 +4,13 @@ import { mockScholarships, mockApiDelay } from '@/mocks/scholarships.mock';
 
 const USE_MOCK_DATA = true;
 
+/**
+ * Custom React Query hook for fetching all available scholarships
+ * Supports mock data mode for development/testing
+ * Implements 10-minute stale time for optimal caching
+ * 
+ * @returns React Query result containing array of all scholarships
+ */
 export const useScholarships = () => {
   return useQuery({
     queryKey: ['scholarships'],

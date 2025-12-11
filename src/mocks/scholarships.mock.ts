@@ -7,7 +7,9 @@ export const mockApiDelay = (ms: number = 1500): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-// Mock scholarships for student discover page
+/**
+ * Mock scholarship data for discover and scholarships page
+ */
 export const mockScholarships: Scholarship[] = Array(23).fill(null).map((_, i) => ({
   scholarship_id: `scholarship-${i + 1}`,
   sponsor_id: `sponsor-${i + 1}`,

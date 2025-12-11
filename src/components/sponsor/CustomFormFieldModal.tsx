@@ -21,6 +21,9 @@ import {
   CalendarIcon,
 } from 'lucide-react';
 
+/**
+ * Available custom form field types
+ */
 const customFieldTypes = [
   'text',
   'textarea',
@@ -34,15 +37,22 @@ const customFieldTypes = [
   'file',
 ] as const;
 
+/**
+ * Props for the CustomFormFieldModal component
+ */
 interface CustomFormFieldModalProps {
+  /** Whether the modal is open */
   isOpen: boolean;
+  /** Callback function to close the modal */
   onClose: () => void;
+  /** Callback function when field is saved */
   onSave: (field: {
     type: CustomFieldType;
     label: string;
     required: boolean;
     options?: string[];
   }) => void;
+  /** Existing field data when editing */
   editingField?: {
     type: CustomFieldType;
     label: string;
@@ -51,6 +61,11 @@ interface CustomFormFieldModalProps {
   } | null;
 }
 
+/**
+ * Renders the appropriate icon for a given field type
+ * @param fieldType - The custom field type
+ * @returns Icon component for the field type
+ */
 const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
   const iconProps = { size: 18, className: "text-secondary" };
   const icons = {
@@ -68,6 +83,11 @@ const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
   return icons[fieldType] || icons.text;
 };
 
+/**
+ * Gets the human-readable label for a field type
+ * @param fieldType - The custom field type
+ * @returns Display label for the field type
+ */
 const getFieldTypeLabel = (fieldType: CustomFieldType) => {
   const labels = {
     text: 'Short answer',
@@ -84,6 +104,12 @@ const getFieldTypeLabel = (fieldType: CustomFieldType) => {
   return labels[fieldType] || fieldType;
 };
 
+/**
+ * Custom form field modal component for sponsors
+ * Allows creating and editing custom form fields for scholarship applications
+ * @param props - Component props
+ * @returns Modal dialog for managing custom form fields
+ */
 export default function CustomFormFieldModal({
   isOpen,
   onClose,
@@ -113,6 +139,10 @@ export default function CustomFormFieldModal({
 
   if (!isOpen) return null;
 
+  /**
+   * Handles saving the form field
+   * Validates and normalizes input before calling onSave callback
+   */
   const handleSave = () => {
     const normalized = normalizeText(newFieldLabel);
     if (!normalized) return;
@@ -130,6 +160,9 @@ export default function CustomFormFieldModal({
     onClose();
   };
 
+  /**
+   * Handles adding a new option to dropdown/checkbox/multiple choice fields
+   */
   const handleAddOption = () => {
     const trimmed = dropdownOptionInput.trim();
     if (trimmed && !dropdownOptions.includes(trimmed)) {

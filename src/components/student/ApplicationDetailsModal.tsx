@@ -4,11 +4,20 @@ import { ChevronsRight, Calendar, Coins, Users, Info, Check, Clock } from 'lucid
 import type { Application, ApplicationStatus } from '@/types/application.types';
 import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting';
 
+/**
+ * Props for the ApplicationDetailsModal component
+ */
 interface ApplicationDetailsModalProps {
+  /** Application data to display */
   application: Application;
+  /** Callback function to close the modal */
   onClose: () => void;
 }
 
+/**
+ * Styling configuration for different application statuses
+ * Maps each status to its display label and Tailwind CSS classes
+ */
 export const statusStyles: Record<
   ApplicationStatus,
   { label: string; bg: string; text: string; border: string }
@@ -45,6 +54,12 @@ export const statusStyles: Record<
   },
 };
 
+/**
+ * Application details modal component for students
+ * Displays comprehensive information about a scholarship application including status, timeline, and scholarship details
+ * @param props - Component props
+ * @returns Animated side panel modal with application details
+ */
 export function ApplicationDetailsModal({ application, onClose }: ApplicationDetailsModalProps) {
   const [isExiting, setIsExiting] = useState(false);
 
@@ -55,6 +70,9 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
     application.scholarship.total_slot
   ) ?? 0;
 
+  /**
+   * Handles modal close with exit animation
+   */
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200);

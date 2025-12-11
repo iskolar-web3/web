@@ -22,21 +22,35 @@ import {
 import { useState, useCallback } from 'react';
 import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
 
-interface SponsorScholarshipDetailsModalProps {
+/**
+ * Props for the ScholarshipDetailsModal component (sponsor view)
+ */
+interface ScholarshipDetailsModalProps {
+  /** Scholarship data to display */
   scholarship: Scholarship;
+  /** Callback function to close the modal */
   onClose: () => void;
+  /** Optional callback when edit is clicked */
   onEdit?: (scholarship: Scholarship) => void;
+  /** Optional callback when delete is clicked */
   onDelete?: (scholarship: Scholarship) => void;
+  /** Optional callback when view applicants is clicked */
   onViewApplicants?: (scholarship: Scholarship) => void;
 }
 
+/**
+ * Scholarship details modal component for sponsors
+ * Displays comprehensive scholarship information with edit, delete, and view applicants actions
+ * @param props - Component props
+ * @returns Animated side panel modal with scholarship details and action buttons
+ */
 export default function ScholarshipDetailsModal({
   scholarship,
   onClose,
   onEdit,
   onDelete,
   onViewApplicants,
-}: SponsorScholarshipDetailsModalProps) {
+}: ScholarshipDetailsModalProps) {
 
   const [isExiting, setIsExiting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -44,6 +58,11 @@ export default function ScholarshipDetailsModal({
 
   const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
+  /**
+   * Gets the human-readable label for a field type
+   * @param type - The custom field type
+   * @returns Display label for the field type
+   */
   const getFieldTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
       text: 'Short answer',
@@ -60,6 +79,11 @@ export default function ScholarshipDetailsModal({
     return typeMap[type] || type;
   };
 
+  /**
+   * Renders the appropriate icon for a given field type
+   * @param fieldType - The custom field type
+   * @returns Icon component for the field type
+   */
   const renderFieldTypeIcon = (fieldType: string) => {
     const iconProps = { size: 20, className: "text-secondary" };
     
@@ -88,27 +112,47 @@ export default function ScholarshipDetailsModal({
     }
   };
 
+  /**
+   * Checks if the scholarship is closed
+   * @returns True if scholarship status is 'closed'
+   */
   const isClosed = useCallback(() => {
     return scholarship.status === 'closed';
   }, [scholarship?.status]);
 
+  /**
+   * Handles modal close with exit animation
+   */
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200);
   };
 
+  /**
+   * Handles edit button click
+   */
   const handleEdit = () => {
     onEdit?.(scholarship);
   };
 
+  /**
+   * Handles delete button click, shows confirmation modal
+   */
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
   };
 
+  /**
+   * Handles view applicants button click
+   */
   const handleViewApplicants = () => {
     onViewApplicants?.(scholarship);
   };
 
+  /**
+   * Confirms and executes the delete action
+   * Handles loading state and error handling
+   */
   const confirmDelete = async () => {
     try {
       setLoading(true);

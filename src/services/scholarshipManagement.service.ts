@@ -3,16 +3,29 @@ import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/lib/errorHandler';
 
+/**
+ * Data structure for creating or updating a scholarship
+ */
 interface ScholarshipData {
+  /** Type of scholarship */
   type?: string;
+  /** Purpose of the scholarship */
   purpose?: string;
+  /** Scholarship title */
   title: string;
+  /** Detailed description */
   description?: string;
+  /** Total scholarship amount */
   total_amount: number;
+  /** Total available slots */
   total_slot: number;
+  /** Application deadline in ISO format */
   application_deadline: string;
+  /** List of eligibility criteria */
   criteria: string[];
+  /** List of required documents */
   required_documents: string[];
+  /** Custom form fields for application */
   custom_form_fields: CustomFormField[];
 }
 
@@ -32,7 +45,16 @@ interface ScholarshipsResponse {
   };
 }
 
+/**
+ * Service for managing scholarship operations
+ * Handles CRUD operations for scholarships and sponsor-specific queries
+ */
 class ScholarshipManagementService {
+  /**
+   * Creates a new scholarship
+   * @param scholarshipData - Scholarship information
+   * @returns Promise resolving to success status, message, and optional scholarship data
+   */
   async createScholarship(scholarshipData: ScholarshipData): Promise<{ 
     success: boolean; 
     message: string; 
@@ -59,6 +81,12 @@ class ScholarshipManagementService {
     }
   }
 
+  /**
+   * Updates an existing scholarship
+   * @param scholarshipId - ID of the scholarship to update
+   * @param data - Partial scholarship data to update, including optional status and custom form fields
+   * @returns Promise resolving to success status, message, and updated scholarship data
+   */
   async updateScholarship(scholarshipId: string, data: Partial<ScholarshipData> & { status?: string; custom_form_fields?: CustomFormField[] }): Promise<{
     success: boolean;
     message: string;
@@ -85,6 +113,11 @@ class ScholarshipManagementService {
     }
   }
 
+  /**
+   * Permanently deletes a scholarship
+   * @param scholarshipId - ID of the scholarship to delete
+   * @returns Promise resolving to success status and message
+   */
   async deleteScholarship(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
@@ -108,6 +141,11 @@ class ScholarshipManagementService {
     }
   }
 
+  /**
+   * Archives a scholarship (soft delete)
+   * @param scholarshipId - ID of the scholarship to archive
+   * @returns Promise resolving to success status, message, and archived scholarship data
+   */
   async archiveScholarship(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
@@ -133,6 +171,10 @@ class ScholarshipManagementService {
     }
   }
 
+  /**
+   * Retrieves all scholarships in the system
+   * @returns Promise resolving to success status, message, and array of scholarships
+   */
   async getAllScholarships(): Promise<{ 
     success: boolean; 
     message: string;
@@ -158,6 +200,11 @@ class ScholarshipManagementService {
     }
   }
 
+  /**
+   * Retrieves a specific scholarship by ID
+   * @param scholarshipId - ID of the scholarship to retrieve
+   * @returns Promise resolving to success status, message, and scholarship data
+   */
   async getScholarshipById(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
@@ -183,6 +230,10 @@ class ScholarshipManagementService {
     }
   }
 
+  /**
+   * Retrieves all scholarships created by the current sponsor
+   * @returns Promise resolving to success status, message, and array of scholarships
+   */
   async getMyScholarships(): Promise<{ 
     success: boolean; 
     message: string;

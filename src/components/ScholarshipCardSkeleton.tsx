@@ -1,10 +1,20 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 
+/**
+ * Props for the ScholarshipCardSkeleton component
+ */
 interface ScholarshipCardSkeletonProps {
+  /** Index for staggered animation delay */
   index?: number;
 }
 
+/**
+ * Skeleton loading component for scholarship cards
+ * Displays an animated placeholder while scholarship data is loading
+ * @param props - Component props
+ * @returns Animated skeleton card component
+ */
 export default function ScholarshipCardSkeleton({ index = 0 }: ScholarshipCardSkeletonProps) {
   return (
     <motion.div

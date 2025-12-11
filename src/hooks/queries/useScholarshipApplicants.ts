@@ -8,6 +8,15 @@ import {
 
 const USE_MOCK_DATA = true;
 
+/**
+ * Custom React Query hook for fetching scholarship applicants and scholarship details
+ * Supports mock data mode for development/testing
+ * 
+ * @param scholarshipId - ID of the scholarship to fetch applicants for
+ * @returns Object containing:
+ *   - applicantsQuery: React Query result for scholarship applications
+ *   - scholarshipQuery: React Query result for scholarship details
+ */
 export const useScholarshipApplicants = (scholarshipId: string) => {
   const applicantsQuery = useQuery({
     queryKey: ['scholarship-applicants', scholarshipId],

@@ -5,35 +5,71 @@ import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
 const API_URL = import.meta.env.VITE_API_URL;
 const DEFAULT_TIMEOUT = 10000; // 10 seconds
 
+/**
+ * Authentication token structure
+ */
 export interface AuthToken {
+  /** JWT token string */
   token: string;
+  /** Token expiration timestamp in milliseconds */
   expiresAt: number;
+  /** User information */
   user: {
+    /** User ID */
     id: string;
   };
 }
 
+/**
+ * Generic API response structure
+ * @template T - Type of the response data
+ */
 export interface ApiResponse<T = unknown> {
+  /** Indicates if the request was successful */
   success?: boolean;
+  /** Response message */
   message: string;
+  /** Optional response data */
   data?: T;
 }
 
+/**
+ * User registration data structure
+ */
 export interface RegisterData {
+  /** User's email address */
   email: string;
+  /** User's password */
   password: string;
+  /** Password confirmation */
   confirm_password: string;
 }
 
+/**
+ * User login data structure
+ */
 export interface LoginData {
+  /** User's email address */
   email: string;
+  /** User's password */
   password: string;
+  /** Whether to remember the user's session */
   remember_me: boolean;
 }
 
+/**
+ * Service for handling authentication operations
+ * Manages token storage, retrieval, and authenticated API requests
+ */
 class AuthService {
+  /** Local storage key for authentication token */
   private readonly TOKEN_KEY = 'authToken';
 
+  /**
+   * Stores the authentication token in local storage
+   * @param token - JWT token to store
+   * @throws {AppError} If token storage fails
+   */
   async storeToken(token: string): Promise<void> {
     try {
       localStorage.setItem(this.TOKEN_KEY, token);
@@ -44,6 +80,10 @@ class AuthService {
     }
   }
 
+  /**
+   * Retrieves the authentication token from local storage
+   * @returns The stored token or null if not found or error occurs
+   */
   async getToken(): Promise<string | null> {
     try {
       return localStorage.getItem(this.TOKEN_KEY);
@@ -54,6 +94,9 @@ class AuthService {
     }
   }
 
+  /**
+   * Removes the authentication token from local storage
+   */
   async removeToken(): Promise<void> {
     try {
       localStorage.removeItem(this.TOKEN_KEY);
@@ -63,6 +106,10 @@ class AuthService {
     }
   }
 
+  /**
+   * Checks if a valid, non-expired token exists
+   * @returns True if a valid token exists, false otherwise
+   */
   async hasValidToken(): Promise<boolean> {
     const token = await this.getToken();
     if (!token) return false;
@@ -76,6 +123,13 @@ class AuthService {
     }
   }
 
+  /**
+   * Makes an authenticated API request with the stored token
+   * @template T - Type of the expected response data
+   * @param endpoint - API endpoint path (e.g., '/users/profile')
+   * @param options - Fetch request options
+   * @returns Promise resolving to response with success status, data, message, and HTTP status
+   */
   async authenticatedRequest<T = unknown>(
     endpoint: string,
     options: RequestInit = {}
@@ -137,6 +191,11 @@ class AuthService {
     }
   }
 
+  /**
+   * Registers a new user account
+   * @param registerData - User registration information
+   * @returns Promise resolving to success status and message
+   */
   async register(registerData: RegisterData): Promise<{ success: boolean; message: string; }> {
     try {
       const response = await fetchWithTimeout(
@@ -175,6 +234,11 @@ class AuthService {
     }
   } 
 
+  /**
+   * Authenticates a user and returns a JWT token
+   * @param loginData - User login credentials
+   * @returns Promise resolving to success status, message, and optional token
+   */
   async login(loginData: LoginData): Promise<{ success: boolean; message: string; token?: string; }> {
     try {
       const response = await fetchWithTimeout(

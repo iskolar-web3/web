@@ -7,7 +7,7 @@ export const mockApiDelay = (ms: number = 2000) =>
   new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Mock scholarship data for editing
+ * Mock scholarship data for application form
  */
 export const mockScholarshipDetails: Partial<Scholarship> = {
   scholarship_id: '1',

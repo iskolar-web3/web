@@ -4,6 +4,13 @@ import { mockSponsorScholarships, mockApiDelay } from '@/mocks/scholarships.mock
 
 const USE_MOCK_DATA = true;
 
+/**
+ * Custom React Query hook for fetching scholarships created by the current sponsor
+ * Supports mock data mode for development/testing
+ * Implements 5-minute stale time for sponsor-specific data
+ * 
+ * @returns React Query result containing array of sponsor's scholarships
+ */
 export const useSponsorScholarships = () => {
   return useQuery({
     queryKey: ['my-scholarships'],

@@ -4,7 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { normalizeText, normalizeArray } from '@/utils/normalize';
 
-// Form field types
+/**
+ * Available custom form field types for scholarship applications
+ */
 export const customFieldTypes = [
   'text',
   'textarea',
@@ -47,8 +49,34 @@ const scholarshipSchema = z.object({
   })).min(1, 'At least one form field is required'),
 });
 
+/**
+ * Scholarship form data type inferred from Zod schema
+ */
 export type ScholarshipFormData = z.infer<typeof scholarshipSchema>;
 
+/**
+ * Custom hook for managing scholarship creation/edit form
+ * Provides form state management, validation, and helper functions for:
+ * - Image upload and preview
+ * - Dynamic criteria list management
+ * - Dynamic required documents list management
+ * - Custom form fields management
+ * 
+ * @returns Object containing:
+ *   - form: React Hook Form instance with Zod validation
+ *   - imagePreview: Current image preview URL
+ *   - criteriaInput: Input state for adding criteria
+ *   - setCriteriaInput: Setter for criteria input
+ *   - documentsInput: Input state for adding documents
+ *   - setDocumentsInput: Setter for documents input
+ *   - handleImageUpload: Function to handle image file upload
+ *   - removeImage: Function to remove uploaded image
+ *   - addCriterion: Function to add a new criterion
+ *   - removeCriterion: Function to remove a criterion by index
+ *   - addDocument: Function to add a new required document
+ *   - removeDocument: Function to remove a document by index
+ *   - resetForm: Function to reset entire form state
+ */
 export function useScholarshipForm() {
   const form = useForm<ScholarshipFormData>({
     resolver: zodResolver(scholarshipSchema),

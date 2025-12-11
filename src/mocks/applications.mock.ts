@@ -8,6 +8,9 @@ export const mockApiDelay = (ms: number = 1500): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+/**
+ * Mock applications data for homepage
+ */
 const createMockScholarship = (overrides: Partial<Scholarship> = {}): Scholarship => ({
   scholarship_id: '1',
   sponsor_id: '1',
