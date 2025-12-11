@@ -1,15 +1,23 @@
-import { useState, useMemo, useEffect, useCallback  } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSponsorScholarships } from '@/hooks/queries/useSponsorScholarships';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Filter, AlertCircle, Loader2, X, GraduationCap, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SponsorFilterSelect from '@/components/SponsorFilters';
-import SponsorScholarshipCard from '@/components/SponsorScholarshipCard';
+import FilterSelect from '@/components/sponsor/Filters';
+import ScholarshipCard from '@/components/sponsor/ScholarshipCard';
 import ScholarshipCardSkeleton from '@/components/ScholarshipCardSkeleton';
-import SponsorScholarshipDetailsModal from '@/components/SponsorScholarshipDetailsModal';
+import ScholarshipDetailsModal from '@/components/sponsor/ScholarshipDetailsModal';
 import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from '@/components/Toast';
-// import { scholarshipManagementService } from '@/services/scholarship-management.service';
+import { useToast } from '@/hooks/useToast';
+import { handleError } from '@/lib/errorHandler';
+import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
+import { logger } from "@/lib/logger";
+import { mockApiDelay } from '@/mocks/scholarships.mock';
+
+const USE_MOCK_DATA = true;
 
 export const Route = createFileRoute('/_sponsor/scholarships')({
   component: Scholarships,
@@ -19,6 +27,7 @@ function Scholarships() {
   usePageTitle("Scholarships")
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [sortBy, setSortBy] = useState('Newest');
   const [scholarshipType, setScholarshipType] = useState('All');
@@ -28,38 +37,27 @@ function Scholarships() {
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const { data: scholarships = [], isLoading: loading, error, isError } = useSponsorScholarships();
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [scholarshipToDelete, setScholarshipToDelete] = useState<Scholarship | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
 
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  }, []);
+  const { toast, showSuccess, showError } = useToast();
 
   const handleViewApplicants = (scholarship: Scholarship) => {
-    // navigate({ 
-    //   to: "/scholarship/$id/applicants",
-    //   params: { id: scholarship.scholarship_id }
-    // });
+    navigate({ 
+      to: "/scholarship/$id/applicants",
+      params: { id: scholarship.scholarship_id }
+    });
   };
 
   const handleEdit = (scholarship: Scholarship) => {
-    // navigate({ 
-    //   to: "/scholarship/$id/edit",
-    //   params: { id: scholarship.scholarship_id }
-    // });
+    navigate({ 
+      to: "/scholarship/$id/edit",
+      params: { id: scholarship.scholarship_id }
+    });
   };
 
   const handleDelete = (scholarship: Scholarship) => {
@@ -72,16 +70,28 @@ function Scholarships() {
 
     try {
       setIsDeleting(true);
-      // const response = await scholarshipManagementService.deleteScholarship(scholarshipToDelete.scholarship_id);
       
-      // if(response.success) {
-      //   showToastMessage('success', 'Success', response.message, 2000);
+      if (USE_MOCK_DATA) {
+        // Mock delete
+        await mockApiDelay(1000);
+        showSuccess('Success', 'Scholarship deleted successfully', 2000);
+
+        queryClient.invalidateQueries({ queryKey: ['my-scholarships'] });
+
+      } else {
+        const response = await scholarshipManagementService.deleteScholarship(scholarshipToDelete.scholarship_id);
         
-      //   Refresh scholarships list
-      //   fetchMyScholarships(); 
-      // }
+        if(response.success) {
+          showSuccess('Success', response.message, 2000);
+
+          queryClient.invalidateQueries({ queryKey: ['my-scholarships'] });
+        }
+
+      }
     } catch (error) {
-      showToastMessage('success', 'Success', 'Failed to delete scholarship.', 2500);
+      const handled = handleError(error, 'Failed to delete scholarship.');
+      logger.error('Delete scholarship error:', handled.raw);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -89,99 +99,15 @@ function Scholarships() {
     }
   };
 
-  const fetchMyScholarships = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setScholarships(mockScholarship);
-  //     const response = await scholarshipManagementService.getMyScholarships();
-  //
-  //     if (response.success) {
-  //       setScholarships(response.scholarships);
-  //     }
-    } catch (error) {
-      showToastMessage('success', 'Success', 'Failed to connect to server.', 2500);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+  useEffect(() => {
+    if (isError && error) {
+      showError('Error', error.message, 2500);
     }
-  }, []);
-  
-  useEffect(() => {
-    fetchMyScholarships();
-  }, [fetchMyScholarships]);
+  }, [isError, error, showError]);
 
-  // Mock data - simulate loading delay
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const mockScholarship: Scholarship[] = Array(5)
-    .fill(null)
-    .map(() => ({
-      scholarship_id: '1',
-      sponsor_id: '1',
-      status: 'active',
-      title: 'CHED Merit Scholarship Program',
-      type: 'Merit-Based',
-      purpose: 'Tuition',
-      sponsor: {
-        name: 'Sponsor name',
-        email: 'sponsor@example.com',
-        profile_url: 'src/logo.svg',
-      },
-      application_deadline: 'September 21, 2025',
-      total_amount: 40000000,
-      total_slot: 400,
-      criteria: ['1st Year', 'LGU', 'Male', 'BSCS', 'BSIT', 'BSIS'],
-      required_documents: ["Voter's Certificate", 'Birth Certificate', 'COR', 'Barangay ID'],
-      image_url: 'src/logo.svg',
-      description:
-        "The Commission on Higher Education (CHED) Merit Scholarship Program awards full or half merit scholarships to high-performing incoming college students in CHED-priority courses. It's designed to help academically excellent but financially needy students access tertiary education.",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      applications_count: 800,
-      custom_form_fields: [
-        {
-          type: 'text',
-          label: 'Full Name',
-          required: true,
-        },
-        {
-          type: 'email',
-          label: 'Email Address',
-          required: true,
-        },
-        {
-          type: 'phone',
-          label: 'Contact Number',
-          required: true,
-        },
-        {
-          type: 'dropdown',
-          label: 'Year Level',
-          required: true,
-          options: ['1st Year', '2nd Year', '3rd Year', '4th Year'],
-        },
-        {
-          type: 'textarea',
-          label: 'Why do you deserve this scholarship?',
-          required: true,
-        },
-        {
-          type: 'file',
-          label: 'Upload Transcript of Records',
-          required: true,
-        },
-      ],
-    }));
 
   const filteredScholarships = useMemo(() => {
-    return mockScholarship.filter((scholarship) => {
+    return scholarships.filter((scholarship) => {
       const matchesType =
         scholarshipType === 'All' ||
         scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
@@ -208,11 +134,11 @@ function Scholarships() {
 
       return matchesType && matchesPurpose && matchesApplications && matchesAmount && matchesSlots;
     });
-  }, [mockScholarship, scholarshipType, purpose, applicationsRange, amountRange, slotRange]);
+  }, [scholarships, scholarshipType, purpose, applicationsRange, amountRange, slotRange]);
 
   return (
     <div className="min-h-screen">
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      {toast && <Toast {...toast} />}
 
       {/* Mobile/Tablet Layout */}
       <div className="lg:hidden space-y-2">
@@ -220,9 +146,9 @@ function Scholarships() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-[#FEFEFD] rounded-md text-center p-2 border border-[#D3DCF6] shadow-sm"
+          className="bg-card rounded-md text-center p-2 border border-[#D3DCF6] shadow-sm"
         >
-          <p className="text-base text-[#111827] tracking-wide">My Scholarships</p>
+          <p className="text-base text-primary tracking-wide">My Scholarships</p>
         </motion.div>
 
         <motion.div
@@ -233,7 +159,7 @@ function Scholarships() {
         >
           <button
             onClick={() => setShowFiltersModal(true)}
-            className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[#3A52A6] text-white rounded-md hover:bg-[#2f4389] transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[#3A52A6] text-tertiary rounded-md hover:bg-[#2f4389] transition-colors"
           >
             <Filter size={16} />
             <span className="text-xs md:text-md">Filters</span>
@@ -260,13 +186,13 @@ function Scholarships() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="lg:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 max-h-[85vh] overflow-hidden"
+              className="lg:hidden fixed bottom-0 left-0 right-0 bg-card rounded-t-2xl shadow-2xl z-50 max-h-[85vh] overflow-hidden"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] sticky top-0 bg-white">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-white">
                 <div className="flex items-center gap-2">
-                  <Filter size={18} className="text-[#111827]"/>
-                  <h2 className="text-base text-[#111827]">Filters</h2>
+                  <Filter size={18} className="text-primary"/>
+                  <h2 className="text-base text-primary">Filters</h2>
                 </div>
                 <button
                   onClick={() => setShowFiltersModal(false)}
@@ -278,7 +204,7 @@ function Scholarships() {
 
               {/* Filters Content */}
               <div className="overflow-y-auto p-4 pb-6 max-h-[calc(85vh-72px)]">
-                <SponsorFilterSelect
+                <FilterSelect
                   title="Sort By"
                   options={[
                     'Newest',
@@ -296,14 +222,14 @@ function Scholarships() {
                   onChange={setSortBy}
                 />
 
-                <SponsorFilterSelect
+                <FilterSelect
                   title="Scholarship Type"
                   options={['All', 'Merit-Based', 'Skill-Based']}
                   value={scholarshipType}
                   onChange={setScholarshipType}
                 />
 
-                <SponsorFilterSelect
+                <FilterSelect
                   title="Scholarship Purpose"
                   options={['All', 'Allowance', 'Tuition']}
                   value={purpose}
@@ -311,7 +237,7 @@ function Scholarships() {
                 />
 
                 <div className="mb-4">
-                  <label className="block text-xs text-[#111827] mb-2">Applications</label>
+                  <label className="block text-xs text-primary mb-2">Applications</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -320,7 +246,7 @@ function Scholarships() {
                       onChange={(event) =>
                         setApplicationsRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -330,13 +256,13 @@ function Scholarships() {
                       onChange={(event) =>
                         setApplicationsRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-xs text-[#111827] mb-2">Amount per Scholar</label>
+                  <label className="block text-xs text-primary mb-2">Amount per Scholar</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -345,7 +271,7 @@ function Scholarships() {
                       onChange={(event) =>
                         setAmountRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -355,13 +281,13 @@ function Scholarships() {
                       onChange={(event) =>
                         setAmountRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 <div className="mb-2">
-                  <label className="block text-xs text-[#111827] mb-2">Slots</label>
+                  <label className="block text-xs text-primary mb-2">Slots</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -370,7 +296,7 @@ function Scholarships() {
                       onChange={(event) =>
                         setSlotRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -380,7 +306,7 @@ function Scholarships() {
                       onChange={(event) =>
                         setSlotRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -399,20 +325,20 @@ function Scholarships() {
             className="hidden lg:block"
           >
             <div className='h-fit sticky top-4'>
-              <div className="bg-[#FEFEFD] rounded-lg text-center p-4 border border-[#D3DCF6] shadow-sm mb-2">
-                <p className="text-xl text-[#111827] tracking-wide">My Scholarships</p>
+              <div className="bg-card rounded-md text-center p-4 border border-[#D3DCF6] shadow-sm mb-2">
+                <p className="text-xl text-primary tracking-wide">My Scholarships</p>
               </div>
 
               <div
-                className="bg-[#FEFEFD] rounded-lg border border-[#D3DCF6] shadow-[0_20px_40px_rgba(17,24,39,0.04)]"
+                className="bg-card rounded-md border border-[#D3DCF6] shadow-[0_20px_40px_rgba(17,24,39,0.04)]"
               >
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-6">
-                    <Filter size={20} className="text-[#111827]" />
-                    <h2 className="text-md text-[#111827]">Filters</h2>
+                    <Filter size={20} className="text-primary" />
+                    <h2 className="text-md text-primary">Filters</h2>
                   </div>
 
-                  <SponsorFilterSelect
+                  <FilterSelect
                     title="Sort By"
                     options={[
                       'Newest',
@@ -430,14 +356,14 @@ function Scholarships() {
                     onChange={setSortBy}
                   />
 
-                  <SponsorFilterSelect
+                  <FilterSelect
                     title="Scholarship Type"
                     options={['All', 'Merit-Based', 'Skill-Based']}
                     value={scholarshipType}
                     onChange={setScholarshipType}
                   />
 
-                  <SponsorFilterSelect
+                  <FilterSelect
                     title="Scholarship Purpose"
                     options={['All', 'Allowance', 'Tuition']}
                     value={purpose}
@@ -445,7 +371,7 @@ function Scholarships() {
                   />
 
                   <div className="mb-6">
-                    <label className="block text-sm text-[#111827] mb-2">Applications</label>
+                    <label className="block text-sm text-primary mb-2">Applications</label>
                     <div className="flex gap-2">
                       <input
                         type="number"
@@ -454,7 +380,7 @@ function Scholarships() {
                         onChange={(event) =>
                           setApplicationsRange((prev) => ({ ...prev, min: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                       <span className="flex items-center text-[#6B7280]">to</span>
                       <input
@@ -464,13 +390,13 @@ function Scholarships() {
                         onChange={(event) =>
                           setApplicationsRange((prev) => ({ ...prev, max: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                     </div>
                   </div>
 
                   <div className="mb-6">
-                    <label className="block text-sm text-[#111827] mb-2">Amount per Scholar</label>
+                    <label className="block text-sm text-primary mb-2">Amount per Scholar</label>
                     <div className="flex gap-2">
                       <input
                         type="number"
@@ -479,7 +405,7 @@ function Scholarships() {
                         onChange={(event) =>
                           setAmountRange((prev) => ({ ...prev, min: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                       <span className="flex items-center text-[#6B7280]">to</span>
                       <input
@@ -489,13 +415,13 @@ function Scholarships() {
                         onChange={(event) =>
                           setAmountRange((prev) => ({ ...prev, max: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm text-[#111827] mb-2">Slots</label>
+                    <label className="block text-sm text-primary mb-2">Slots</label>
                     <div className="flex gap-2">
                       <input
                         type="number"
@@ -504,7 +430,7 @@ function Scholarships() {
                         onChange={(event) =>
                           setSlotRange((prev) => ({ ...prev, min: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                       <span className="flex items-center text-[#6B7280]">to</span>
                       <input
@@ -514,7 +440,7 @@ function Scholarships() {
                         onChange={(event) =>
                           setSlotRange((prev) => ({ ...prev, max: event.target.value }))
                         }
-                        className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -543,7 +469,7 @@ function Scholarships() {
                   </p>
                   <button
                     onClick={() => navigate({ to: '/create' })}
-                    className="inline-flex items-center cursor-pointer gap-2 px-4 py-2.5 bg-[#9CA3AF] text-[#F0F7FF] text-sm md:text-base rounded-md hover:bg-[#D1D5DB] hover:text-white transition-colors"
+                    className="inline-flex items-center cursor-pointer gap-2 px-4 py-2.5 bg-[#9CA3AF] text-tertiary text-sm md:text-base rounded-md hover:bg-muted-foreground hover:text-tertiary transition-colors"
                   >
                     <Plus size={18} />
                     Create Scholarship
@@ -551,8 +477,8 @@ function Scholarships() {
                 </div>
               ) : (
                 filteredScholarships.map((scholarship, index) => (
-                  <SponsorScholarshipCard
-                    key={`${scholarship.title}-${index}`}
+                  <ScholarshipCard
+                    key={`${scholarship.scholarship_id}-${index}`}
                     scholarship={scholarship}
                     index={index}
                     onClick={() => setSelectedScholarship(scholarship)}
@@ -568,7 +494,7 @@ function Scholarships() {
       </div>
 
       {selectedScholarship && (
-        <SponsorScholarshipDetailsModal
+        <ScholarshipDetailsModal
           scholarship={selectedScholarship}
           onClose={() => setSelectedScholarship(null)}
           onEdit={handleEdit}
@@ -591,7 +517,7 @@ function Scholarships() {
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full text-[#EF4444] mb-1">
                 <AlertCircle size={36}/>
               </div>
-              <h3 className="text-lg text-[#111827] mb-2">Delete Scholarship</h3>
+              <h3 className="text-lg text-primary mb-2">Delete Scholarship</h3>
               <p className="text-sm text-[#6B7280] mb-6">
                 Are you sure you want to delete "<strong>{scholarshipToDelete.title}</strong>"? This action cannot be undone.
               </p>
@@ -612,7 +538,7 @@ function Scholarships() {
               <button
                 onClick={confirmDelete}
                 disabled={isDeleting}
-                className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-[#F0F7FF] rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+                className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-tertiary rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
                   isDeleting && "opacity-60 cursor-not-allowed"
                 }`}
               >

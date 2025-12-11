@@ -20,38 +20,49 @@ import {
   AlertCircle, 
   Loader2 } from 'lucide-react';
 import { useState, useCallback } from 'react';
+import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
 
-interface SponsorScholarshipDetailsModalProps {
+/**
+ * Props for the ScholarshipDetailsModal component (sponsor view)
+ */
+interface ScholarshipDetailsModalProps {
+  /** Scholarship data to display */
   scholarship: Scholarship;
+  /** Callback function to close the modal */
   onClose: () => void;
+  /** Optional callback when edit is clicked */
   onEdit?: (scholarship: Scholarship) => void;
+  /** Optional callback when delete is clicked */
   onDelete?: (scholarship: Scholarship) => void;
+  /** Optional callback when view applicants is clicked */
   onViewApplicants?: (scholarship: Scholarship) => void;
 }
 
-export default function SponsorScholarshipDetailsModal({
+/**
+ * Scholarship details modal component for sponsors
+ * Displays comprehensive scholarship information with edit, delete, and view applicants actions
+ * @param props - Component props
+ * @returns Animated side panel modal with scholarship details and action buttons
+ */
+export default function ScholarshipDetailsModal({
   scholarship,
   onClose,
   onEdit,
   onDelete,
   onViewApplicants,
-}: SponsorScholarshipDetailsModalProps) {
+}: ScholarshipDetailsModalProps) {
 
   const [isExiting, setIsExiting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const amountPerScholar = (() => {
-    if (scholarship.total_amount && scholarship.total_slot) {
-      const total = scholarship.total_amount;
-      const slots = scholarship.total_slot;
-      if (slots > 0) {
-        return total / slots;
-      }
-    }
-    return null;
-  })();
+  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
+  /**
+   * Gets the human-readable label for a field type
+   * @param type - The custom field type
+   * @returns Display label for the field type
+   */
   const getFieldTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
       text: 'Short answer',
@@ -68,8 +79,13 @@ export default function SponsorScholarshipDetailsModal({
     return typeMap[type] || type;
   };
 
+  /**
+   * Renders the appropriate icon for a given field type
+   * @param fieldType - The custom field type
+   * @returns Icon component for the field type
+   */
   const renderFieldTypeIcon = (fieldType: string) => {
-    const iconProps = { size: 20, className: "text-[#3A52A6]" };
+    const iconProps = { size: 20, className: "text-secondary" };
     
     switch (fieldType) {
       case 'text':
@@ -96,27 +112,47 @@ export default function SponsorScholarshipDetailsModal({
     }
   };
 
+  /**
+   * Checks if the scholarship is closed
+   * @returns True if scholarship status is 'closed'
+   */
   const isClosed = useCallback(() => {
     return scholarship.status === 'closed';
   }, [scholarship?.status]);
 
+  /**
+   * Handles modal close with exit animation
+   */
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200);
   };
 
+  /**
+   * Handles edit button click
+   */
   const handleEdit = () => {
     onEdit?.(scholarship);
   };
 
+  /**
+   * Handles delete button click, shows confirmation modal
+   */
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
   };
 
+  /**
+   * Handles view applicants button click
+   */
   const handleViewApplicants = () => {
     onViewApplicants?.(scholarship);
   };
 
+  /**
+   * Confirms and executes the delete action
+   * Handles loading state and error handling
+   */
   const confirmDelete = async () => {
     try {
       setLoading(true);
@@ -153,16 +189,16 @@ export default function SponsorScholarshipDetailsModal({
             stiffness: 300,
             duration: 0.1,
           }}
-          className="relative w-full max-w-[30rem] h-full bg-white shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
+          className="relative w-full max-w-[30rem] h-full bg-card shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
         >
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-5 py-3 flex items-center justify-between z-10">
-            <h2 className="text-lg text-[#111827] flex items-center gap-2">
+          <div className="sticky top-0 bg-card border-b border-border px-5 py-3 flex items-center justify-between z-10">
+            <h2 className="text-lg text-primary flex items-center gap-2">
               <button
                 onClick={handleClose}
                 className="hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <ChevronsRight size={20} className="text-[#111827]" />
+                <ChevronsRight size={20} className="text-primary" />
               </button>
               Scholarship Details
             </h2>
@@ -201,17 +237,17 @@ export default function SponsorScholarshipDetailsModal({
             </div>
 
             {/* Title and Badges */}
-            <h1 className="text-[26px] text-[#111827] mb-2">
+            <h1 className="text-[26px] text-primary mb-2">
               {scholarship.title || 'Scholarship Title'}
             </h1>
             <div className="flex gap-2 mb-4">
               {scholarship.type && (
-                <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                   {scholarship.type === 'merit_based' ? 'Merit-Based' : 'Skill-Based'}
                 </span>
               )}
               {scholarship.purpose && (
-                <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                   {scholarship.purpose === 'allowance' ? 'Allowance' : 'Tuition'}
                 </span>
               )}
@@ -230,50 +266,44 @@ export default function SponsorScholarshipDetailsModal({
               <div className="flex items-center gap-2">
                 <Calendar size={22} />
                 <span className="text-sm">
-                  {scholarship.application_deadline
-                    ? new Date(scholarship.application_deadline).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })
-                    : 'Application deadline'}
+                  {formatDeadline(scholarship.application_deadline)}
                 </span>
               </div>
             </div>
 
             {/* Amount and Slots */}
             <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+              <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
                 <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Users size={16} />
                   <span className="text-xs">Applications</span>
                 </div>
-                <p className="text-base text-[#111827]">{scholarship.applications_count || 0}</p>
+                <p className="text-base text-primary">{scholarship.applications_count || 0}</p>
                 <p className="text-xs text-[#6B7280]">applicants</p>
               </div>
 
-              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+              <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
                 <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Coins size={16} />
                   <span className="text-xs">Amount</span>
                 </div>
-                <p className="text-base text-[#111827] mb-0.5">
+                <p className="text-base text-primary mb-0.5">
                   {amountPerScholar !== null
-                    ? `₱${amountPerScholar.toLocaleString(undefined, {
+                    ? formatCurrency(amountPerScholar, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                      })}`
+                      })
                     : '₱0.00'}
                 </p>
                 <p className="text-xs text-[#6B7280]">per scholar</p>
               </div>
 
-              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+              <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
                 <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Users size={16} />
                   <span className="text-xs">Slots</span>
                 </div>
-                <p className="text-base text-[#111827] mb-0.5">{scholarship.total_slot || 0}</p>
+                <p className="text-base text-primary mb-0.5">{scholarship.total_slot || 0}</p>
                 <p className="text-xs text-[#6B7280]">scholars</p>
               </div>
             </div>
@@ -281,7 +311,7 @@ export default function SponsorScholarshipDetailsModal({
             {/* Description */}
             {scholarship.description && (
               <div className="mb-6">
-                <h3 className="text-sm text-[#111827] mb-2">About Scholarship</h3>
+                <h3 className="text-sm text-primary mb-2">About Scholarship</h3>
                 <p className="text-[#6B7280] text-xs leading-relaxed">
                   {scholarship.description}
                 </p>
@@ -291,12 +321,12 @@ export default function SponsorScholarshipDetailsModal({
             {/* Eligibility Criteria */}
             {scholarship.criteria && scholarship.criteria.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm text-[#111827] mb-2">Eligibility Criteria</h3>
+                <h3 className="text-sm text-primary mb-2">Eligibility Criteria</h3>
                 <div className="flex flex-wrap gap-2">
                   {scholarship.criteria.map((criterion: string, i: number) => (
                     <span
                       key={i}
-                      className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB]"
+                      className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border"
                     >
                       {criterion}
                     </span>
@@ -308,12 +338,12 @@ export default function SponsorScholarshipDetailsModal({
             {/* Required Documents */}
             {scholarship.required_documents && scholarship.required_documents.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm text-[#111827] mb-2">Required Documents</h3>
+                <h3 className="text-sm text-primary mb-2">Required Documents</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {scholarship.required_documents.map((doc: string, i: number) => (
                     <div
                       key={i}
-                      className="px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB] text-center"
+                      className="px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border text-center"
                     >
                       {doc}
                     </div>
@@ -325,7 +355,7 @@ export default function SponsorScholarshipDetailsModal({
             {/* Custom Form Fields */}
             {scholarship.custom_form_fields && scholarship.custom_form_fields.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm text-[#111827] mb-3">Application Form Fields</h3>
+                <h3 className="text-sm text-primary mb-3">Application Form Fields</h3>
                 <div className="space-y-2.5">
                   {scholarship.custom_form_fields.map((field: any, i: number) => (
                     <div key={i} className="flex items-start gap-3 p-3 bg-[#F9FAFB] border border-[#E0ECFF] rounded-lg">
@@ -334,7 +364,7 @@ export default function SponsorScholarshipDetailsModal({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[13px] text-[#111827] font-medium">{field.label}</span>
+                          <span className="text-[13px] text-primary font-medium">{field.label}</span>
                           {field.required && (
                             <span className="px-1.5 py-0.5 bg-[#FEE2E2] text-[#DC2626] text-[9px] rounded">
                               Required
@@ -358,7 +388,7 @@ export default function SponsorScholarshipDetailsModal({
             {/* View Applicants Button */}
             <button 
               onClick={handleViewApplicants}
-              className="w-full bg-[#E0ECFF] cursor-pointer text-[#3A52A6] py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md border-2 border-[#3A52A6] mb-3"
+              className="w-full bg-[#E0ECFF] cursor-pointer text-secondary py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md border-2 border-[#3A52A6] mb-3"
             >
               <Users size={15} />
               View Applicants
@@ -372,7 +402,7 @@ export default function SponsorScholarshipDetailsModal({
                 className={`flex-1 py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 ${
                   isClosed()
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-[#3A52A6] cursor-pointer text-[#F0F7FF] hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md'
+                    : 'bg-[#3A52A6] cursor-pointer text-tertiary hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md'
                 }`}
               >
                 <Edit2 size={15} />
@@ -380,7 +410,7 @@ export default function SponsorScholarshipDetailsModal({
               </button>
               <button 
                 onClick={handleDeleteClick}
-                className={`flex-1 cursor-pointer text-[#F0F7FF] py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md ${
+                className={`flex-1 cursor-pointer text-tertiary py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md ${
                   isClosed() ? 'bg-[#F59E0B] hover:bg-[#D97706]' : 'bg-[#EF4444] hover:bg-[#DC2626]'
                 }`}
               >
@@ -417,7 +447,7 @@ export default function SponsorScholarshipDetailsModal({
                 }`}>
                   <AlertCircle size={38}/>
                 </div>
-                <h3 className="text-lg text-[#111827] mb-2">
+                <h3 className="text-lg text-primary mb-2">
                   {isClosed() ? 'Archive Scholarship' : 'Delete Scholarship'}
                 </h3>
                 <p className="text-sm text-[#6B7280] mb-6">
@@ -440,7 +470,7 @@ export default function SponsorScholarshipDetailsModal({
                 <button
                   onClick={confirmDelete}
                   disabled={loading}
-                  className={`flex-1 px-4 py-2 cursor-pointer text-sm text-[#F0F7FF] rounded-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+                  className={`flex-1 px-4 py-2 cursor-pointer text-sm text-tertiary rounded-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
                     isClosed() 
                       ? 'bg-[#F59E0B] hover:bg-[#D97706]' 
                       : 'bg-[#EF4444] hover:bg-[#DC2626]'

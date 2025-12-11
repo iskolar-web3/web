@@ -2,39 +2,51 @@ import { Calendar, Users, Coins, Edit2, Trash2 } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
+import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
 
-export default function SponsorScholarshipCard({ 
+/**
+ * Props for the ScholarshipCard component (sponsor view)
+ */
+export interface ScholarshipCardProps {
+  /** Scholarship data to display */
+  scholarship: Scholarship;
+  /** Index for staggered animation delay */
+  index: number;
+  /** Optional callback when card is clicked */
+  onClick?: () => void;
+  /** Optional callback when edit is selected */
+  onEdit?: (scholarship: Scholarship) => void;
+  /** Optional callback when delete is selected */
+  onDelete?: (scholarship: Scholarship) => void;
+  /** Optional callback when view applicants is selected */
+  onViewApplicants?: (scholarship: Scholarship) => void;
+}
+
+/**
+ * Scholarship card component for sponsor view
+ * Displays scholarship information with context menu for actions (edit, delete, view applicants)
+ * @param props - Component props
+ * @returns Animated scholarship card with context menu
+ */
+export default function ScholarshipCard({ 
   scholarship, 
   index, 
   onClick,
   onEdit,
   onDelete,
   onViewApplicants
-}: { 
-  scholarship: Scholarship; 
-  index: number; 
-  onClick?: () => void;
-  onEdit?: (scholarship: Scholarship) => void;
-  onDelete?: (scholarship: Scholarship) => void;
-  onViewApplicants?: (scholarship: Scholarship) => void;
-}) {
+}: ScholarshipCardProps) {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const amountPerScholar = (() => {
-    if (scholarship.total_amount && scholarship.total_slot) {
-      const total = scholarship.total_amount;
-      const slots = scholarship.total_slot;
-      if (slots > 0) {
-        return total / slots;
-      }
-    }
-    return null;
-  })();
+  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
-  // Handle right-click
+  /**
+   * Handles right-click context menu
+   * @param e - Mouse event
+   */
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -66,18 +78,30 @@ export default function SponsorScholarshipCard({
     };
   }, [showContextMenu]);
 
+  /**
+   * Handles edit action from context menu
+   * @param e - Mouse event
+   */
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowContextMenu(false);
     onEdit?.(scholarship);
   };
 
+  /**
+   * Handles delete action from context menu
+   * @param e - Mouse event
+   */
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowContextMenu(false);
     onDelete?.(scholarship);
   };
 
+  /**
+   * Handles view applicants action from context menu
+   * @param e - Mouse event
+   */
   const handleViewApplicants = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowContextMenu(false);
@@ -100,7 +124,7 @@ export default function SponsorScholarshipCard({
       }}
       onClick={onClick}
       onContextMenu={handleContextMenu}
-      className="bg-white cursor-pointer rounded-lg border border-[#E5E7EB] hover:border-[#3A52A6] transition-colors relative shadow-sm"
+      className="bg-white cursor-pointer rounded-lg border border-border hover:border-[#3A52A6] transition-colors relative shadow-sm"
     >
       {/* Context Menu */}
       <AnimatePresence>
@@ -117,19 +141,19 @@ export default function SponsorScholarshipCard({
               top: `${contextMenuPosition.y}px`,
               zIndex: 100,
             }}
-            className="bg-white rounded-lg shadow-xl border border-[#E5E7EB] py-1 min-w-[160px]"
+            className="bg-white rounded-lg shadow-xl border border-border py-1 min-w-[160px]"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={handleViewApplicants}
-              className="w-full px-4 py-2 cursor-pointer text-left text-[12px] text-[#111827] hover:bg-[#F0F7FF] flex items-center gap-1.5 transition-colors"
+              className="w-full px-4 py-2 cursor-pointer text-left text-[12px] text-primary hover:bg-[#F0F7FF] flex items-center gap-1.5 transition-colors"
             >
               <Users size={15} />
               View Applicants
             </button>
             <button
               onClick={handleEdit}
-              className="w-full px-4 py-2 cursor-pointer text-left text-[12px] text-[#111827] hover:bg-[#F0F7FF] flex items-center gap-1.5 transition-colors"
+              className="w-full px-4 py-2 cursor-pointer text-left text-[12px] text-primary hover:bg-[#F0F7FF] flex items-center gap-1.5 transition-colors"
             >
               <Edit2 size={15} />
               Edit
@@ -161,7 +185,7 @@ export default function SponsorScholarshipCard({
           </motion.div>
 
           {/* Info */}
-          <div className="flex-1 text-white px-4 py-2">
+          <div className="flex-1 text-tertiary px-4 py-2">
             <h3 className="text-lg mb-1 line-clamp-1">{scholarship.title}</h3>
             
             {/* Badges */}
@@ -170,7 +194,7 @@ export default function SponsorScholarshipCard({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.05 + 0.1 }}
-                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded"
+                className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded"
               >
                 {scholarship.type}
               </motion.span>
@@ -178,7 +202,7 @@ export default function SponsorScholarshipCard({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.05 + 0.15 }}
-                className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded"
+                className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded"
               >
                 {scholarship.purpose}
               </motion.span>
@@ -209,27 +233,27 @@ export default function SponsorScholarshipCard({
         <div className="grid grid-cols-3 gap-3 mb-4">
           <motion.div
             transition={{ duration: 0.2 }}
-            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
+            className="bg-[#F9FAFB] border border-border rounded-lg p-3"
           >
             <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
               <Users size={14} />
               <span>Applications</span>
             </div>
-            <p className="text-sm md:text-base text-[#111827]">{scholarship.applications_count || 0}</p>
+            <p className="text-sm md:text-base text-primary">{scholarship.applications_count || 0}</p>
             <p className="text-xs text-[#6B7280]">applicants</p>
           </motion.div>
 
           <motion.div
             transition={{ duration: 0.2 }}
-            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
+            className="bg-[#F9FAFB] border border-border rounded-lg p-3"
           >
             <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
               <Coins size={14} />
               <span>Amount</span>
             </div>
-            <p className="text-[#111827] text-sm md:text-base">
+            <p className="text-primary text-sm md:text-base">
               {amountPerScholar !== null
-                ? `₱${amountPerScholar.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                ? formatCurrency(amountPerScholar, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
                 : '₱0.00'}
             </p>
             <p className="text-xs text-[#6B7280]">per scholar</p>
@@ -237,13 +261,13 @@ export default function SponsorScholarshipCard({
 
           <motion.div
             transition={{ duration: 0.2 }}
-            className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3"
+            className="bg-[#F9FAFB] border border-border rounded-lg p-3"
           >
             <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-1">
               <Users size={14} />
               <span>Slots</span>
             </div>
-            <p className="text-[#111827] text-sm md:text-base">{scholarship.total_slot}</p>
+            <p className="text-primary text-sm md:text-base">{scholarship.total_slot}</p>
             <p className="text-xs text-[#6B7280]">scholars</p>
           </motion.div>
         </div>
@@ -258,13 +282,13 @@ export default function SponsorScholarshipCard({
               {scholarship.criteria.slice(0, 2).map((item, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border"
                 >
                   {item}
                 </span>
               ))}
               {scholarship.criteria.length > 2 && (
-                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border">
                   +{scholarship.criteria.length - 2}
                 </span>
               )}
@@ -279,13 +303,13 @@ export default function SponsorScholarshipCard({
               {scholarship.required_documents.slice(0, 2).map((item, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
+                  className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border"
                 >
                   {item}
                 </span>
               ))}
               {scholarship.required_documents.length > 2 && (
-                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px]] rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px]] rounded border border-border">
                   +{scholarship.required_documents.length - 2}
                 </span>
               )}

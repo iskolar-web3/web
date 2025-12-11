@@ -1,14 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Loader2, Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
+import { Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import type { Scholarship } from '@/types/scholarship.types';
-import type { Application } from '@/types/application.types';
-import { ApplicationDetailsModal, statusStyles } from '@/components/ApplicationDetailsModal';
+import { useApplications } from '@/hooks/useApplications';
+import { ApplicationDetailsModal, statusStyles } from '@/components/student/ApplicationDetailsModal';
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
 import { Skeleton } from '@/components/ui/skeleton';
-// import { scholarshipApplicationService } from '@/services/scholarship-application.service';
+import { useToast } from '@/hooks/useToast';
+import Toast from '@/components/Toast';
+import type { Application } from '@/types/application.types';
+import { formatDate, formatTime, formatAmountPerScholar } from '@/utils/formatting';
+import { useMyApplications } from '@/hooks/queries/useMyApplications';
 
 export const Route = createFileRoute('/_student/home')({
   component: Home,
@@ -16,170 +19,34 @@ export const Route = createFileRoute('/_student/home')({
 
 type FilterType = 'applied' | 'past' | 'granted';
 
-const createMockScholarship = (overrides: Partial<Scholarship> = {}): Scholarship => ({
-  scholarship_id: '1',
-  sponsor_id: '1',
-  status: 'active',
-  type: 'Merit-Based',
-  purpose: 'Tuition',
-  title: 'CHED Merit Scholarship Program',
-  description:
-    'The CHED Merit Scholarship Program supports academically excellent students pursuing tertiary education in priority programs.',
-  total_amount: 10000000,
-  total_slot: 400,
-  application_deadline: 'September 21, 2025',
-  criteria: ['1st Year', 'LGU', 'Male', 'BSCS', 'BSIT', 'BSIS'],
-  required_documents: ['Voters Certificate', 'Birth Certificate', 'COR', 'Report of Grades'],
-  custom_form_fields: [],
-  image_url: 'src/logo.svg',
-  applications_count: 0,
-  sponsor: {
-    name: 'Sponsor name',
-    email: 'sponsor@example.com',
-    profile_url: 'src/logo.svg',
-  },
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  ...overrides,
-});
-
-const mockApplications: Application[] = [
-  {
-    scholarship_application_id: 'app-1',
-    status: 'pending',
-    applied_at: '2025-09-01T07:00:00Z',
-    updated_at: '2025-09-01T07:00:00Z',
-    scholarship: createMockScholarship(),
-  },
-  {
-    scholarship_application_id: 'app-2',
-    status: 'shortlisted',
-    applied_at: '2025-08-15T06:00:00Z',
-    updated_at: '2025-08-20T04:30:00Z',
-    scholarship: createMockScholarship({
-      scholarship_id: '2',
-      title: 'STEM Excellence Grant',
-      purpose: 'Allowance',
-      total_amount: 5000000,
-      total_slot: 150,
-    }),
-  },
-  {
-    scholarship_application_id: 'app-3',
-    status: 'granted',
-    applied_at: '2025-07-10T09:30:00Z',
-    updated_at: '2025-07-25T03:15:00Z',
-    scholarship: createMockScholarship({
-      scholarship_id: '3',
-      title: 'Local Government Scholarship',
-      purpose: 'Tuition',
-      total_amount: 2500000,
-      total_slot: 80,
-    }),
-  },
-];
-
 function Home() {
   usePageTitle('Home');
 
   const navigate = useNavigate();
-
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [filteredApplications, setFilteredApplications] = useState<Application[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<FilterType>('applied');
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const { toast, showError } = useToast();
+  const { data: fetchedApplications, isLoading: loading, error, isError } = useMyApplications();
 
-  const fetchApplicationsMock = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setApplications(
-        mockApplications.sort(
-          (a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
-        ),
-      );
-    } finally {
-      setIsLoading(false);
-      // setIsRefreshing(false);
-    }
-  }, []);
+
+  const {
+    applications,
+    setApplications,
+    filteredApplications,
+    selectedFilter,
+    setSelectedFilter,
+  } = useApplications();
 
   useEffect(() => {
-    fetchApplicationsMock();
-  }, [fetchApplicationsMock]);
-
-  // TODO: Fetch applications from service instead of using mock data
-  // const fetchApplications = useCallback(async () => {
-  //   try {
-  //     setIsLoading(true);
-  //     const response = await scholarshipApplicationService.getMyApplications();
-  //
-  //     if (response.success && response.applications) {
-  //       const appsWithScholarship = response.applications.filter(
-  //         (application) => application.scholarship,
-  //       );
-  //       setApplications(
-  //         appsWithScholarship.sort(
-  //           (a, b) =>
-  //             new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
-  //         ) as Application[],
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to fetch applications', error);
-  //   } finally {
-  //     setIsLoading(false);
-  //     setIsRefreshing(false);
-  //   }
-  // }, []);
-  //
-  // useEffect(() => {
-  //   fetchApplications();
-  // }, [fetchApplications]);
+    if (fetchedApplications) {
+      setApplications(fetchedApplications);
+    }
+  }, [fetchedApplications, setApplications]);
 
   useEffect(() => {
-    let filtered = [...applications];
-
-    if (selectedFilter === 'applied') {
-      filtered = filtered.filter(
-        (app) => app.status === 'pending' || app.status === 'shortlisted',
-      );
-    } else if (selectedFilter === 'past') {
-      filtered = filtered.filter((app) => app.status === 'approved' || app.status === 'denied');
-    } else if (selectedFilter === 'granted') {
-      filtered = filtered.filter((app) => app.status === 'granted');
+    if (isError && error) {
+      showError('Error', error.message, 2500);
     }
-
-    setFilteredApplications(filtered);
-  }, [applications, selectedFilter]);
-
-  const formatDate = (value: string) => {
-    const date = new Date(value);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatTime = (value: string) => {
-    const date = new Date(value);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatAmount = (totalAmount: number, totalSlot: number) => {
-    if (!totalAmount || !totalSlot || totalSlot <= 0) return '₱0.00';
-    const perScholar = totalAmount / totalSlot;
-    return `₱${perScholar.toLocaleString('en-PH', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
+  }, [isError, error, showError]);
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'applied', label: 'Applied' },
@@ -189,11 +56,13 @@ function Home() {
 
   return (
     <div className="min-h-screen">
+      {toast && <Toast {...toast} />}
+      
       <div className="max-w-[44rem] mx-auto space-y-12">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl text-[#111827]">Applications</h1>
+            <h1 className="text-2xl md:text-3xl text-primary">Applications</h1>
           </div>
 
           <div className="flex items-center gap-3">
@@ -208,8 +77,8 @@ function Home() {
                       onClick={() => setSelectedFilter(filter.key)}
                       className={`relative px-4 py-1.5 rounded-sm transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-[#607EF2] text-[#F0F7FF] shadow-md'
-                          : 'text-[#E5E7EB]/80 hover:text-white'
+                          ? 'bg-[#607EF2] text-tertiary shadow-md'
+                          : 'text-[#E5E7EB]/80 hover:text-tertiary'
                       }`}
                     >
                       <span>{filter.label}</span>
@@ -223,7 +92,7 @@ function Home() {
 
         {/* List / States */}
         <div>
-          {isLoading ? (
+          {loading ? (
             // Show skeleton loaders when loading
             Array.from({ length: 4 }).map((_, index) => (
               <div key={`skeleton-${index}`} className="flex gap-4 md:gap-6">
@@ -231,8 +100,8 @@ function Home() {
                 <div className="hidden md:flex gap-4">
                   <div className="flex flex-col items-start w-30 flex-shrink-0 pt-1">
                     <div className="text-left space-y-1">
-                      <Skeleton className="h-4 w-30 bg-[#D1D5DB]" />
-                      <Skeleton className="h-3 w-20 bg-[#D1D5DB]" />
+                      <Skeleton className="h-4 w-30 bg-muted-foreground" />
+                      <Skeleton className="h-3 w-20 bg-muted-foreground" />
                     </div>
                   </div>
 
@@ -261,8 +130,8 @@ function Home() {
                 <div className="flex-1 mb-3">
                   {/* Mobile/Tablet: Date/Time */}
                   <div className="md:hidden mb-2 text-left space-y-1">
-                    <Skeleton className="h-3 w-28 bg-[#D1D5DB]" />
-                    <Skeleton className="h-[11px] w-16 bg-[#D1D5DB]" />
+                    <Skeleton className="h-3 w-28 bg-muted-foreground" />
+                    <Skeleton className="h-[11px] w-16 bg-muted-foreground" />
                   </div>
 
                   <ScholarshipCardSkeleton index={index} />
@@ -278,7 +147,7 @@ function Home() {
               </p>
               <button
                 onClick={() => navigate({ to: '/discover' })}
-                className="inline-flex cursor-pointer items-center gap-2 px-4 py-2.5 bg-[#9CA3AF] text-white text-sm md:text-base rounded-md hover:bg-[#D1D5DB] hover:text-white text-[#F0F7FF] transition-colors"
+                className="inline-flex cursor-pointer items-center gap-2 px-4 py-2.5 bg-[#9CA3AF] text-tertiary text-sm md:text-base rounded-md hover:bg-muted-foreground hover:text-tertiary text-tertiary transition-colors"
               >
                 Explore Scholarships
                 <ArrowRight size={18} />
@@ -292,7 +161,7 @@ function Home() {
                   <div className="hidden md:flex gap-4">
                     <div className="flex flex-col items-start w-30 flex-shrink-0 pt-1">
                       <div className="text-left">
-                        <div className="text-sm text-[#111827]">
+                        <div className="text-sm text-primary">
                           {formatDate(application.applied_at)}
                         </div>
                         <div className="text-xs text-[#6B7280]">
@@ -326,7 +195,7 @@ function Home() {
                   <div className="flex-1 mb-3">
                     {/* Mobile/Tablet: Date/Time */}
                     <div className="md:hidden mb-2 text-left">
-                      <div className="text-xs text-[#111827]">
+                      <div className="text-xs text-primary">
                         {formatDate(application.applied_at)}
                       </div>
                       <div className="text-[11px] text-[#6B7280]">
@@ -367,10 +236,10 @@ function Home() {
                                 </h3>
 
                                 <div className="flex flex-wrap gap-2 mb-3">
-                                  <span className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded">
+                                  <span className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded">
                                     {application.scholarship.type}
                                   </span>
-                                  <span className="px-2 py-0.5 bg-white/90 text-[#3A52A6] text-[10px] md:text-[11px] rounded">
+                                  <span className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded">
                                     {application.scholarship.purpose}
                                   </span>
                                 </div>
@@ -409,26 +278,27 @@ function Home() {
                         {/* Body */}
                         <div className="space-y-4 bg-white px-4 py-3 md:px-5 md:py-4">
                           <div className="grid grid-cols-2 gap-2 md:gap-3">
-                            <div className="rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-3">
+                            <div className="rounded-xl border border-border bg-[#F9FAFB] p-3">
                               <div className="mb-1 flex items-center gap-1.5 text-[11px] text-[#6B7280]">
                                 <Coins className="h-3.5 w-3.5" />
                                 <span>Amount</span>
                               </div>
-                              <p className="text-sm text-[#111827]">
-                                {formatAmount(
+                              <p className="text-sm text-primary">
+                                {formatAmountPerScholar(
                                   application.scholarship.total_amount,
                                   application.scholarship.total_slot,
+                                  { locale: 'en-PH' }
                                 )}
                               </p>
                               <p className="text-[11px] text-[#6B7280]">per scholar</p>
                             </div>
 
-                            <div className="rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-3">
+                            <div className="rounded-xl border border-border bg-[#F9FAFB] p-3">
                               <div className="mb-1 flex items-center gap-1.5 text-[11px] text-[#6B7280]">
                                 <Users className="h-3.5 w-3.5" />
                                 <span>Slots</span>
                               </div>
-                              <p className="text-sm text-[#111827]">
+                              <p className="text-sm text-primary">
                                 {application.scholarship.total_slot}
                               </p>
                               <p className="text-[11px] text-[#6B7280]">scholars</p>
@@ -444,13 +314,13 @@ function Home() {
                                 {application.scholarship.criteria.slice(0, 2).map((item, i) => (
                                   <span
                                     key={i}
-                                    className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
+                                    className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border"
                                   >
                                     {item}
                                   </span>
                                 ))}
                                 {application.scholarship.criteria.length > 2 && (
-                                  <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]">
+                                  <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border">
                                     + {application.scholarship.criteria.length - 2} more
                                   </span>
                                 )}
@@ -467,13 +337,13 @@ function Home() {
                                   .map((item, i) => (
                                     <span
                                       key={i}
-                                      className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]"
+                                      className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border"
                                     >
                                       {item}
                                     </span>
                                   ))}
                                 {application.scholarship.required_documents.length > 2 && (
-                                  <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-[#E5E7EB]">
+                                  <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border">
                                     + {application.scholarship.required_documents.length - 2} more
                                   </span>
                                 )}

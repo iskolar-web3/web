@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { logger } from "@/lib/logger";
 // import { profileService } from '@/services/profile.service';
 // import { authService } from '@/services/auth.service';
 
+/**
+ * Props for the Preloader component
+ */
 interface PreloaderProps {
+  /** Callback function to execute when preloading completes */
   onComplete?: () => void;
+  /** Minimum time to display the preloader in milliseconds */
   minDisplayTime?: number;
 }
 
+/**
+ * Array of motivational messages to display during loading
+ */
 const loadingMessages = [
   'Unlocking Opportunities',
   'Getting Your Scholarships Ready',
@@ -20,6 +28,12 @@ const loadingMessages = [
   'Discovering Opportunities',
 ];
 
+/**
+ * Preloader component with animated logo and progress bar
+ * Displays loading messages and ensures minimum display time before completing
+ * @param props - Component props
+ * @returns Animated preloader component
+ */
 export default function Preloader({ onComplete, minDisplayTime = 2000 }: PreloaderProps) {
   const [currentMessage, setCurrentMessage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +82,7 @@ export default function Preloader({ onComplete, minDisplayTime = 2000 }: Preload
           onComplete?.();
         }, 500);
       } catch (error) {
-        console.error('Preloader error:', error);
+        logger.error('Preloader error:', error);
         const elapsed = Date.now() - startTime;
         const remaining = Math.max(0, minDisplayTime - elapsed);
         
@@ -153,7 +167,7 @@ export default function Preloader({ onComplete, minDisplayTime = 2000 }: Preload
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-xl md:text-2xl text-[#3A52A6] mt-8">
+                <h2 className="text-xl md:text-2xl text-secondary mt-8">
                   {loadingMessages[currentMessage]}
                 </h2>
               </motion.div>

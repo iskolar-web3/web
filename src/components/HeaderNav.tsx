@@ -4,30 +4,55 @@ import { Search, Home, Compass, WalletCards, Plus, Repeat, Bell, User, X } from 
 import { AnimatePresence, motion } from 'framer-motion';
 import ProfileDropdown from './ProfileDropdown';
 
+/**
+ * User role type for navigation context
+ */
 type UserRole = 'student' | 'sponsor';
 
+/**
+ * Navigation item structure
+ */
 interface NavItem {
+  /** Display label for the navigation item */
   label: string;
+  /** Route path for navigation */
   path: string;
+  /** Icon component to display */
   icon: React.ComponentType<{ className?: string }>;
 }
 
+/**
+ * Props for the HeaderNav component
+ */
 interface HeaderNavProps {
+  /** Current user's role (student or sponsor) */
   role: UserRole;
 }
 
+/**
+ * Navigation items for student users
+ */
 const studentNavItems: NavItem[] = [
   { label: 'Home', path: '/home', icon: Home },
   { label: 'Discover', path: '/discover', icon: Compass },
   { label: 'Transactions', path: '/transactions', icon: Repeat },
 ];
 
+/**
+ * Navigation items for sponsor users
+ */
 const sponsorNavItems: NavItem[] = [
   { label: 'Scholarships', path: '/scholarships', icon: WalletCards },
   { label: 'Create', path: '/create', icon: Plus },
   { label: 'Transactions', path: '/transactions', icon: Repeat },
 ];
 
+/**
+ * Main navigation header component
+ * Provides role-based navigation, search functionality, notifications, and profile access
+ * @param props - Component props
+ * @returns Header navigation component
+ */
 export default function HeaderNav({ role }: HeaderNavProps) {
   const router = useRouterState();
   const navigate = useNavigate();
@@ -77,25 +102,43 @@ export default function HeaderNav({ role }: HeaderNavProps) {
     }
   }, [isSearchExpanded]);
 
+  /**
+   * Handles logo click to navigate to role-specific home page
+   */
   const handleLogoClick = () => {
     navigate({ to: logoRedirectPath });
   };
 
+  /**
+   * Handles search form submission
+   * @param e - Form event
+   */
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement search functionality
     console.log('Search query:', searchQuery);
   };
 
+  /**
+   * Expands the search bar on mobile devices
+   */
   const handleSearchIconClick = () => {
     setIsSearchExpanded(true);
   };
 
+  /**
+   * Closes the expanded search bar and clears the query
+   */
   const handleSearchClose = () => {
     setIsSearchExpanded(false);
     setSearchQuery('');
   };
 
+  /**
+   * Determines if a navigation route is currently active
+   * @param path - Route path to check
+   * @returns True if the route is active
+   */
   const isActiveRoute = (path: string) => {
     // Handle exact matches
     if (path === '/home') {
@@ -150,7 +193,7 @@ export default function HeaderNav({ role }: HeaderNavProps) {
                       handleSearchSubmit(e);
                     }
                   }}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-[#E5E7EB] text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-border text-sm text-primary placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
               </div>
             </div>
@@ -160,7 +203,7 @@ export default function HeaderNav({ role }: HeaderNavProps) {
               <button
                 type="button"
                 onClick={handleSearchIconClick}
-                className="md:hidden p-2 text-[#9CA3AF] hover:text-[#111827] transition-colors"
+                className="md:hidden p-2 text-[#9CA3AF] hover:text-primary transition-colors"
                 aria-label="Search"
               >
                 <Search className="w-4.5 h-4.5" />
@@ -188,14 +231,14 @@ export default function HeaderNav({ role }: HeaderNavProps) {
                         handleSearchSubmit(e);
                       }
                     }}
-                    className="w-full pl-10 pr-4 py-2 rounded-md border border-[#E5E7EB] text-xs text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 rounded-md border border-border text-xs text-primary placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                   />
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handleSearchClose}
-                className="p-2 text-[#9CA3AF] hover:text-[#111827] transition-colors"
+                className="p-2 text-[#9CA3AF] hover:text-primary transition-colors"
                 aria-label="Close search"
               >
                 <X className="w-4 h-4" />
@@ -232,7 +275,7 @@ export default function HeaderNav({ role }: HeaderNavProps) {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 5 }}
                           transition={{ duration: 0.15 }}
-                          className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 px-3 py-1.5 bg-[#3A52A6] text-white text-[11px] md:text-xs rounded-md whitespace-nowrap z-50"
+                          className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 px-3 py-1.5 bg-[#3A52A6] text-tertiary text-[11px] md:text-xs rounded-md whitespace-nowrap z-50"
                         >
                           This feature is not available yet
                           <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-[#111827]" />
@@ -251,12 +294,12 @@ export default function HeaderNav({ role }: HeaderNavProps) {
                 >
                   <Icon
                     className={`w-4 md:w-5 h-4 md:h-5 ${
-                      isActive ? 'text-[#111827]' : 'text-[#9CA3AF]'
+                      isActive ? 'text-primary' : 'text-[#9CA3AF]'
                     }`}
                   />
                   <span
                     className={`text-[11px] md:text-xs ${
-                      isActive ? 'text-[#111827]' : 'text-[#9CA3AF]'
+                      isActive ? 'text-primary' : 'text-inactive'
                     }`}
                   >
                     {item.label}
@@ -271,7 +314,7 @@ export default function HeaderNav({ role }: HeaderNavProps) {
             {/* Notification Bell */}
             <button
               type="button"
-              className="relative p-2 cursor-pointer text-[#9CA3AF] hover:text-[#111827] transition-colors"
+              className="relative p-2 cursor-pointer text-[#9CA3AF] hover:text-primary transition-colors"
               aria-label="Notifications"
             >
               <Bell className="w-4 md:w-5 h-4 md:h-5" />
@@ -283,7 +326,7 @@ export default function HeaderNav({ role }: HeaderNavProps) {
               <button
                 type="button"
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="w-8 md:w-10 h-8 md:h-10 rounded-full bg-[#E5E7EB] flex items-center justify-center hover:ring-2 hover:ring-[#3A52A6] hover:ring-offset-2 transition-all cursor-pointer"
+                className="w-8 md:w-10 h-8 md:h-10 rounded-full bg-muted flex items-center justify-center hover:ring-2 hover:ring-[#3A52A6] hover:ring-offset-2 transition-all cursor-pointer"
                 aria-label="Profile menu"
               >
                 <User className="w-4 md:w-5 h-4 md:h-5 text-[#6B7280]" />

@@ -11,7 +11,7 @@ function App() {
 
 	return (
 		<div className="text-center">
-			<header className="min-h-screen flex flex-col items-center justify-center bg-[#F0F7FF]">
+			<header className="min-h-screen flex flex-col items-center justify-center bg-background">
 				<p className="text-2xl text-[#3A52A6]">Welcome to iSkolar</p>
 
 				<Link to="/login">

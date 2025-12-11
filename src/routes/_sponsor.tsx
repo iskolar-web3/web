@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_sponsor")({
 
 function SponsorLayout(): JSX.Element {
   return (
-    <div className="min-h-screen bg-[#F0F7FF]">
+    <div className="min-h-screen bg-background">
       <HeaderNav role="sponsor" />
       <div className="w-full px-4 md:px-14 pt-21 md:pt-24 pb-6">
         <Outlet />

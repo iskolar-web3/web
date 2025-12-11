@@ -1,15 +1,16 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import ScholarshipCard from "@/components/ScholarshipCard"; 
+import ScholarshipCard from "@/components/student/ScholarshipCard"; 
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton"; 
-import Filters from "@/components/Filters"; 
+import Filters from "@/components/student/Filters"; 
 import { Filter, X, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 import type { Scholarship } from '@/types/scholarship.types';
-import ScholarshipDetailsModal from '@/components/ScholarshipDetailsModal';
+import ScholarshipDetailsModal from '@/components/student/ScholarshipDetailsModal';
 import { usePageTitle } from "@/hooks/usePageTitle"
-import { scholarshipManagementService } from '@/services/scholarship-management.service';
+import { useScholarships } from '@/hooks/queries/useScholarships';
 
 export const Route = createFileRoute('/_student/discover')({
   component: DiscoverScholarship,
@@ -26,73 +27,19 @@ function DiscoverScholarship() {
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
 
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
+  const { toast, showError } = useToast();
 
-  const showToastMessage = useCallback((type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  }, []);
-
-  const fetchScholarships = useCallback(async () => {
-    try {
-      setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setScholarships(mockScholarship);
-      // const response = await scholarshipManagementService.getAllScholarships();
-      
-      // if (response.success) {
-      //   setScholarships(response.scholarships);
-      // } else {
-      //   showToastMessage('error', 'Error', response.message, 2500);
-      // }
-    } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to connect to server.', 2500);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
+  const { data: scholarships = [], isLoading: loading, error, isError } = useScholarships();
+  
   useEffect(() => {
-    fetchScholarships();
-  }, [fetchScholarships]);
-
-  // Mock data
-  const mockScholarship: Scholarship[] = Array(23).fill(null).map((_, i) => ({
-    scholarship_id: '1',
-    sponsor_id: '1',
-    status: 'active',
-    title: 'CHED Merit Scholarship Program',
-    type: 'Merit-Based',
-    purpose: 'Tuition',
-    sponsor: { 
-      name: 'Sponsor name',
-      email: 'sponsor@example.com',
-      profile_url: 'src/logo.svg'
-    },
-    application_deadline: 'September 21, 2025',
-    total_amount: 10000000,
-    total_slot: 400,
-    criteria: ['3rd Year', 'Male', 'BSCS', 'BSIT', 'BSIS', '1st Year'],
-    required_documents: ['Certificate of Enrollment', 'Latest Report of Grades', 'Birth Certificate', 'Barangay ID', 'School ID', 'Government ID'],
-    image_url: 'src/logo.svg',
-    description: "The Commission on Higher Education (CHED) Merit Scholarship Program awards full or half merit scholarships to high-performing incoming college students in CHED-priority courses. It's designed to help academically excellent but financially needy students access tertiary education.",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }));
+    if (isError && error) {
+      showError('Error', error.message, 2500);
+    }
+  }, [isError, error, showError]);
 
   const filteredScholarships = useMemo(() => {
-    return mockScholarship.filter((scholarship) => {
+    return scholarships.filter((scholarship) => {
       const matchesType =
         scholarshipType === 'All' ||
         scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
@@ -118,22 +65,22 @@ function DiscoverScholarship() {
 
       return matchesType && matchesPurpose && matchesSponsorType && matchesAmount && matchesSlots;
     });
-  }, [mockScholarship, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
+  }, [scholarships, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
 
   return (
     <div className="min-h-screen">
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} /> 
+      {toast && <Toast {...toast} />}
       
       {/* Mobile/Tablet Layout */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="lg:hidden bg-white rounded-md mb-4 p-2 shadow-sm"
+        className="lg:hidden bg-card rounded-md mb-4 p-2 shadow-sm"
       >
         <button
           onClick={() => setShowFiltersModal(true)}
-          className="flex items-center justify-center gap-1 w-full py-2 px-4 bg-[#3A52A6] text-[#F0F7FF] rounded-md hover:bg-[#2f4389] transition-colors"
+          className="flex items-center justify-center gap-1 w-full py-2 px-4 bg-[#3A52A6] text-tertiary rounded-md hover:bg-[#2f4389] transition-colors"
         >
           <Filter size={16} />
           <span className="text-xs md:text-md">Filters</span>
@@ -162,10 +109,10 @@ function DiscoverScholarship() {
               className="lg:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 max-h-[85vh] overflow-hidden"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] sticky top-0 bg-white">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-white">
                 <div className="flex items-center gap-2">
-                  <Filter size={18} className="text-[#111827]"/>
-                  <h2 className="text-md text-[#111827]">Filters</h2>
+                  <Filter size={18} className="text-primary"/>
+                  <h2 className="text-md text-primary">Filters</h2>
                 </div>
                 <button
                   onClick={() => setShowFiltersModal(false)}
@@ -214,7 +161,7 @@ function DiscoverScholarship() {
                 />
 
                 <div className="mb-4">
-                  <label className="block text-xs text-[#111827] mb-2">Amount per Scholar</label>
+                  <label className="block text-xs text-primary mb-2">Amount per Scholar</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -223,7 +170,7 @@ function DiscoverScholarship() {
                       onChange={(event) =>
                         setAmountRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -233,13 +180,13 @@ function DiscoverScholarship() {
                       onChange={(event) =>
                         setAmountRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 <div className="mb-2">
-                  <label className="block text-xs text-[#111827] mb-2">Slots</label>
+                  <label className="block text-xs text-primary mb-2">Slots</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -248,7 +195,7 @@ function DiscoverScholarship() {
                       onChange={(event) =>
                         setSlotRange((prev) => ({ ...prev, min: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                     <span className="flex items-center text-[#6B7280]">to</span>
                     <input
@@ -258,7 +205,7 @@ function DiscoverScholarship() {
                       onChange={(event) =>
                         setSlotRange((prev) => ({ ...prev, max: event.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -277,10 +224,10 @@ function DiscoverScholarship() {
           transition={{ duration: 0.5 }}
           className="hidden lg:block lg:col-span-1"
         >
-          <div className="bg-[#FEFEFD] rounded-lg p-6 border border-[#E5E7EB] sticky top-4 shadow-sm">
+          <div className="bg-card rounded-lg p-6 border border-border sticky top-4 shadow-sm">
             <div className="flex items-center gap-1 mb-6">
               <Filter size={20}/>
-              <h2 className="text-md text-[#111827]">Filters</h2>
+              <h2 className="text-md text-primary">Filters</h2>
             </div>
 
             <Filters
@@ -309,7 +256,7 @@ function DiscoverScholarship() {
             />
 
             <div className="mb-4">
-              <label className="block text-sm text-[#111827] mb-2">Amount per Scholar</label>
+              <label className="block text-sm text-primary mb-2">Amount per Scholar</label>
               <div className="flex gap-2">
                 <input
                   type="number"
@@ -318,7 +265,7 @@ function DiscoverScholarship() {
                   onChange={(event) =>
                     setAmountRange((prev) => ({ ...prev, min: event.target.value }))
                   }
-                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
                 <span className="flex items-center text-[#6B7280]">to</span>
                 <input
@@ -328,13 +275,13 @@ function DiscoverScholarship() {
                   onChange={(event) =>
                     setAmountRange((prev) => ({ ...prev, max: event.target.value }))
                   }
-                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
               </div>
             </div>
 
             <div className="mb-2">
-              <label className="block text-sm text-[#111827] mb-2">Slots</label>
+              <label className="block text-sm text-primary mb-2">Slots</label>
               <div className="flex gap-2">
                 <input
                   type="number"
@@ -343,7 +290,7 @@ function DiscoverScholarship() {
                   onChange={(event) =>
                     setSlotRange((prev) => ({ ...prev, min: event.target.value }))
                   }
-                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
                 <span className="flex items-center text-[#6B7280]">to</span>
                 <input
@@ -353,7 +300,7 @@ function DiscoverScholarship() {
                   onChange={(event) =>
                     setSlotRange((prev) => ({ ...prev, max: event.target.value }))
                   }
-                  className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
                 />
               </div>
             </div>
@@ -375,7 +322,7 @@ function DiscoverScholarship() {
             ) : (
               filteredScholarships.map((scholarship, index) => (
                 <ScholarshipCard
-                  key={`${scholarship.title}-${index}`}
+                  key={`${scholarship.scholarship_id}-${index}`}
                   scholarship={scholarship}
                   index={index}
                   onClick={() => setSelectedScholarship(scholarship)}

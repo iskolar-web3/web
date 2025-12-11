@@ -2,13 +2,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Users, Coins, ChevronsRight, Images } from 'lucide-react';
 import { useState } from 'react';
 import type { Scholarship } from '@/types/scholarship.types';
+import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
 
+/**
+ * Props for the ScholarshipFullPreviewModal component
+ */
 interface ScholarshipFullPreviewModalProps {
+  /** Partial scholarship data to display in preview */
   scholarship: Partial<Scholarship>;
+  /** Callback function to close the modal */
   onClose: () => void;
+  /** Whether this is a preview mode (hides apply button) */
   isPreview?: boolean;
 }
 
+/**
+ * Full scholarship preview modal component
+ * Displays comprehensive scholarship details in preview or view mode
+ * @param props - Component props
+ * @returns Animated side panel modal with full scholarship preview
+ */
 export default function ScholarshipFullPreviewModal({
   scholarship,
   onClose,
@@ -16,17 +29,11 @@ export default function ScholarshipFullPreviewModal({
 }: ScholarshipFullPreviewModalProps) {
   const [isExiting, setIsExiting] = useState(false);
 
-  const amountPerScholar = (() => {
-    if (scholarship.total_amount && scholarship.total_slot) {
-      const total = scholarship.total_amount;
-      const slots = scholarship.total_slot;
-      if (slots > 0) {
-        return total / slots;
-      }
-    }
-    return null;
-  })();
+  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
 
+  /**
+   * Handles modal close with exit animation
+   */
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200);
@@ -53,16 +60,16 @@ export default function ScholarshipFullPreviewModal({
             stiffness: 300,
             duration: 0.1,
           }}
-          className="relative w-full max-w-[30rem] h-full bg-[#FEFEFD] shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
+          className="relative w-full max-w-[30rem] h-full bg-card shadow-2xl rounded-lg overflow-y-auto custom-scrollbar"
         >
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-5 py-3 flex items-center justify-between z-10">
-            <h2 className="text-lg text-[#111827] flex items-center gap-2">
+          <div className="sticky top-0 bg-white border-b border-border px-5 py-3 flex items-center justify-between z-10">
+            <h2 className="text-lg text-primary flex items-center gap-2">
               <button
                 onClick={handleClose}
                 className="hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <ChevronsRight size={20} className="text-[#111827]" />
+                <ChevronsRight size={20} className="text-primary" />
               </button>
               {isPreview ? 'Preview' : 'Scholarship Details'}
             </h2>
@@ -85,17 +92,17 @@ export default function ScholarshipFullPreviewModal({
             </div>
 
             {/* Title and Badges */}
-            <h1 className="text-[26px] text-[#111827] mb-2">
+            <h1 className="text-[26px] text-primary mb-2">
               {scholarship.title || 'Scholarship Title'}
             </h1>
             <div className="flex gap-2 mb-4">
               {scholarship.type && (
-                <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                   {scholarship.type === 'merit_based' ? 'Merit-Based' : 'Skill-Based'}
                 </span>
               )}
               {scholarship.purpose && (
-                <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+                <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                   {scholarship.purpose === 'allowance' ? 'Allowance' : 'Tuition'}
                 </span>
               )}
@@ -114,41 +121,35 @@ export default function ScholarshipFullPreviewModal({
               <div className="flex items-center gap-2">
                 <Calendar size={22} />
                 <span className="text-sm">
-                  {scholarship.application_deadline
-                    ? new Date(scholarship.application_deadline).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })
-                    : 'Application deadline'}
+                  {formatDeadline(scholarship.application_deadline)}
                 </span>
               </div>
             </div>
 
             {/* Amount and Slots */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+              <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
                 <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Coins size={16} />
                   <span className="text-xs">Amount</span>
                 </div>
-                <p className="text-base text-[#111827] mb-0.5">
+                <p className="text-base text-primary mb-0.5">
                   {amountPerScholar !== null
-                    ? `₱${amountPerScholar.toLocaleString(undefined, {
+                    ? formatCurrency(amountPerScholar, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                      })}`
+                      })
                     : '₱0.00'}
                 </p>
                 <p className="text-xs text-[#6B7280]">per scholar</p>
               </div>
 
-              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+              <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
                 <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                   <Users size={16} />
                   <span className="text-xs">Slots</span>
                 </div>
-                <p className="text-base text-[#111827] mb-0.5">{scholarship.total_slot || 0}</p>
+                <p className="text-base text-primary mb-0.5">{scholarship.total_slot || 0}</p>
                 <p className="text-xs text-[#6B7280]">scholars</p>
               </div>
             </div>
@@ -156,7 +157,7 @@ export default function ScholarshipFullPreviewModal({
             {/* Description */}
             {scholarship.description && (
               <div className="mb-6">
-                <h3 className="text-sm text-[#111827] mb-2">About Scholarship</h3>
+                <h3 className="text-sm text-primary mb-2">About Scholarship</h3>
                 <p className="text-[#6B7280] text-xs leading-relaxed">
                   {scholarship.description}
                 </p>
@@ -166,12 +167,12 @@ export default function ScholarshipFullPreviewModal({
             {/* Eligibility Criteria */}
             {scholarship.criteria && scholarship.criteria.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm text-[#111827] mb-2">Eligibility Criteria</h3>
+                <h3 className="text-sm text-primary mb-2">Eligibility Criteria</h3>
                 <div className="flex flex-wrap gap-2">
                   {scholarship.criteria.map((criterion: string, i: number) => (
                     <span
                       key={i}
-                      className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB]"
+                      className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border"
                     >
                       {criterion}
                     </span>
@@ -183,12 +184,12 @@ export default function ScholarshipFullPreviewModal({
             {/* Required Documents */}
             {scholarship.required_documents && scholarship.required_documents.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm text-[#111827] mb-2">Required Documents</h3>
+                <h3 className="text-sm text-primary mb-2">Required Documents</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {scholarship.required_documents.map((doc: string, i: number) => (
                     <div
                       key={i}
-                      className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB] text-center"
+                      className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border text-center"
                     >
                       {doc}
                     </div>
@@ -199,7 +200,7 @@ export default function ScholarshipFullPreviewModal({
 
             {/* Apply Button - only show if not preview */}
             {!isPreview && (
-              <button className="w-full bg-[#3646A8] cursor-pointer text-white py-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md">
+              <button className="w-full bg-[#3646A8] cursor-pointer text-tertiary py-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md">
                 Apply Now →
               </button>
             )}

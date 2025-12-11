@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Toast from "@/components/Toast";
+import { useToast } from '@/hooks/useToast';
 import Preloader from "@/components/Preloader";
 import { SiGoogle } from "react-icons/si";
 import type { JSX } from "react";
@@ -10,6 +11,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
+import { handleError } from '@/lib/errorHandler';
+import { logger } from "@/lib/logger";
 // import { authService } from '@/services/auth.service';
 // import { profileService } from '@/services/profile.service';
 
@@ -39,13 +42,8 @@ function LoginPage(): JSX.Element {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showToast, setShowToast] = useState(false);
   const [showPreloader, setShowPreloader] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: "success" as "success" | "error",
-    title: "",
-    message: "",
-  });
+  const { toast, showSuccess, showError } = useToast();
 
   // useEffect(() => {
   //   const checkAuth = async () => {
@@ -93,42 +91,29 @@ function LoginPage(): JSX.Element {
     //   }
 
     //   if(result.success) {
-    //     setToastConfig({
-    //       type: "success",
-    //       title: "Success",
-    //       message: result.message,
-    //     });
-    //     setShowToast(true);
-
+    //      showSuccess(`Success`, result.message, 1250);
     //     setTimeout(() => {
-    //       setShowToast(false);
     //       setShowPreloader(true);
-    //     }, 1000);
+    //     }, 1300);
     //   } else {
-    //     setToastConfig({
-    //       type: "error",
-    //       title: "Error",
-    //       message: result.error,
-    //     });
-    //     setShowToast(true);
+    //     showError(`Error`, result.error, 2500);
     //   }
     // } catch(error) {
-    //   setToastConfig({
-    //     type: "error",
-    //     title: "Error",
-    //     message: error.message,
-    //   });
-    //   setShowToast(true);
+    //    const handled = handleError(error, 'Unable to load scholarship details.');
+    //    logger.error('Failed to load scholarship:', handled.raw);
+    //    showError(`Error`, error.message, 2500);
     // } finally {
     //   setLoading(false);
     // }
     
-    // Simulate successful login 
+    // Simulate
     setLoading(true);
+
+    showSuccess(`Success`, 'Login successful', 1250);
     setTimeout(() => {
       setLoading(false);
       setShowPreloader(true);
-    }, 500);
+    }, 1300);
   };
 
   const handlePreloaderComplete = () => {
@@ -146,16 +131,7 @@ function LoginPage(): JSX.Element {
   };
 
   const handleGoogleSignIn = () => {
-    setToastConfig({
-      type: "error",
-      title: "Not Available",
-      message: "Google Auth is not available at the moment.",
-    });
-    setShowToast(true);
-    
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
+    showError( `Error`, 'Google Auth is not available at the moment.', 2500);
     
     // Handle Google sign in
   };
@@ -169,12 +145,7 @@ function LoginPage(): JSX.Element {
         />
       )}
       
-      <Toast
-        visible={showToast}
-        type={toastConfig.type}
-        title={toastConfig.title}
-        message={toastConfig.message}
-      />
+      {toast && <Toast {...toast} />}
       
       {!showPreloader && (
       <motion.div 
@@ -193,7 +164,7 @@ function LoginPage(): JSX.Element {
               Don't have an account?{" "}
               <Link 
                 to="/register"
-                className="text-[#3A52A6] hover:underline"
+                className="text-secondary hover:underline"
               >
                 Sign up
               </Link>
@@ -202,7 +173,7 @@ function LoginPage(): JSX.Element {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
             <div>
-              <label htmlFor="email" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="email" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Email
               </label>
               <input
@@ -211,7 +182,7 @@ function LoginPage(): JSX.Element {
                 placeholder="Enter Email"
                 {...register("email")}
                 disabled={loading}
-                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                   errors.email
                     ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                     : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -225,7 +196,7 @@ function LoginPage(): JSX.Element {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="password" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -235,7 +206,7 @@ function LoginPage(): JSX.Element {
                   placeholder="Enter Password"
                   {...register("password")}
                   disabled={loading}
-                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                     errors.password
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                       : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -244,7 +215,7 @@ function LoginPage(): JSX.Element {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-[#3A52A6] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-secondary transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -267,13 +238,13 @@ function LoginPage(): JSX.Element {
                 <input
                   type="checkbox"
                   {...register("rememberMe")}
-                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded border-[#C4CBD5] text-[#3A52A6] focus:ring-[#3A52A6] cursor-pointer"
+                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded border-[#C4CBD5] text-secondary focus:ring-[#3A52A6] cursor-pointer"
                 />
                 <span className="ml-1 text-[#8C8C8C] text-xs sm:text-[11px]">Remember Me</span>
               </label>
               <Link 
                 to="/"
-                className="text-[#3A52A6] text-xs sm:text-[11px] hover:underline"
+                className="text-secondary text-xs sm:text-[11px] hover:underline"
               >
                 Forgot password?
               </Link>
@@ -312,7 +283,7 @@ function LoginPage(): JSX.Element {
               type="button"
               className="w-12 h-12 flex items-center justify-center rounded-full hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.25)] transition-all bg-[#F0F7FF] shadow-[0_2px_4px_0_rgba(0,0,0,0.25)] cursor-pointer"
             >
-              <SiGoogle size={24} className="text-[#3A52A6] sm:w-6 sm:h-6" />
+              <SiGoogle size={24} className="text-secondary sm:w-6 sm:h-6" />
             </button>
           </div>
         </div>

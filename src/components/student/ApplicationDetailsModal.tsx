@@ -2,12 +2,22 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronsRight, Calendar, Coins, Users, Info, Check, Clock } from 'lucide-react';
 import type { Application, ApplicationStatus } from '@/types/application.types';
+import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting';
 
+/**
+ * Props for the ApplicationDetailsModal component
+ */
 interface ApplicationDetailsModalProps {
+  /** Application data to display */
   application: Application;
+  /** Callback function to close the modal */
   onClose: () => void;
 }
 
+/**
+ * Styling configuration for different application statuses
+ * Maps each status to its display label and Tailwind CSS classes
+ */
 export const statusStyles: Record<
   ApplicationStatus,
   { label: string; bg: string; text: string; border: string }
@@ -44,40 +54,25 @@ export const statusStyles: Record<
   },
 };
 
+/**
+ * Application details modal component for students
+ * Displays comprehensive information about a scholarship application including status, timeline, and scholarship details
+ * @param props - Component props
+ * @returns Animated side panel modal with application details
+ */
 export function ApplicationDetailsModal({ application, onClose }: ApplicationDetailsModalProps) {
   const [isExiting, setIsExiting] = useState(false);
 
   const statusStyle = statusStyles[application.status];
 
-  const amountPerScholar = (() => {
-    const total = application.scholarship.total_amount;
-    const slots = application.scholarship.total_slot;
-    if (!total || !slots || slots <= 0) return 0;
-    return total / slots;
-  })();
+  const amountPerScholar = calculateAmountPerScholar(
+    application.scholarship.total_amount,
+    application.scholarship.total_slot
+  ) ?? 0;
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'No date';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatDateTime = (dateString?: string) => {
-    if (!dateString) return 'No date';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
+  /**
+   * Handles modal close with exit animation
+   */
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200);
@@ -111,7 +106,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
         }}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E5E7EB] bg-white px-5 py-3">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-white px-5 py-3">
           <h2 className="text-lg text-[#111827] flex items-center gap-2">
             <button
               onClick={handleClose}
@@ -154,10 +149,10 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
           <div>
             <h1 className="text-[26px] text-[#111827] mb-2">{application.scholarship.title}</h1>
             <div className="flex gap-2 mb-4">
-              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                 {application.scholarship.type}
               </span>
-              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-[#E5E7EB]">
+              <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
                 {application.scholarship.purpose}
               </span>
             </div>
@@ -183,21 +178,22 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
 
           {/* Amount and Slots */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+            <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
               <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                 <Coins size={16} />
                 <span className="text-xs">Amount</span>
               </div>
               <p className="text-base text-[#111827] mb-0.5">
-                {`₱${amountPerScholar.toLocaleString('en-PH', {
+                {formatCurrency(amountPerScholar, {
+                  locale: 'en-PH',
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
-                })}`}
+                })}
               </p>
               <p className="text-xs text-[#6B7280]">per scholar</p>
             </div>
 
-            <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-3">
+            <div className="bg-[#F9FAFB] border border-border rounded-lg p-3">
               <div className="flex items-center gap-1.5 text-[#6B7280] mb-1.5">
                 <Users size={16} />
                 <span className="text-xs">Slots</span>
@@ -226,7 +222,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
               {application.scholarship.criteria?.map((criterion: string, i: number) => (
                 <span
                   key={i}
-                  className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB]"
+                  className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border"
                 >
                   {criterion}
                 </span>
@@ -241,7 +237,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
               {application.scholarship.required_documents?.map((doc: string, i: number) => (
                 <div
                   key={i}
-                  className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-[#E5E7EB] text-center"
+                  className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border text-center"
                 >
                   {doc}
                 </div>
@@ -250,7 +246,7 @@ export function ApplicationDetailsModal({ application, onClose }: ApplicationDet
           </div>
 
           {/* Timeline */}
-          <div className="bg-white border border-[#E5E7EB] rounded-md p-4">
+          <div className="bg-white border border-border rounded-md p-4">
             <h3 className="text-sm text-[#111827] mb-4">Timeline</h3>
             <div>
               <div className="flex gap-3">

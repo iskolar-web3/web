@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from "@/components/Toast"
+import { useToast } from '@/hooks/useToast';
 import Preloader from "@/components/Preloader"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -22,6 +23,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { CalendarIcon } from "lucide-react"
+import { handleError } from '@/lib/errorHandler';
+import { logger } from "@/lib/logger";
 // import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute('/_onboarding/profile-setup')({
@@ -113,13 +116,8 @@ function ProfileSetup() {
   const [roleValidationError, setRoleValidationError] = useState(false)
   
   const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false)
   const [showPreloader, setShowPreloader] = useState(false)
-  const [toastConfig, setToastConfig] = useState({
-    type: "success" as "success" | "error",
-    title: "",
-    message: "",
-  })
+  const { toast, showSuccess, showError } = useToast();
   
   // Student form
   const studentForm = useForm<StudentFormData>({
@@ -185,16 +183,12 @@ function ProfileSetup() {
   useEffect(() => {
     if (!role || !VALID_ROLES.includes(role as Role)) {
       setRoleValidationError(true)
-      setToastConfig({
-        type: 'error',
-        title: 'Invalid Role',
-        message: 'Please select a valid role to continue.',
-      })
-      setShowToast(true)
+
+      showError('Invalid Role', 'Please select a valid role to continue.', 2500);
       
       setTimeout(() => {
         navigate({ to: '/role-selection' })
-      }, 2000)
+      }, 2050)
       return
     }
     
@@ -243,14 +237,8 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'individual_sponsor') {
@@ -291,14 +279,8 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'organization_sponsor') {
@@ -335,14 +317,8 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'government_sponsor') {
@@ -379,14 +355,8 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'school') {
@@ -423,25 +393,15 @@ function ProfileSetup() {
         // }
         
         // For now, simulate successful profile setup to test preloader
-        setToastConfig({
-          type: 'success',
-          title: 'Profile Created',
-          message: 'Your profile has been set up successfully!',
-        })
-        setShowToast(true);
+        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
-          setShowToast(false)
           setShowPreloader(true);
         }, 1250);
       } 
     } catch(error) {
-      console.error('Profile setup error:', error);
-      setToastConfig({
-        type: 'error',
-        title: 'Connection Error',
-        message: 'Failed to connect to server.',
-      })
-      setShowToast(true)
+      const handled = handleError(error, 'Failed to connect to server.');
+      logger.error('Connection Error', handled.raw);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setLoading(false);
     }
@@ -469,12 +429,8 @@ function ProfileSetup() {
   if (roleValidationError || !selectedRole) {
     return (
       <>
-        <Toast
-          visible={showToast}
-          type={toastConfig.type}
-          title={toastConfig.title}
-          message={toastConfig.message}
-        />
+        {toast && <Toast {...toast} />}
+
         <motion.div 
           className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12"
           initial={{ opacity: 0 }}
@@ -482,7 +438,7 @@ function ProfileSetup() {
           transition={{ duration: 0.3 }}
         >
           <div className="text-center">
-            <p className="text-[#3A52A6]">Redirecting to role selection...</p>
+            <p className="text-secondary">Redirecting to role selection...</p>
           </div>
         </motion.div>
       </>
@@ -518,12 +474,7 @@ function ProfileSetup() {
         />
       )}
       
-      <Toast
-        visible={showToast}
-        type={toastConfig.type}
-        title={toastConfig.title}
-        message={toastConfig.message}
-      />
+      {toast && <Toast {...toast} />}
 
       {!showPreloader && (
       <motion.div 
@@ -540,10 +491,10 @@ function ProfileSetup() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl text-[#3A52A6] mb-1.5 sm:mb-2">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl text-secondary mb-1.5 sm:mb-2">
               Welcome to iSkolar
             </h1>
-            <p className="text-base sm:text-lg sm:text-xl text-[#3A52A6]/80">
+            <p className="text-base sm:text-lg sm:text-xl text-secondary/80">
               Complete your profile to get started
             </p>
           </motion.div>
@@ -564,8 +515,8 @@ function ProfileSetup() {
                       {...studentForm.register('firstName')}
                       className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                         studentForm.formState.errors.firstName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                       }`}
                       placeholder="First name"
                     />
@@ -582,8 +533,8 @@ function ProfileSetup() {
                       {...studentForm.register('middleName')}
                       className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                         studentForm.formState.errors.middleName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                       }`}
                       placeholder="Middle name"
                     />
@@ -600,8 +551,8 @@ function ProfileSetup() {
                       {...studentForm.register('lastName')}
                       className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                         studentForm.formState.errors.lastName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                       }`}
                       placeholder="Last name"
                     />
@@ -620,8 +571,8 @@ function ProfileSetup() {
                   >
                     <SelectTrigger className={`w-full px-4 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       studentForm.formState.errors.gender
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}>
                       <SelectValue placeholder="Select your gender" />
                     </SelectTrigger>
@@ -643,7 +594,7 @@ function ProfileSetup() {
                       <button
                         type="button"
                         className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
-                          studentForm.watch('dateOfBirth') ? 'text-[#111827]' : 'text-gray-400'
+                          studentForm.watch('dateOfBirth') ? 'text-primary' : 'text-gray-400'
                         } ${
                           studentForm.formState.errors.dateOfBirth
                             ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
@@ -685,8 +636,8 @@ function ProfileSetup() {
                     {...studentForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       studentForm.formState.errors.contactNumber
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}
                     placeholder="Enter contact number"
                     inputMode="numeric"
@@ -705,7 +656,7 @@ function ProfileSetup() {
                 <motion.button
                   type="submit"
                   disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
+                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
                     isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'
@@ -735,8 +686,8 @@ function ProfileSetup() {
                       {...individualSponsorForm.register('firstName')}
                       className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                         individualSponsorForm.formState.errors.firstName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                       }`}
                       placeholder="First name"
                     />
@@ -754,8 +705,8 @@ function ProfileSetup() {
                       {...individualSponsorForm.register('middleName')}
                       className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                         individualSponsorForm.formState.errors.middleName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                       }`}
                       placeholder="Middle name"
                     />
@@ -773,8 +724,8 @@ function ProfileSetup() {
                       {...individualSponsorForm.register('lastName')}
                       className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                         individualSponsorForm.formState.errors.lastName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                       }`}
                       placeholder="Last name"
                     />
@@ -794,14 +745,14 @@ function ProfileSetup() {
                   >
                     <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       individualSponsorForm.formState.errors.employmentType
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}>
                       <SelectValue placeholder="Select your employment type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="employed">Employed</SelectItem>
-                      <SelectItem value="self-employed">Self-Employed</SelectItem>
+                      <SelectItem value="self_employed">Self-Employed</SelectItem>
                       <SelectItem value="freelancer">Freelancer</SelectItem>
                       <SelectItem value="overseas_filipino_worker">Overseas Filipino Worker</SelectItem>
                       <SelectItem value="student">Student</SelectItem>
@@ -820,7 +771,7 @@ function ProfileSetup() {
                       <button
                         type="button"
                         className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
-                          individualSponsorForm.watch('dateOfBirth') ? 'text-[#111827]' : 'text-gray-400'
+                          individualSponsorForm.watch('dateOfBirth') ? 'text-primary' : 'text-gray-400'
                         } ${
                           individualSponsorForm.formState.errors.dateOfBirth
                             ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
@@ -863,8 +814,8 @@ function ProfileSetup() {
                     {...individualSponsorForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       individualSponsorForm.formState.errors.contactNumber
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}
                     placeholder="Enter contact number"
                     inputMode="numeric"
@@ -883,7 +834,7 @@ function ProfileSetup() {
                 <motion.button
                   type="submit"
                   disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
+                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
                     isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'
@@ -912,8 +863,8 @@ function ProfileSetup() {
                     {...organizationSponsorForm.register('organizationName')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       organizationSponsorForm.formState.errors.organizationName
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}
                     placeholder="What's your organization name?"
                   />
@@ -932,8 +883,8 @@ function ProfileSetup() {
                   >
                     <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       organizationSponsorForm.formState.errors.organizationType
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}>
                       <SelectValue placeholder="Select your organization type" />
                     </SelectTrigger>
@@ -957,8 +908,8 @@ function ProfileSetup() {
                     {...organizationSponsorForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       organizationSponsorForm.formState.errors.contactNumber
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}
                     placeholder="Enter contact number"
                     inputMode="numeric"
@@ -977,7 +928,7 @@ function ProfileSetup() {
                 <motion.button
                   type="submit"
                   disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
+                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
                     isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'
@@ -1006,8 +957,8 @@ function ProfileSetup() {
                     {...governmentSponsorForm.register('agencyName')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       governmentSponsorForm.formState.errors.agencyName
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}
                     placeholder="What's your agency name?"
                   />
@@ -1026,8 +977,8 @@ function ProfileSetup() {
                   >
                     <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       governmentSponsorForm.formState.errors.agencyType
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}>
                       <SelectValue placeholder="Select your agency type" />
                     </SelectTrigger>
@@ -1051,8 +1002,8 @@ function ProfileSetup() {
                     {...governmentSponsorForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       governmentSponsorForm.formState.errors.contactNumber
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}
                     placeholder="Enter contact number"
                     inputMode="numeric"
@@ -1071,7 +1022,7 @@ function ProfileSetup() {
                 <motion.button
                   type="submit"
                   disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
+                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
                     isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'
@@ -1100,8 +1051,8 @@ function ProfileSetup() {
                     {...schoolForm.register('schoolName')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       schoolForm.formState.errors.schoolName
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}
                     placeholder="What's your school name?"
                   />
@@ -1120,8 +1071,8 @@ function ProfileSetup() {
                   >
                     <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       schoolForm.formState.errors.schoolType
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}>
                       <SelectValue placeholder="Select your school type" />
                     </SelectTrigger>
@@ -1147,8 +1098,8 @@ function ProfileSetup() {
                     {...schoolForm.register('contactNumber')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
                       schoolForm.formState.errors.contactNumber
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-[#111827]'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-[#111827]'
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
+                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}
                     placeholder="Enter contact number"
                     inputMode="numeric"
@@ -1167,7 +1118,7 @@ function ProfileSetup() {
                 <motion.button
                   type="submit"
                   disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-[#F0F7FF] text-xs sm:text-sm mt-3 ${
+                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
                     isFormValid && !loading
                       ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
                       : 'bg-[#9CA3AF] cursor-not-allowed'

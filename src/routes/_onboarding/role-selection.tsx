@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { HiAcademicCap, HiHeart, HiBuildingOffice2, HiUser, HiUserGroup, HiBuildingLibrary, HiArrowLeft } from "react-icons/hi2";
 import Toast from "@/components/Toast";
+import { useToast } from '@/hooks/useToast';
 import { z } from 'zod';
 import { Loader2 } from "lucide-react";
 // import { profileService } from '@/services/profile.service';
@@ -35,12 +36,7 @@ function RoleSelection() {
   const [showSponsorTypes, setShowSponsorTypes] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: "success" as "success" | "error",
-    title: "",
-    message: "",
-  });
+  const { toast, showSuccess, showError } = useToast();
 
   const roles = [
     {
@@ -180,13 +176,7 @@ function RoleSelection() {
     const validation = validateSelection();
     
     if (!validation.isValid) {
-      setToastConfig({
-        type: 'error',
-        title: 'Validation Error',
-        message: validation.errorMessage || 'Please make a valid selection',
-      });
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000);
+      showError(`Validation Error`, 'Please make a valid selection', 2500);
       return;
     }
 
@@ -215,34 +205,23 @@ function RoleSelection() {
     } else {
       return; 
     }
+    
+    setLoading(false);
 
-    setToastConfig({
-      type: 'success',
-      title: 'Success',
-      message: roleMessage,
-    });
-    setShowToast(true);
+    showSuccess(`Success`, roleMessage, 1250);
 
     setTimeout(() => {
-      setLoading(false);
-      setShowToast(false);
       navigate({ 
         to: '/profile-setup',
-        search: { role: role }
-      });
-    }, 1000);
+        search: { role: role } })
+    }, 1300)
   };
 
   const canContinue = selectedRole && (selectedRole !== 'sponsor' || selectedSubRole);
 
   return (
     <>
-      <Toast
-        visible={showToast}
-        type={toastConfig.type}
-        title={toastConfig.title}
-        message={toastConfig.message}
-      />
+      {toast && <Toast {...toast} />}
 
       <motion.div 
         className="text-center px-8 md:px-10 py-8 sm:py-10 md:py-12 relative"
@@ -254,7 +233,7 @@ function RoleSelection() {
         {showSponsorTypes && (
           <motion.button
             onClick={handleBack}
-            className="absolute top-11 sm:top-13 md:top-16 left-10 sm:left-12 md:left-82 flex items-center gap-2 text-[#3A52A6] hover:text-[#2A4296] transition-colors duration-300 group"
+            className="absolute top-11 sm:top-13 md:top-16 left-10 sm:left-12 md:left-82 flex items-center gap-2 text-secondary hover:text-[#2A4296] transition-colors duration-300 group"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
@@ -272,10 +251,10 @@ function RoleSelection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl text-[#3A52A6] mb-1 sm:mb-2">
+          <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl text-secondary mb-1 sm:mb-2">
             Welcome to iSkolar
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-[#3A52A6]">
+          <p className="text-base sm:text-lg md:text-xl text-secondary">
             {showSponsorTypes ? 'Select your sub-role' : 'Select your role'}
           </p>
         </motion.div>
@@ -307,22 +286,22 @@ function RoleSelection() {
                     whileTap={{ scale: 0.95 }}
                   >
                     {/* Icon */}
-                    <div className={`${selectedRole === role.id ? 'text-[#F0F7FF]' : role.iconColor} mb-3 sm:mb-4 flex justify-center transition-colors duration-500`}>
+                    <div className={`${selectedRole === role.id ? 'text-tertiary' : role.iconColor} mb-3 sm:mb-4 flex justify-center transition-colors duration-500`}>
                       <IconComponent className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16" />
                     </div>
 
                     {/* Title */}
-                    <h2 className={`text-xl sm:text-1xl md:text-3xl ${selectedRole === role.id ? 'text-[#F0F7FF]' : role.titleColor} mb-1 transition-colors duration-500`}>
+                    <h2 className={`text-xl sm:text-1xl md:text-3xl ${selectedRole === role.id ? 'text-tertiary' : role.titleColor} mb-1 transition-colors duration-500`}>
                       {role.title}
                     </h2>
 
                     {/* Subtitle */}
-                    <p className={`text-xs sm:text-sm md:text-base ${selectedRole === role.id ? 'text-[#F0F7FF]' : role.subtitleColor} mb-4 sm:mb-6 md:mb-8 transition-colors duration-500`}>
+                    <p className={`text-xs sm:text-sm md:text-base ${selectedRole === role.id ? 'text-tertiary' : role.subtitleColor} mb-4 sm:mb-6 md:mb-8 transition-colors duration-500`}>
                       {role.subtitle}
                     </p>
 
                     {/* Description */}
-                    <p className={`text-left text-xs sm:text-sm md:text-md ${selectedRole === role.id ? 'text-[#F0F7FF]' : 'text-gray-800'} leading-relaxed transition-colors duration-500`}>
+                    <p className={`text-left text-xs sm:text-sm md:text-md ${selectedRole === role.id ? 'text-tertiary' : 'text-gray-800'} leading-relaxed transition-colors duration-500`}>
                       {role.description}
                     </p>
                   </motion.button>
@@ -355,22 +334,22 @@ function RoleSelection() {
                     whileTap={{ scale: 0.95 }}
                   >
                     {/* Icon */}
-                    <div className={`${selectedSubRole === subRole.id ? 'text-[#F0F7FF]' : subRole.iconColor} mb-3 sm:mb-4 flex justify-center transition-colors duration-500`}>
+                    <div className={`${selectedSubRole === subRole.id ? 'text-tertiary' : subRole.iconColor} mb-3 sm:mb-4 flex justify-center transition-colors duration-500`}>
                       <IconComponent className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16" />
                     </div>
 
                     {/* Title */}
-                    <h2 className={`text-xl sm:text-1xl md:text-3xl ${selectedSubRole === subRole.id ? 'text-[#F0F7FF]' : subRole.titleColor} mb-1 transition-colors duration-500`}>
+                    <h2 className={`text-xl sm:text-1xl md:text-3xl ${selectedSubRole === subRole.id ? 'text-tertiary' : subRole.titleColor} mb-1 transition-colors duration-500`}>
                       {subRole.title}
                     </h2>
 
                     {/* Subtitle */}
-                    <p className={`text-xs sm:text-sm md:text-base ${selectedSubRole === subRole.id ? 'text-[#F0F7FF]' : subRole.subtitleColor} mb-4 sm:mb-6 md:mb-8 transition-colors duration-500`}>
+                    <p className={`text-xs sm:text-sm md:text-base ${selectedSubRole === subRole.id ? 'text-tertiary' : subRole.subtitleColor} mb-4 sm:mb-6 md:mb-8 transition-colors duration-500`}>
                       {subRole.subtitle}
                     </p>
 
                     {/* Description */}
-                    <p className={`text-left text-xs sm:text-sm md:text-md ${selectedSubRole === subRole.id ? 'text-[#F0F7FF]' : 'text-gray-800'} leading-relaxed transition-colors duration-500`}>
+                    <p className={`text-left text-xs sm:text-sm md:text-md ${selectedSubRole === subRole.id ? 'text-tertiary' : 'text-gray-800'} leading-relaxed transition-colors duration-500`}>
                       {subRole.description}
                     </p>
                   </motion.button>
@@ -392,8 +371,8 @@ function RoleSelection() {
             disabled={!canContinue || loading}
             className={`px-50 sm:px-75 md:px-22 lg:px-29 py-3 sm:py-3.5 md:py-3 rounded-lg text-sm sm:text-base md:text-base transition-all duration-300 ${
               canContinue && !loading
-                ? 'bg-[#EFA508] hover:bg-[#D89407] text-[#F0F7FF] cursor-pointer shadow-md hover:shadow-lg'
-                : 'bg-[#9CA3AF] text-[#F0F7FF] cursor-not-allowed'
+                ? 'bg-[#EFA508] hover:bg-[#D89407] text-tertiary cursor-pointer shadow-md hover:shadow-lg'
+                : 'bg-[#9CA3AF] text-tertiary cursor-not-allowed'
             }`}
             whileHover={canContinue ? { scale: 1.05 } : {}}
             whileTap={canContinue ? { scale: 0.95 } : {}}

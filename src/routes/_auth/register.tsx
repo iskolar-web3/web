@@ -3,12 +3,15 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Toast from "@/components/Toast";
+import { useToast } from '@/hooks/useToast';
 import { SiGoogle } from "react-icons/si";
 import type { JSX } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react"; 
+import { handleError } from '@/lib/errorHandler';
+import { logger } from "@/lib/logger";
 // import { authService } from '@/services/auth.service';
 // import { profileService } from '@/services/profile.service';
 
@@ -48,12 +51,7 @@ function RegisterPage(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: "success" as "success" | "error",
-    title: "",
-    message: "",
-  });
+  const { toast, showSuccess, showError } = useToast();
 
   // useEffect(() => {
   //   const checkAuth = async () => {
@@ -98,60 +96,41 @@ function RegisterPage(): JSX.Element {
     //   })
 
     //   if(result.success) {
-    //     setToastConfig({
-    //       type: "success",
-    //       title: "Success",
-    //       message: result.message,
-    //     });
-    //     setShowToast(true);
-
+    //     showSuccess(`Success`, result.message, 1250); 
+    
     //     setTimeout(() => {
-    //       setShowToast(false);
     //       navigate({ to: "/login" });
-    //     }, 1000);
+    //     }, 1300);
     //   } else {
-    //     setToastConfig({
-    //       type: "error",
-    //       title: "Error",
-    //       message: result.error,
-    //     });
-    //     setShowToast(true);
+    //     showError(`Error`, result.error, 2500);
     //   }
     // } catch(error) {
-    //   setToastConfig({
-    //     type: "error",
-    //     title: "Error",
-    //     message: error.message,
-    //   });
-    //   setShowToast(true);
+    //   const handled = handleError(error, 'Unable to load scholarship details.');
+    //   logger.error('Failed to load scholarship:', handled.raw);
+    //   showError(`Error`, error.message, 2500);
     // } finally {
     //   setLoading(false);
     // }
+
+    // Simulate
+    setLoading(true);
+    showSuccess(`Success`, 'Login successful', 1250);
+
+    setTimeout(() => {
+      setLoading(false);
+      navigate({ to: "/login" });
+    }, 1300);
   };
 
   const handleGoogleSignUp = () => {
-    setToastConfig({
-      type: "error",
-      title: "Not Available",
-      message: "Google Auth is not available at the moment.",
-    });
-    setShowToast(true);
-    
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
+    showError(`Error`, "Google Auth is not available at the moment.", 2500);
     
     // Handle Google sign up
   };
 
   return (
     <>
-      <Toast
-        visible={showToast}
-        type={toastConfig.type}
-        title={toastConfig.title}
-        message={toastConfig.message}
-      />
+      {toast && <Toast {...toast} />}
 
       <motion.div 
         className="rounded-3xl py-6 px-10 md:py-8 md:px-12 lg:py-6 lg:px-10 sm:py-5 sm:px-6 shadow-[1px_1px_4px_1px_rgba(96,126,242,0.5)] bg-[#F0F7FF] min-h-[520px] sm:min-h-[480px] w-full max-w-md mx-auto"
@@ -169,7 +148,7 @@ function RegisterPage(): JSX.Element {
               Already have an account?{" "}
               <Link 
                 to="/login"
-                className="text-[#3A52A6] hover:underline"
+                className="text-secondary hover:underline"
               >
                 Sign in
               </Link>
@@ -178,7 +157,7 @@ function RegisterPage(): JSX.Element {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
             <div>
-              <label htmlFor="email" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="email" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Email
               </label>
               <input
@@ -187,7 +166,7 @@ function RegisterPage(): JSX.Element {
                 placeholder="Enter Email"
                 {...register("email")}
                 disabled={loading}
-                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                   errors.email
                     ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                     : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -201,7 +180,7 @@ function RegisterPage(): JSX.Element {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="password" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -211,7 +190,7 @@ function RegisterPage(): JSX.Element {
                   placeholder="Enter Password"
                   {...register("password")}
                   disabled={loading}
-                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                     errors.password
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                       : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -220,7 +199,7 @@ function RegisterPage(): JSX.Element {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-[#3A52A6] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-secondary transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -238,7 +217,7 @@ function RegisterPage(): JSX.Element {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-xs sm:text-[11px] text-[#111827] mb-1.5">
+              <label htmlFor="confirmPassword" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Confirm Password
               </label>
               <div className="relative">
@@ -248,7 +227,7 @@ function RegisterPage(): JSX.Element {
                   placeholder="Confirm Password"
                   {...register("confirmPassword")}
                   disabled={loading}
-                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-[#111827] placeholder:text-[#C4CBD5] ${
+                  className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                     errors.confirmPassword
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                       : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
@@ -257,7 +236,7 @@ function RegisterPage(): JSX.Element {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-[#3A52A6] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] hover:text-secondary transition-colors"
                   tabIndex={-1}
                 >
                   {showConfirmPassword ? (
@@ -307,7 +286,7 @@ function RegisterPage(): JSX.Element {
               type="button"
               className="w-12 h-12 flex items-center justify-center rounded-full hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.25)] transition-all bg-[#F0F7FF] shadow-[0_2px_4px_0_rgba(0,0,0,0.25)] cursor-pointer"
             >
-              <SiGoogle size={24} className="text-[#3A52A6] sm:w-6 sm:h-6" />
+              <SiGoogle size={24} className="text-secondary sm:w-6 sm:h-6" />
             </button>
           </div>
         </div>

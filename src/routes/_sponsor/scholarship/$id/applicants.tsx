@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -22,12 +23,21 @@ import {
   Mail,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-// import { scholarshipManagementService } from '@/services/scholarship-management.service';
-// import { scholarshipApplicationService } from '@/services/scholarship-application.service';
 import Toast from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import type { Scholarship } from '@/types/scholarship.types';
-import type { ScholarshipApplication } from '@/services/scholarship-application.service';
+import type { ScholarshipApplication } from '@/services/scholarshipApplication.service';
+import { handleError } from '@/lib/errorHandler';
+import { logger } from '@/lib/logger';
+import { formatDateTime } from '@/utils/formatting';
+import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
+import { 
+  mockUpdateApplicationStatus,
+  mockBulkUpdateApplicationStatus
+} from '@/mocks/scholarshipApplicants.mock';
+import { useScholarshipApplicants } from '@/hooks/queries/useScholarshipApplicants';
+
+const USE_MOCK_DATA = true;
 
 interface Applicant extends ScholarshipApplication {
   rank?: number;
@@ -49,11 +59,28 @@ function ApplicantsListPage() {
   usePageTitle("Applicants")
 
   const { id } = Route.useParams();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [applicants, setApplicants] = useState<Applicant[]>([]);
-  const [scholarship, setScholarship] = useState<Scholarship | null>(null);
+  const queryClient = useQueryClient();
+
+  // Query Hooks
+  const { applicantsQuery, scholarshipQuery } = useScholarshipApplicants(id || '');
+  const { 
+    data: applicants = [], 
+    isLoading: applicantsLoading, 
+    error: applicantsError,
+    isError: isApplicantsError
+  } = applicantsQuery;
+
+  const {
+    data: scholarship = null,
+    isLoading: scholarshipLoading,
+    error: scholarshipError
+  } = scholarshipQuery;
+
+  const loading = applicantsLoading || scholarshipLoading;
+  const error = (isApplicantsError ? applicantsError?.message : null) || (scholarshipError ? scholarshipError?.message : null);
+
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'shortlisted' | 'approved' | 'denied'>('all');
@@ -67,12 +94,7 @@ function ApplicantsListPage() {
   const [bulkRemarks, setBulkRemarks] = useState('');
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
-  const [showToast, setShowToast] = useState(false);
-  const [toastConfig, setToastConfig] = useState({
-    type: 'success' as 'success' | 'error',
-    title: '',
-    message: '',
-  });
+  const { toast, showSuccess, showError } = useToast();
 
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState(false);
@@ -83,101 +105,12 @@ function ApplicantsListPage() {
   const [denialRemarks, setDenialRemarks] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  const showToastMessage = (type: 'success' | 'error', title: string, message: string, duration: number) => {
-    setToastConfig({ type, title, message });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), duration);
-  };
-
-  const fetchApplicants = useCallback(async () => {
-    if (!id) return;
-
-    try {
-      setError(null);
-      setLoading(true);
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // const scholarshipRes = await scholarshipManagementService.getScholarshipById(id);
-      // if (scholarshipRes.success && scholarshipRes.scholarship) {
-      //   setScholarship(scholarshipRes.scholarship);
-      // }
-
-      // const response = await scholarshipApplicationService.getScholarshipApplications(id);
-      // if (response.success && response.applications) {
-      //   setApplicants(response.applications);
-      // } else {
-      //   setError(response.message || 'Failed to load applicants');
-      // }
-
-      // Mocked applicants data
-      const mockScholarship: Scholarship = {
-        scholarship_id: id,
-        sponsor_id: '1',
-        status: 'active',
-        type: 'merit_based',
-        purpose: 'tuition',
-        title: 'CHED Merit Scholarship Program',
-        description: 'A sample description for the scholarship program.',
-        total_amount: 250000,
-        total_slot: 25,
-        application_deadline: new Date(Date.now() + 86400000 * 30).toISOString(),
-        criteria: ['Minimum GWA of 1.75', 'STEM Strand Graduate'],
-        required_documents: ['Birth Certificate', 'Report Card'],
-        custom_form_fields: [
-          { type: 'text', label: 'Full Name', required: true },
-          { type: 'email', label: 'Email Address', required: true },
-          { type: 'file', label: 'Upload Transcript', required: true },
-        ],
-        image_url: '/src/logo.svg',
-        sponsor: {
-          name: 'Sponsor Name',
-          email: 'sponsor@example.com',
-          profile_url: 'src/logo.svg',
-        },
-        applications_count: 120,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const mockApplicants: Applicant[] = Array.from({ length: 0 }, (_, index) => ({
-        scholarship_application_id: `${index + 1}`,
-        student_id: `${index + 1}`,
-        scholarship_id: id,
-        status: 'pending',
-        custom_form_response: [
-          { label: 'Full Name', value: 'John Doe' },
-          { label: 'Email Address', value: 'john.doe@example.com' },
-          { label: 'Upload Transcript', value: ['https://example.com/transcript.pdf'] },
-        ],
-        applied_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        student: {
-          student_id: `${index + 1}`,
-          full_name: 'John Doe',
-          gender: 'male',
-          date_of_birth: '2000-01-01',
-          contact_number: '+1234567890',
-          user: {
-            email: 'john.doe@example.com',
-            profile_url: undefined,
-          },
-        },
-        scholarship: mockScholarship,
-      }));
-
-      setScholarship(mockScholarship);
-      setApplicants(mockApplicants);
-    } catch (e) {
-      setError('Failed to load applicants');
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
-    fetchApplicants();
-  }, [fetchApplicants]);
+    if (error) {
+      showError('Error', error, 2500);
+    }
+  }, [error, showError]);
+
 
   const toggleBulkMode = () => {
     setBulkMode(!bulkMode);
@@ -205,7 +138,7 @@ function ApplicantsListPage() {
 
   const handleBulkAction = (action: 'shortlisted' | 'approved' | 'denied') => {
     if (selectedApplicantIds.size === 0) {
-      showToastMessage('error', 'Error', 'Please select at least one applicant', 2500);
+      showError('Error', 'Please select at least one applicant', 2500);
       return;
     }
     setBulkAction(action);
@@ -217,43 +150,63 @@ function ApplicantsListPage() {
 
     try {
       setIsBulkUpdating(true);
-      // const response = await scholarshipApplicationService.bulkUpdateApplicationStatus(
-      //   Array.from(selectedApplicantIds),
-      //   bulkAction,
-      //   bulkRemarks.trim() || undefined
-      // );
+      
+      if (USE_MOCK_DATA) {
+        // Use mock bulk update
+        const response = await mockBulkUpdateApplicationStatus(
+          Array.from(selectedApplicantIds),
+          bulkAction,
+          bulkRemarks.trim() || undefined
+        );
 
-      // if (response.success) {
-      //   showToastMessage('success', 'Success', `${response.updated_count || selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
-      //   setBulkActionModal(false);
-      //   setBulkRemarks('');
-      //   setSelectedApplicantIds(new Set());
-      //   setBulkMode(false);
-      //   fetchApplicants();
-      // } else {
-      //   showToastMessage('error', 'Error', response.message, 2500);
-      // }
+        if (response.success) {
+          // Update Cache
+          queryClient.setQueryData(['scholarship-applicants', id], (oldData: Applicant[] | undefined) => {
+            if (!oldData) return [];
+            return oldData.map((app) =>
+              selectedApplicantIds.has(app.scholarship_application_id)
+                ? {
+                    ...app,
+                    status: bulkAction,
+                    remarks: bulkRemarks.trim() || undefined,
+                    updated_at: new Date().toISOString(),
+                  }
+                : app
+            );
+          });
 
-      // Mock behavior
-      setApplicants((prev) =>
-        prev.map((app) =>
-          selectedApplicantIds.has(app.scholarship_application_id)
-            ? {
-                ...app,
-                status: bulkAction,
-                remarks: bulkRemarks.trim() || undefined,
-                updated_at: new Date().toISOString(),
-              }
-            : app
-        )
-      );
-      showToastMessage('success', 'Success', `${selectedApplicantIds.size} applicant(s) ${bulkAction}`, 2000);
-      setBulkActionModal(false);
-      setBulkRemarks('');
-      setSelectedApplicantIds(new Set());
-      setBulkMode(false);
+          showSuccess('Success', response.message, 2000);
+          setBulkActionModal(false);
+          setBulkRemarks('');
+          setSelectedApplicantIds(new Set());
+          setBulkMode(false);
+        } else {
+          showError(`Error`, response.message, 2500);
+        }
+      } else {
+        const response = await scholarshipApplicationService.bulkUpdateApplicationStatus(
+          Array.from(selectedApplicantIds),
+          bulkAction,
+          bulkRemarks.trim() || undefined
+        );
+
+        if (response.success) {
+          showSuccess('Success', `${selectedApplicantIds.size} application(s) ${bulkAction}`, 2000);
+          setBulkActionModal(false);
+          setBulkRemarks('');
+          setSelectedApplicantIds(new Set());
+          setBulkMode(false);
+          setBulkMode(false);
+          queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
+
+        } else {
+          showError('Error', response.message, 2500);
+        }
+      }
     } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to update applications', 2500);
+      const handled = handleError(error, 'Failed to update applications');
+      logger.error('Bulk update error:', handled.raw);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setIsBulkUpdating(false);
     }
@@ -268,49 +221,70 @@ function ApplicantsListPage() {
 
     try {
       setIsUpdatingStatus(true);
-      // const response = await scholarshipApplicationService.updateApplicationStatus(
-      //   applicationId,
-      //   newStatus,
-      //   remarks
-      // );
+      
+      if (USE_MOCK_DATA) {
+        // Use mock update
+        const response = await mockUpdateApplicationStatus(
+          applicationId,
+          newStatus,
+          remarks
+        );
 
-      // if (response.success) {
-      //   showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
-      //   setModalVisible(false);
-      //   setConfirmationModal(false);
-      //   setDenialRemarks('');
-      //   fetchApplicants();
-      // } else {
-      //   showToastMessage('error', 'Error', response.message, 2500);
-      // }
+        if (response.success) {
+          queryClient.setQueryData(['scholarship-applicants', id], (oldData: Applicant[] | undefined) => {
+            if (!oldData) return [];
+            return oldData.map((app) =>
+              app.scholarship_application_id === applicationId
+                ? {
+                    ...app,
+                    status: newStatus,
+                    remarks: remarks || undefined,
+                    updated_at: new Date().toISOString(),
+                  }
+                : app
+            );
+          });
 
-      // Mock update
-      setApplicants((prev) =>
-        prev.map((app) =>
-          app.scholarship_application_id === applicationId
-            ? {
-                ...app,
-                status: newStatus,
-                remarks: remarks || undefined,
-                updated_at: new Date().toISOString(),
-              }
-            : app
-        )
-      );
-      if (selectedApplicant && selectedApplicant.scholarship_application_id === applicationId) {
-        setSelectedApplicant({
-          ...selectedApplicant,
-          status: newStatus,
-          remarks: remarks || undefined,
-          updated_at: new Date().toISOString(),
-        });
+          
+          if (selectedApplicant && selectedApplicant.scholarship_application_id === applicationId) {
+            setSelectedApplicant({
+              ...selectedApplicant,
+              status: newStatus,
+              remarks: remarks || undefined,
+              updated_at: new Date().toISOString(),
+            });
+          }
+          
+          showSuccess('Success', response.message, 2000);
+          handleCloseModal();
+          setConfirmationModal(false);
+          setDenialRemarks('');
+        } else {
+          showError(`Error`, response.message, 2500);
+        }
+      } else {
+        const response = await scholarshipApplicationService.updateApplicationStatus(
+          applicationId,
+          newStatus,
+          remarks
+        );
+
+        if (response.success) {
+          showSuccess('Success', `Applicant ${newStatus}`, 2000);
+          setModalVisible(false);
+          setConfirmationModal(false);
+          setDenialRemarks('');
+          setDenialRemarks('');
+          queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
+
+        } else {
+          showError('Error', response.message, 2500);
+        }
       }
-      showToastMessage('success', 'Success', `Applicant ${newStatus}`, 2000);
-      handleCloseModal();
-      setConfirmationModal(false);
-      setDenialRemarks('');
     } catch (error) {
-      showToastMessage('error', 'Error', 'Failed to update application status', 2500);
+      const handled = handleError(error, 'Failed to update application status');
+      logger.error('Update application status error:', handled.raw);
+      showError(`Error ${handled.code}`, handled.message, 2500);
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -361,17 +335,6 @@ function ApplicantsListPage() {
     }, 200);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const handleFileOpen = (url: string) => {
     window.open(url, '_blank');
   };
@@ -405,21 +368,21 @@ function ApplicantsListPage() {
   
   return (
     <div className="min-h-screen bg-[#F8F9FC]">
-      <Toast visible={showToast} type={toastConfig.type} title={toastConfig.title} message={toastConfig.message} />
+      {toast && <Toast {...toast} />}
 
       {loading ? (
         <div className="max-w-3xl mx-auto">
           {/* Scholarship Info Header Skeleton */}
-          <div className="bg-[#FEFEFD] rounded-lg shadow-sm p-4 md:p-5 mb-3">
-            <Skeleton className="h-8 w-full mb-2 bg-[#D1D5DB]" />
-            <Skeleton className="h-4 w-32 bg-[#D1D5DB]" />
+          <div className="bg-[#F9FAFB] rounded-lg shadow-sm p-4 md:p-5 mb-3">
+            <Skeleton className="h-8 w-full mb-2 bg-muted-foreground" />
+            <Skeleton className="h-4 w-32 bg-muted-foreground" />
           </div>
 
           {/* Toolbar Skeleton */}
           <div className="flex items-center gap-2 mb-4">
-            <Skeleton className="h-9 w-24 rounded-md bg-[#D1D5DB]" />
-            <Skeleton className="h-9 w-32 rounded-md bg-[#D1D5DB]" />
-            <Skeleton className="h-9 w-24 rounded-md bg-[#D1D5DB] ml-auto" />
+            <Skeleton className="h-9 w-24 rounded-md bg-muted-foreground" />
+            <Skeleton className="h-9 w-32 rounded-md bg-muted-foreground" />
+            <Skeleton className="h-9 w-24 rounded-md bg-muted-foreground ml-auto" />
           </div>
 
           {/* Applicants List Skeleton */}
@@ -430,20 +393,17 @@ function ApplicantsListPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="bg-white rounded-xl shadow-sm p-5 relative"
+                className="bg-[#F9FAFB] rounded-lg shadow-sm p-5 relative"
               >
-                {/* Status Icon Skeleton */}
-                <Skeleton className="w-5 h-5 rounded-full bg-[#D1D5DB] absolute top-4 right-4" />
+                <Skeleton className="w-5 h-5 rounded-full bg-muted-foreground absolute top-4 right-4" />
                 
                 <div className="flex items-center gap-4">
-                  {/* Avatar Skeleton */}
-                  <Skeleton className="w-14 h-14 rounded-full bg-[#D1D5DB] flex-shrink-0" />
+                  <Skeleton className="w-14 h-14 rounded-full bg-muted-foreground flex-shrink-0" />
 
-                  {/* Info Skeleton */}
                   <div className="flex-1">
-                    <Skeleton className="h-5 w-32 mb-2 bg-[#D1D5DB]" />
-                    <Skeleton className="h-4 w-48 mb-2 bg-[#D1D5DB]" />
-                    <Skeleton className="h-3 w-36 bg-[#D1D5DB]" />
+                    <Skeleton className="h-5 w-32 mb-2 bg-muted-foreground" />
+                    <Skeleton className="h-4 w-48 mb-2 bg-muted-foreground" />
+                    <Skeleton className="h-3 w-36 bg-muted-foreground" />
                   </div>
                 </div>
               </motion.div>
@@ -455,8 +415,9 @@ function ApplicantsListPage() {
           <AlertCircle className="w-12 h-12 text-[#FF6B6B]" />
           <p className="mt-4 text-[#5D6673] text-center">{error}</p>
           <button
-            onClick={fetchApplicants}
-            className="mt-4 px-6 py-3 bg-[#3A52A6] text-white rounded-md hover:bg-[#2A4296] transition-colors"
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] })}
+
+            className="mt-4 px-6 py-3 bg-[#3A52A6] text-tertiary rounded-md hover:bg-[#2A4296] transition-colors"
           >
             Retry
           </button>
@@ -464,9 +425,9 @@ function ApplicantsListPage() {
       ) : (
         <div className="max-w-3xl mx-auto">
           {/* Scholarship Info Header */}
-          <div className="bg-[#FEFEFD] rounded-lg shadow-sm p-4 md:p-5 mb-3">
+          <div className="bg-card rounded-lg shadow-sm p-4 md:p-5 mb-3">
             <div className="flex-1">
-              <h1 className="text-2xl text-[#111827] mb-1">{scholarship?.title}</h1>
+              <h1 className="text-2xl text-primary mb-1">{scholarship?.title}</h1>
               <p className="text-[11px] md:text-xs text-[#6B7280]">
                 {applicants.length} {applicants.length === 1 ? 'Applicant' : 'Applicants'}
               </p>
@@ -480,8 +441,8 @@ function ApplicantsListPage() {
               onClick={toggleBulkMode}
               className={`px-4 py-2 rounded-md border cursor-pointer text-[11px] md:text-xs transition-colors ${
                 bulkMode
-                  ? 'bg-[#3A52A6] text-white border-[#3A52A6]'
-                  : 'bg-white text-[#3A52A6] border-[#3A52A6]'
+                  ? 'bg-[#3A52A6] text-tertiary border-[#3A52A6]'
+                  : 'bg-white text-secondary border-[#3A52A6]'
               }`}
             >
               {bulkMode ? 'Cancel' : 'Bulk Select'}
@@ -491,13 +452,13 @@ function ApplicantsListPage() {
               <>
                 <button
                   onClick={selectAll}
-                  className="px-4 py-2 bg-[#FEFEFD] cursor-pointer border border-[#E5E7EB] rounded-md text-xs text-[#6B7280] hover:bg-[#F9FAFB] transition-colors"
+                  className="px-4 py-2 bg-card cursor-pointer border border-[#E5E7EB] rounded-md text-xs text-[#6B7280] hover:bg-[#F9FAFB] transition-colors"
                 >
                   Select All
                 </button>
                 <button
                   onClick={deselectAll}
-                  className="px-4 py-2 bg-[#FEFEFD] cursor-pointer border border-[#E5E7EB] rounded-md text-xs text-[#6B7280] hover:bg-[#F9FAFB] transition-colors"
+                  className="px-4 py-2 bg-card cursor-pointer border border-[#E5E7EB] rounded-md text-xs text-[#6B7280] hover:bg-[#F9FAFB] transition-colors"
                 >
                   Deselect
                 </button>
@@ -508,9 +469,9 @@ function ApplicantsListPage() {
             {!bulkMode && (
               <button
                 onClick={() => {
-                  showToastMessage('error', 'Feature Unavailable', 'This feature is not available yet.', 2500);
+                  showError('Feature Unavailable', 'This feature is not available yet.', 2500);
                 }}
-                className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#EFA508] text-white rounded-md hover:bg-[#D89407] transition-colors text-[11px] md:text-xs"
+                className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#EFA508] text-tertiary rounded-md hover:bg-[#D89407] transition-colors text-[11px] md:text-xs"
               >
                 <Trophy className="w-3.5 h-3.5" />
                 Rank Applicants
@@ -521,10 +482,10 @@ function ApplicantsListPage() {
             <div className="relative ml-auto">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#F8F9FC] border border-[#E5E7EB] rounded-md hover:border-[#3A52A6] transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-card border border-[#E5E7EB] rounded-md hover:border-[#3A52A6] transition-colors"
               >
-                <span className="text-[11px] md:text-xs text-[#111827] capitalize">{filterStatus}</span>
-                <span className="px-1  bg-[#3A52A6] text-white text-[9px] md:text-[10px] rounded-full">
+                <span className="text-[11px] md:text-xs text-primary capitalize">{filterStatus}</span>
+                <span className="px-1  bg-[#3A52A6] text-tertiary text-[9px] md:text-[10px] rounded-full">
                   {statusCounts[filterStatus]}
                 </span>
                 <ChevronDown
@@ -533,7 +494,7 @@ function ApplicantsListPage() {
               </button>
 
               {showDropdown && (
-                <div className="absolute top-full right-0 mt-2 bg-white border border-[#E5E7EB] rounded-md shadow-lg z-10 min-w-[140px]">
+                <div className="absolute top-full right-0 mt-2 bg-white border bg-card rounded-md shadow-lg z-10 min-w-[140px]">
                   {(['all', 'pending', 'shortlisted', 'approved', 'denied'] as const).map((status) => (
                     <button
                       key={status}
@@ -545,14 +506,14 @@ function ApplicantsListPage() {
                         filterStatus === status ? 'bg-[#EFF6FF]' : ''
                       } ${status !== 'all' ? 'border-b border-[#F3F4F6]' : ''}`}
                     >
-                      <span className={`capitalize ${filterStatus === status ? 'text-[#3A52A6]' : 'text-[#6B7280]'}`}>
+                      <span className={`capitalize ${filterStatus === status ? 'text-secondary' : 'text-[#6B7280]'}`}>
                         {status}
                       </span>
                       <span
                         className={`px-1 rounded-full text-[9px] md:text-[10px] ${
                           filterStatus === status
-                            ? 'bg-white text-[#3A52A6]'
-                            : 'bg-[#E5E7EB] text-[#6B7280]'
+                            ? 'bg-white text-secondary'
+                            : 'bg-muted text-[#6B7280]'
                         }`}
                       >
                         {statusCounts[status]}
@@ -566,15 +527,15 @@ function ApplicantsListPage() {
 
           {/* Bulk Action Buttons */}
           {bulkMode && selectedApplicantIds.size > 0 && (
-            <div className="flex items-center justify-between gap-4 mb-4 bg-white rounded-md shadow-sm p-4">
-              <span className="text-xs text-[#111827]">{selectedApplicantIds.size} selected</span>
+            <div className="flex items-center justify-between gap-4 mb-4 bg-card rounded-md shadow-sm p-4">
+              <span className="text-xs text-primary">{selectedApplicantIds.size} selected</span>
               <div className="flex items-center gap-2">
                 {filteredApplicants
                   .filter((app) => selectedApplicantIds.has(app.scholarship_application_id))
                   .every((app) => app.status !== 'denied' && app.status !== 'approved') && (
                   <button
                     onClick={() => handleBulkAction('denied')}
-                    className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#EF4444] text-white rounded-md hover:bg-[#DC2626] transition-colors text-xs"
+                    className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#EF4444] text-tertiary rounded-md hover:bg-[#DC2626] transition-colors text-xs"
                   >
                     <XCircle className="w-4 h-4" />
                     Deny
@@ -586,7 +547,7 @@ function ApplicantsListPage() {
                   .every((app) => app.status === 'pending') && (
                   <button
                     onClick={() => handleBulkAction('shortlisted')}
-                    className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#8B5CF6] text-white rounded-md hover:bg-[#7C3AED] transition-colors text-xs"
+                    className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#8B5CF6] text-tertiary rounded-md hover:bg-[#7C3AED] transition-colors text-xs"
                   >
                     <Star className="w-4 h-4" />
                     Shortlist
@@ -598,7 +559,7 @@ function ApplicantsListPage() {
                   .every((app) => app.status === 'shortlisted') && (
                   <button
                     onClick={() => handleBulkAction('approved')}
-                    className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#31D0AA] text-white rounded-md hover:bg-[#10B981] transition-colors text-xs"
+                    className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#31D0AA] text-tertiary rounded-md hover:bg-[#10B981] transition-colors text-xs"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     Approve
@@ -610,7 +571,7 @@ function ApplicantsListPage() {
 
           {/* Applicants List */}
           {filteredApplicants.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm">
+            <div className="flex flex-col items-center justify-center py-16 bg-card rounded-lg shadow-sm">
               <Users className="w-14 h-14 text-[#D1D5DB]" />
               <p className="mt-4 text-[#9CA3AF]">No applicants found</p>
             </div>
@@ -634,8 +595,8 @@ function ApplicantsListPage() {
                         openApplicantModal(applicant);
                       }
                     }}
-                    className={`bg-white rounded-xl shadow-sm p-5 cursor-pointer transition-all relative ${
-                      isSelected ? 'ring-2 ring-[#3A52A6] bg-[#EFF6FF]' : 'hover:shadow-md'
+                    className={`bg-card rounded-lg shadow-sm p-5 cursor-pointer transition-all relative ${
+                      isSelected ? 'ring-2 ring-[#3A52A6] bg-background' : 'hover:shadow-md'
                     }`}
                   >
                     {/* Status Icon */}
@@ -649,7 +610,7 @@ function ApplicantsListPage() {
                       {bulkMode && (
                         <div className="flex items-center">
                           {isSelected ? (
-                            <CheckSquare2 className="w-5 h-5 text-[#3A52A6]" />
+                            <CheckSquare2 className="w-5 h-5 text-secondary" />
                           ) : (
                             <Square className="w-5 h-5 text-[#9CA3AF]" />
                           )}
@@ -666,20 +627,20 @@ function ApplicantsListPage() {
                           />
                         ) : (
                           <div className="w-14 h-14 rounded-full bg-[#E0ECFF] flex items-center justify-center">
-                            <User className="w-7 h-7 text-[#3A52A6]" />
+                            <User className="w-7 h-7 text-secondary" />
                           </div>
                         )}
                       </div>
 
                       {/* Applicant Info */}
                       <div className="flex-1">
-                        <h3 className="text-base text-[#111827] truncate">
+                        <h3 className="text-base text-primary truncate">
                           {applicant.student.full_name}
                         </h3>
                         <p className="text-sm text-[#6B7280] mb-2">{applicant.student.user.email}</p>
 
                         <div className="flex items-center gap-2 text-xs text-[#6B7280]">
-                          <span>{formatDate(applicant.applied_at)}</span>
+                          <span>{formatDateTime(applicant.applied_at)}</span>
                         </div>
                       </div>
                     </div>
@@ -717,12 +678,12 @@ function ApplicantsListPage() {
             >
               {/* Header */}
               <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-5 py-3 flex items-center justify-between z-10">
-                <h2 className="text-lg text-[#111827] flex items-center gap-2">
+                <h2 className="text-lg text-primary flex items-center gap-2">
                   <button
                     onClick={handleCloseModal}
                     className="hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    <ChevronsRight size={20} className="text-[#111827]" />
+                    <ChevronsRight size={20} className="text-primary" />
                   </button>
                   Application Details
                 </h2>
@@ -757,13 +718,13 @@ function ApplicantsListPage() {
                       />
                     ) : (
                       <div className="w-24 h-24 rounded-full bg-[#E0ECFF] flex items-center justify-center border-2 border-[#E5E7EB] shadow-md">
-                        <User className="w-12 h-12 text-[#3A52A6]" />
+                        <User className="w-12 h-12 text-secondary" />
                       </div>
                     )}
                   </div>
 
                   {/* Name */}
-                  <h1 className="text-xl text-[#111827] text-center mb-4">
+                  <h1 className="text-xl text-primary text-center mb-4">
                     {selectedApplicant.student.full_name}
                   </h1>
                   
@@ -800,7 +761,7 @@ function ApplicantsListPage() {
                       <Calendar size={17} className="flex-shrink-0" />
                        <div className={`${selectedApplicant.student.gender ? 'col-span-1' : 'col-span-2'} flex items-start gap-2`}>
                         <span className="text-xs md:text-sm">
-                          {formatDate(selectedApplicant.applied_at)}
+                          {formatDateTime(selectedApplicant.applied_at)}
                         </span>
                       </div>
                     </div>
@@ -810,13 +771,13 @@ function ApplicantsListPage() {
                 {/* Application Response */}
                 {selectedApplicant.custom_form_response && selectedApplicant.custom_form_response.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-sm text-[#111827] mb-3">Application Response</h3>
+                    <h3 className="text-sm text-primary mb-3">Application Response</h3>
                     <div className="space-y-2.5">
                       {Array.isArray(selectedApplicant.custom_form_response) &&
                         selectedApplicant.custom_form_response.map((item, index) => (
                           <div key={index} className="p-3 bg-[#F9FAFB] border border-[#E0ECFF] rounded-lg">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[13px] text-[#111827] font-medium">{item.label}</span>
+                              <span className="text-[13px] text-primary font-medium">{item.label}</span>
                             </div>
                             {Array.isArray(item.value) && item.value.length > 0 && typeof item.value[0] === 'string' && item.value[0].startsWith('http') ? (
                               <div className="space-y-2 mt-2">
@@ -826,8 +787,8 @@ function ApplicantsListPage() {
                                     className="flex items-center justify-between bg-[#F3F4F6] px-4 py-3 rounded-lg border-l-4 border-[#3A52A6]"
                                   >
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                                      <FileText className="w-5 h-5 text-[#3A52A6] flex-shrink-0" />
-                                      <p className="text-[11px] text-[#111827] truncate">{item.label}</p>
+                                      <FileText className="w-5 h-5 text-secondary flex-shrink-0" />
+                                      <p className="text-[11px] text-primary truncate">{item.label}</p>
                                     </div>
                                     <button
                                       onClick={(e) => {
@@ -836,7 +797,7 @@ function ApplicantsListPage() {
                                       }}
                                       className="p-2 hover:bg-[#E0ECFF] rounded-lg transition-colors flex-shrink-0"
                                     >
-                                      <ExternalLink className="w-4 h-4 text-[#111827]" />
+                                      <ExternalLink className="w-4 h-4 text-primary" />
                                     </button>
                                   </div>
                                 ))}
@@ -857,7 +818,7 @@ function ApplicantsListPage() {
                 {/* Remarks */}
                 {selectedApplicant.remarks && (
                   <div className="mb-6">
-                    <h3 className="text-sm text-[#111827] mb-2">Remarks</h3>
+                    <h3 className="text-sm text-primary mb-2">Remarks</h3>
                     <div className="px-3 py-2 bg-[#FEF3C7] border border-[#FCD34D] rounded-lg">
                       <p className="text-[11px] text-[#78350F] leading-relaxed">{selectedApplicant.remarks}</p>
                     </div>
@@ -872,7 +833,7 @@ function ApplicantsListPage() {
                         setPendingAction({ type: 'denied', applicationId: selectedApplicant.scholarship_application_id });
                         setConfirmationModal(true);
                       }}
-                      className="flex-1 py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md bg-[#EF4444] cursor-pointer text-[#F0F7FF] hover:bg-[#DC2626]"
+                      className="flex-1 py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md bg-[#EF4444] cursor-pointer text-tertiary hover:bg-[#DC2626]"
                     >
                       <XCircle size={15} />
                       Deny
@@ -886,7 +847,7 @@ function ApplicantsListPage() {
                           });
                           setConfirmationModal(true);
                         }}
-                        className="flex-1 py-3 cursor-pointer rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md bg-[#8B5CF6] cursor-pointer text-[#F0F7FF] hover:bg-[#7C3AED]"
+                        className="flex-1 py-3 cursor-pointer rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md bg-[#8B5CF6] cursor-pointer text-tertiary hover:bg-[#7C3AED]"
                       >
                         <Star size={15} />
                         Shortlist
@@ -901,7 +862,7 @@ function ApplicantsListPage() {
                           });
                           setConfirmationModal(true);
                         }}
-                        className="flex-1 py-3 cursor-pointer rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md bg-[#31D0AA] cursor-pointer text-[#F0F7FF] hover:bg-[#10B981]"
+                        className="flex-1 py-3 cursor-pointer rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md bg-[#31D0AA] cursor-pointer text-tertiary hover:bg-[#10B981]"
                       >
                         <CheckCircle2 size={15} />
                         Approve
@@ -935,8 +896,8 @@ function ApplicantsListPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <div className="bg-[#F0F7FF] rounded-xl p-5 max-w-md w-full shadow-xl">
-                <h3 className="text-lg text-[#111827] mb-1">
+              <div className="bg-background rounded-lg p-5 max-w-md w-full shadow-xl">
+                <h3 className="text-lg text-primary mb-1">
                   Bulk {bulkAction?.charAt(0).toUpperCase()}
                   {bulkAction?.slice(1)} Applications
                 </h3>
@@ -976,7 +937,7 @@ function ApplicantsListPage() {
                   <button
                     onClick={executeBulkAction}
                     disabled={isBulkUpdating}
-                    className={`flex-1 px-2 py-2.5 text-sm text-white rounded-md transition-colors ${
+                    className={`flex-1 px-2 py-2.5 text-sm text-tertiary rounded-md transition-colors ${
                       isBulkUpdating ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
                     }`}
                     style={{
@@ -1024,8 +985,8 @@ function ApplicantsListPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-2"
             >
-              <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-md w-full shadow-xl">
-                <h3 className="text-lg text-[#111827] mb-1">
+              <div className="bg-background rounded-lg p-6 max-w-md w-full shadow-xl">
+                <h3 className="text-lg text-primary mb-1">
                   {pendingAction.type === 'approved'
                     ? 'Approve Application'
                     : pendingAction.type === 'shortlisted'
@@ -1075,7 +1036,7 @@ function ApplicantsListPage() {
                       handleUpdateStatus(pendingAction.applicationId, pendingAction.type, remarks);
                     }}
                     disabled={isUpdatingStatus}
-                    className={`flex-1 px-2 py-2.5 text-white text-sm rounded-md transition-colors ${
+                    className={`flex-1 px-2 py-2.5 text-tertiary text-sm rounded-md transition-colors ${
                       isUpdatingStatus ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
                     }`}
                     style={{
