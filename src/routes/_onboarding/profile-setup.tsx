@@ -618,6 +618,7 @@ function ProfileSetup() {
                             studentForm.setValue('dateOfBirth', date, { shouldValidate: true })
                           }
                         }}
+                        captionLayout="dropdown" 
                         disabled={(date) => date > new Date()}
                         initialFocus
                       />
@@ -795,6 +796,7 @@ function ProfileSetup() {
                             individualSponsorForm.setValue('dateOfBirth', date, { shouldValidate: true })
                           }
                         }}
+                        captionLayout="dropdown"
                         disabled={(date) => date > new Date() || loading}
                         initialFocus
                       />

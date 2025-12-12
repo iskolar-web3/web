@@ -24,8 +24,10 @@ import { Route as OnboardingProfileSetupRouteImport } from './routes/_onboarding
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as StudentScholarshipIdApplyRouteImport } from './routes/_student/scholarship/$id/apply'
+import { Route as StudentProfileStudentStudentIdRouteImport } from './routes/_student/profile/student/$studentId'
 import { Route as SponsorScholarshipIdEditRouteImport } from './routes/_sponsor/scholarship/$id/edit'
 import { Route as SponsorScholarshipIdApplicantsRouteImport } from './routes/_sponsor/scholarship/$id/applicants'
+import { Route as SponsorProfileSponsorSponsorIdRouteImport } from './routes/_sponsor/profile/sponsor/$sponsorId'
 
 const StudentRoute = StudentRouteImport.update({
   id: '/_student',
@@ -99,6 +101,12 @@ const StudentScholarshipIdApplyRoute =
     path: '/scholarship/$id/apply',
     getParentRoute: () => StudentRoute,
   } as any)
+const StudentProfileStudentStudentIdRoute =
+  StudentProfileStudentStudentIdRouteImport.update({
+    id: '/profile/student/$studentId',
+    path: '/profile/student/$studentId',
+    getParentRoute: () => StudentRoute,
+  } as any)
 const SponsorScholarshipIdEditRoute =
   SponsorScholarshipIdEditRouteImport.update({
     id: '/scholarship/$id/edit',
@@ -109,6 +117,12 @@ const SponsorScholarshipIdApplicantsRoute =
   SponsorScholarshipIdApplicantsRouteImport.update({
     id: '/scholarship/$id/applicants',
     path: '/scholarship/$id/applicants',
+    getParentRoute: () => SponsorRoute,
+  } as any)
+const SponsorProfileSponsorSponsorIdRoute =
+  SponsorProfileSponsorSponsorIdRouteImport.update({
+    id: '/profile/sponsor/$sponsorId',
+    path: '/profile/sponsor/$sponsorId',
     getParentRoute: () => SponsorRoute,
   } as any)
 
@@ -123,8 +137,10 @@ export interface FileRoutesByFullPath {
   '/scholarships': typeof SponsorScholarshipsRoute
   '/discover': typeof StudentDiscoverRoute
   '/home': typeof StudentHomeRoute
+  '/profile/sponsor/$sponsorId': typeof SponsorProfileSponsorSponsorIdRoute
   '/scholarship/$id/applicants': typeof SponsorScholarshipIdApplicantsRoute
   '/scholarship/$id/edit': typeof SponsorScholarshipIdEditRoute
+  '/profile/student/$studentId': typeof StudentProfileStudentStudentIdRoute
   '/scholarship/$id/apply': typeof StudentScholarshipIdApplyRoute
 }
 export interface FileRoutesByTo {
@@ -138,8 +154,10 @@ export interface FileRoutesByTo {
   '/scholarships': typeof SponsorScholarshipsRoute
   '/discover': typeof StudentDiscoverRoute
   '/home': typeof StudentHomeRoute
+  '/profile/sponsor/$sponsorId': typeof SponsorProfileSponsorSponsorIdRoute
   '/scholarship/$id/applicants': typeof SponsorScholarshipIdApplicantsRoute
   '/scholarship/$id/edit': typeof SponsorScholarshipIdEditRoute
+  '/profile/student/$studentId': typeof StudentProfileStudentStudentIdRoute
   '/scholarship/$id/apply': typeof StudentScholarshipIdApplyRoute
 }
 export interface FileRoutesById {
@@ -158,8 +176,10 @@ export interface FileRoutesById {
   '/_sponsor/scholarships': typeof SponsorScholarshipsRoute
   '/_student/discover': typeof StudentDiscoverRoute
   '/_student/home': typeof StudentHomeRoute
+  '/_sponsor/profile/sponsor/$sponsorId': typeof SponsorProfileSponsorSponsorIdRoute
   '/_sponsor/scholarship/$id/applicants': typeof SponsorScholarshipIdApplicantsRoute
   '/_sponsor/scholarship/$id/edit': typeof SponsorScholarshipIdEditRoute
+  '/_student/profile/student/$studentId': typeof StudentProfileStudentStudentIdRoute
   '/_student/scholarship/$id/apply': typeof StudentScholarshipIdApplyRoute
 }
 export interface FileRouteTypes {
@@ -175,8 +195,10 @@ export interface FileRouteTypes {
     | '/scholarships'
     | '/discover'
     | '/home'
+    | '/profile/sponsor/$sponsorId'
     | '/scholarship/$id/applicants'
     | '/scholarship/$id/edit'
+    | '/profile/student/$studentId'
     | '/scholarship/$id/apply'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -190,8 +212,10 @@ export interface FileRouteTypes {
     | '/scholarships'
     | '/discover'
     | '/home'
+    | '/profile/sponsor/$sponsorId'
     | '/scholarship/$id/applicants'
     | '/scholarship/$id/edit'
+    | '/profile/student/$studentId'
     | '/scholarship/$id/apply'
   id:
     | '__root__'
@@ -209,8 +233,10 @@ export interface FileRouteTypes {
     | '/_sponsor/scholarships'
     | '/_student/discover'
     | '/_student/home'
+    | '/_sponsor/profile/sponsor/$sponsorId'
     | '/_sponsor/scholarship/$id/applicants'
     | '/_sponsor/scholarship/$id/edit'
+    | '/_student/profile/student/$studentId'
     | '/_student/scholarship/$id/apply'
   fileRoutesById: FileRoutesById
 }
@@ -329,6 +355,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentScholarshipIdApplyRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/_student/profile/student/$studentId': {
+      id: '/_student/profile/student/$studentId'
+      path: '/profile/student/$studentId'
+      fullPath: '/profile/student/$studentId'
+      preLoaderRoute: typeof StudentProfileStudentStudentIdRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/_sponsor/scholarship/$id/edit': {
       id: '/_sponsor/scholarship/$id/edit'
       path: '/scholarship/$id/edit'
@@ -341,6 +374,13 @@ declare module '@tanstack/react-router' {
       path: '/scholarship/$id/applicants'
       fullPath: '/scholarship/$id/applicants'
       preLoaderRoute: typeof SponsorScholarshipIdApplicantsRouteImport
+      parentRoute: typeof SponsorRoute
+    }
+    '/_sponsor/profile/sponsor/$sponsorId': {
+      id: '/_sponsor/profile/sponsor/$sponsorId'
+      path: '/profile/sponsor/$sponsorId'
+      fullPath: '/profile/sponsor/$sponsorId'
+      preLoaderRoute: typeof SponsorProfileSponsorSponsorIdRouteImport
       parentRoute: typeof SponsorRoute
     }
   }
@@ -377,6 +417,7 @@ const OnboardingRouteWithChildren = OnboardingRoute._addFileChildren(
 interface SponsorRouteChildren {
   SponsorCreateRoute: typeof SponsorCreateRoute
   SponsorScholarshipsRoute: typeof SponsorScholarshipsRoute
+  SponsorProfileSponsorSponsorIdRoute: typeof SponsorProfileSponsorSponsorIdRoute
   SponsorScholarshipIdApplicantsRoute: typeof SponsorScholarshipIdApplicantsRoute
   SponsorScholarshipIdEditRoute: typeof SponsorScholarshipIdEditRoute
 }
@@ -384,6 +425,7 @@ interface SponsorRouteChildren {
 const SponsorRouteChildren: SponsorRouteChildren = {
   SponsorCreateRoute: SponsorCreateRoute,
   SponsorScholarshipsRoute: SponsorScholarshipsRoute,
+  SponsorProfileSponsorSponsorIdRoute: SponsorProfileSponsorSponsorIdRoute,
   SponsorScholarshipIdApplicantsRoute: SponsorScholarshipIdApplicantsRoute,
   SponsorScholarshipIdEditRoute: SponsorScholarshipIdEditRoute,
 }
@@ -394,12 +436,14 @@ const SponsorRouteWithChildren =
 interface StudentRouteChildren {
   StudentDiscoverRoute: typeof StudentDiscoverRoute
   StudentHomeRoute: typeof StudentHomeRoute
+  StudentProfileStudentStudentIdRoute: typeof StudentProfileStudentStudentIdRoute
   StudentScholarshipIdApplyRoute: typeof StudentScholarshipIdApplyRoute
 }
 
 const StudentRouteChildren: StudentRouteChildren = {
   StudentDiscoverRoute: StudentDiscoverRoute,
   StudentHomeRoute: StudentHomeRoute,
+  StudentProfileStudentStudentIdRoute: StudentProfileStudentStudentIdRoute,
   StudentScholarshipIdApplyRoute: StudentScholarshipIdApplyRoute,
 }
 
