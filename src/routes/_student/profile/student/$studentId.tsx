@@ -7,9 +7,9 @@ import { useToast } from '@/hooks/useToast';
 import Toast from '@/components/Toast';
 import { profileService } from '@/services/profile.service';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { StudentProfile } from '@/types/profile.types';
+import type { StudentProfile, StudentProfileData } from '@/types/profile.types';
 import { mockStudentUser } from '@/mocks/userProfile.mock';
-import { formatDate, getRoleLabel, parseDateString } from '@/utils/profile.utils';
+import { formatDate, getRoleLabel, parseDateString, formatDateToString } from '@/utils/profile.utils';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -132,11 +132,11 @@ function StudentProfilePage() {
 
   const handleDateChange = (date: Date | undefined) => {
     if (!editedProfile || !date) return;
-    const formattedDate = date.toISOString().split('T')[0];
+    const formattedDate = formatDateToString(date);
     setEditedProfile({
       ...editedProfile,
       date_of_birth: formattedDate,
-    });
+    } as StudentProfile);
   };
 
   if (isLoading) {
