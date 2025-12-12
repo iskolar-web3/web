@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { normalizeText, normalizeArray } from '@/utils/normalize';
+import { normalizeText, normalizeArray } from '@/utils/normalize.utils';
 import type { CustomFieldType } from '@/hooks/useScholarshipForm';
 import {
   Type as TypeIcon,

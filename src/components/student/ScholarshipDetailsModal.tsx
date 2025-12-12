@@ -5,7 +5,7 @@ import { Calendar, Users, Coins, ChevronsRight, LockKeyhole, UserIcon } from 'lu
 import type { Scholarship } from '@/types/scholarship.types';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
-import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting.utils';
 import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
 
 /**

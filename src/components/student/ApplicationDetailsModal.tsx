@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronsRight, Calendar, Coins, Users, Info, Check, Clock } from 'lucide-react';
 import type { Application, ApplicationStatus } from '@/types/application.types';
-import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting.utils';
 
 /**
  * Props for the ApplicationDetailsModal component

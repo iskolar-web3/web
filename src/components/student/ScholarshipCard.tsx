@@ -1,7 +1,7 @@
 import { Calendar, Users, Coins, UserIcon } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { motion } from 'framer-motion';
-import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting.utils';
 
 /**
  * Props for the ScholarshipCard component (student view)

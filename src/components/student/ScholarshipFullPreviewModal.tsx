@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Users, Coins, ChevronsRight, Images } from 'lucide-react';
 import { useState } from 'react';
 import type { Scholarship } from '@/types/scholarship.types';
-import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting.utils';
 
 /**
  * Props for the ScholarshipFullPreviewModal component

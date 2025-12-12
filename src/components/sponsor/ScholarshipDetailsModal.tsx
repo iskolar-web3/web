@@ -21,7 +21,7 @@ import {
   UserIcon,
   Loader2 } from 'lucide-react';
 import { useState, useCallback } from 'react';
-import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting.utils';
 
 /**
  * Props for the ScholarshipDetailsModal component (sponsor view)

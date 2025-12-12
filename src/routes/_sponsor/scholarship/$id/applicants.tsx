@@ -29,7 +29,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import type { ScholarshipApplication } from '@/services/scholarshipApplication.service';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
-import { formatDateTime } from '@/utils/formatting';
+import { formatDateTime } from '@/utils/formatting.utils';
 import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
 import { 
   mockUpdateApplicationStatus,

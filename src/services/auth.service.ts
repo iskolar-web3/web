@@ -1,6 +1,6 @@
 import { AppError, deriveResponseError, handleError, safeParseJSON } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
-import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
+import { fetchWithTimeout } from '@/utils/fetchWithTimeout.utils';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const DEFAULT_TIMEOUT = 10000; // 10 seconds

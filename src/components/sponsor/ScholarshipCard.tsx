@@ -2,7 +2,7 @@ import { Calendar, Users, Coins, Edit2, Trash2, UserIcon } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
-import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting.utils';
 
 /**
  * Props for the ScholarshipCard component (sponsor view)

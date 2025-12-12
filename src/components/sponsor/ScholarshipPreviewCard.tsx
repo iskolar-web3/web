@@ -1,6 +1,6 @@
 import { Calendar, Users, Coins, Images } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
-import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting.utils';
 
 /**
  * Props for the ScholarshipPreviewCard component
