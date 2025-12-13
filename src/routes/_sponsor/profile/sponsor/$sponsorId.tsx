@@ -89,7 +89,7 @@ function SponsorProfile() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="bg-white rounded-lg shadow-sm border border-[#E0ECFF] overflow-hidden"
+          className="bg-card rounded-lg shadow-sm border border-[#E0ECFF] overflow-hidden"
         > 
           <div className="px-6 pb-6">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mt-6">
@@ -161,20 +161,20 @@ function ProfileAvatar({ isIndividual }: { isIndividual: boolean }) {
   return (
     <div className="relative">
       <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white p-1 shadow-lg">
-        <div className="w-full h-full rounded-full bg-[#3A52A6] flex items-center justify-center">
+        <div className="w-full h-full rounded-full bg-muted flex items-center justify-center">
           {isIndividual ? (
-            <User className="w-12 h-12 md:w-14 md:h-14 text-white" />
+            <User className="w-12 h-12 md:w-14 md:h-14 text-[#6B7280]" />
           ) : (
-            <Building2 className="w-12 h-12 md:w-14 md:h-14 text-white" />
+            <Building2 className="w-12 h-12 md:w-14 md:h-14 text-[#6B7280]" />
           )}
         </div>
       </div>
       <button
-        className="absolute bottom-0 right-0 w-8 h-8 bg-[#EFA508] hover:bg-[#D89407] rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer"
+        className="absolute bottom-0 right-0 w-8 h-8 bg-secondary hover:bg-[#2f4389] rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer"
         title="Edit profile picture"
         aria-label="Edit profile picture"
       >
-        <Edit className="w-4 h-4 text-white" />
+        <Edit className="w-4 h-4 text-tertiary" />
       </button>
     </div>
   );
