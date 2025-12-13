@@ -136,6 +136,11 @@ function LoginPage(): JSX.Element {
     // Handle Google sign in
   };
 
+  const handleForgotPassword = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    showError(`Error`, 'Forgot password feature is not available yet.', 2500);
+  };
+
   return (
     <>
       {showPreloader && (
@@ -242,12 +247,20 @@ function LoginPage(): JSX.Element {
                 />
                 <span className="ml-1 text-[#8C8C8C] text-xs sm:text-[11px]">Remember Me</span>
               </label>
-              <Link 
+              {/* Uncomment when forgot password is available */}
+              {/* <Link 
                 to="/"
                 className="text-secondary text-xs sm:text-[11px] hover:underline"
               >
                 Forgot password?
-              </Link>
+              </Link> */}
+              <a 
+                href="#"
+                onClick={handleForgotPassword}
+                className="text-secondary text-xs sm:text-[11px] hover:underline"
+              >
+                Forgot password?
+              </a>
             </div>
 
             <button
