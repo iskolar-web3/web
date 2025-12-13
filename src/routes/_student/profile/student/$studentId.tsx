@@ -2,11 +2,11 @@ import { createFileRoute } from '@tanstack/react-router';
 import { User, Phone, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { useProfileForm } from '@/hooks/useProfileForm';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import Toast from '@/components/Toast';
-import { profileService } from '@/services/profile.service';
 import { ProfileSkeleton } from '@/components/profile/ProfileSkeleton';
 import { ProfileError } from '@/components/profile/ProfileError';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
@@ -15,11 +15,6 @@ import InfoField from '@/components/profile/InfoField';
 import SelectField from '@/components/profile/SelectField';
 import DateField from '@/components/profile/DateField';
 import type { StudentProfile } from '@/types/profile.types';
-import { mockStudentUser } from '@/mocks/userProfile.mock';
-import { handleError } from '@/lib/errorHandler';
-import { logger } from '@/lib/logger';
-
-const USE_MOCK_DATA = import.meta.env.DEV;
 
 export const Route = createFileRoute('/_student/profile/student/$studentId')({
   component: StudentProfilePage,
@@ -28,10 +23,13 @@ export const Route = createFileRoute('/_student/profile/student/$studentId')({
 function StudentProfilePage() {
   usePageTitle('Profile');
 
-  const [profile, setProfile] = useState<StudentProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const { studentId } = Route.useParams();
+  const { data: profile, isLoading, error, isError } = useUserProfile(studentId);
+
+  const [localProfile, setLocalProfile] = useState<StudentProfile | null>(
+    profile && profile.role === 'student' ? (profile as StudentProfile) : null
+  );
+  const { toast, showSuccess, showError } = useToast();
 
   const {
     isEditing,
@@ -42,52 +40,22 @@ function StudentProfilePage() {
     handleSaveEdit,
     handleFieldChange,
     handleDateChange,
-  } = useProfileForm(profile, setProfile);
+  } = useProfileForm(localProfile, setLocalProfile, { showSuccess, showError });
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const result = await profileService.getUserProfile();
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        if (result.success && result.profile?.role === 'student') {
-          setProfile(result.profile);
-          setError(null);
-        } else {
-          if (USE_MOCK_DATA) {
-            logger.info('Using mock student data for development');
-            setProfile(mockStudentUser);
-          } else {
-            setError(result.message || 'Failed to load profile');
-          }
-        }
-      } catch (err) {
-        const handled = handleError(err, 'Failed to fetch profile');
-        logger.error('Fetch student profile error:', handled.raw);
-        
-        if (USE_MOCK_DATA) {
-          logger.info('Using mock student data as fallback');
-          setProfile(mockStudentUser);
-        } else {
-          setError(handled.message);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
+  // Update local profile when fetched profile changes
+  if (profile && profile.role === 'student' && localProfile?.user_id !== profile.user_id) {
+    setLocalProfile(profile as StudentProfile);
+  }
 
   if (isLoading) {
     return <ProfileSkeleton />;
   }
 
-  if (error || !profile) {
-    return <ProfileError error={error} />;
+  if (isError || !localProfile || !profile) {
+    return <ProfileError error={error?.message || 'Failed to load profile'} />;
   }
 
-  const currentProfile = (isEditing && editedProfile) ? editedProfile as StudentProfile : profile;
+  const currentProfile = (isEditing && editedProfile) ? editedProfile as StudentProfile : localProfile;
 
   return (
     <div className="min-h-screen">
@@ -105,10 +73,10 @@ function StudentProfilePage() {
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mt-6">
               <ProfileAvatar />
               <ProfileHeader 
-                name={profile.full_name}
-                role={profile.role}
-                email={profile.email}
-                contactNumber={profile.contact_number}
+                name={localProfile.full_name}
+                role={localProfile.role}
+                email={localProfile.email}
+                contactNumber={localProfile.contact_number}
               />
             </div>
           </div>

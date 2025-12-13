@@ -2,11 +2,11 @@ import { createFileRoute } from '@tanstack/react-router';
 import { User, Building2, Phone, Briefcase, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { useProfileForm } from '@/hooks/useProfileForm';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import Toast from '@/components/Toast';
-import { profileService } from '@/services/profile.service';
 import InfoField from '@/components/profile/InfoField';
 import SelectField from '@/components/profile/SelectField';
 import DateField from '@/components/profile/DateField';
@@ -19,12 +19,7 @@ import type {
   OrganizationSponsorProfile, 
   GovernmentSponsorProfile, 
 } from '@/types/profile.types';
-import { mockIndividualSponsorUser } from '@/mocks/userProfile.mock';
 import { getDisplayName } from '@/utils/profile.utils';
-import { handleError } from '@/lib/errorHandler';
-import { logger } from '@/lib/logger';
-
-const USE_MOCK_DATA = import.meta.env.DEV;
 
 export const Route = createFileRoute('/_sponsor/profile/sponsor/$sponsorId')({
   component: SponsorProfile,
@@ -34,11 +29,16 @@ type SponsorProfile = IndividualSponsorProfile | OrganizationSponsorProfile | Go
 
 function SponsorProfile() {
   usePageTitle('Profile');
+
+  const { sponsorId } = Route.useParams();
+  const { data: profile, isLoading, error, isError } = useUserProfile(sponsorId);
   
-  const [profile, setProfile] = useState<SponsorProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const [localProfile, setLocalProfile] = useState<SponsorProfile | null>(
+    profile && (profile.role === 'individual_sponsor' || profile.role === 'organization_sponsor' || profile.role === 'government_sponsor')
+      ? (profile as SponsorProfile)
+      : null
+  );
+  const { toast, showSuccess, showError } = useToast();
 
   const {
     isEditing,
@@ -49,54 +49,19 @@ function SponsorProfile() {
     handleSaveEdit,
     handleFieldChange,
     handleDateChange,
-  } = useProfileForm(profile, setProfile);
+  } = useProfileForm(localProfile, setLocalProfile, { showSuccess, showError });
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const result = await profileService.getUserProfile();
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        const userProfile = result.profile;
-        if (result.success && userProfile && (
-          userProfile.role === 'individual_sponsor' ||
-          userProfile.role === 'organization_sponsor' ||
-          userProfile.role === 'government_sponsor'
-        )) {
-          setProfile(userProfile);
-          setError(null);
-        } else {
-          if (USE_MOCK_DATA) {
-            logger.info('Using mock sponsor data for development');
-            setProfile(mockIndividualSponsorUser);
-          } else {
-            setError(result.message || 'Failed to load profile');
-          }
-        }
-      } catch (err) {
-        const handled = handleError(err, 'Failed to fetch profile');
-        logger.error('Fetch sponsor profile error:', handled.raw);
-        
-        if (USE_MOCK_DATA) {
-          logger.info('Using mock sponsor data as fallback');
-          setProfile(mockIndividualSponsorUser);
-        } else {
-          setError(handled.message);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
+  // Update local profile when fetched profile changes
+  if (profile && (profile.role === 'individual_sponsor' || profile.role === 'organization_sponsor' || profile.role === 'government_sponsor') && localProfile?.user_id !== profile.user_id) {
+    setLocalProfile(profile as SponsorProfile);
+  }
 
   if (isLoading) {
     return <ProfileSkeleton />;
   }
 
-  if (error || !profile) {
-    return <ProfileError error={error} />;
+  if (isError || !localProfile || !profile) {
+    return <ProfileError error={error?.message || 'Failed to load profile'} />;
   }
 
   const isIndividual = profile.role === 'individual_sponsor';

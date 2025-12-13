@@ -35,7 +35,7 @@ export function EditHeader({ title, isEditing, isSaving, onEdit, onCancel, onSav
         </button>
       ) : (
         <div className="flex items-center gap-2">
-          <button onClick={onCancel} disabled={isSaving} className="px-3 py-2 bg-[#F0F7FF] border border-[#D1D5DB] hover:bg-[#D9E9FF] text-primary rounded-mdd flex items-center gap-1 transition-colors cursor-pointer text-xs disabled:opacity-50 disabled:cursor-not-allowed">
+          <button onClick={onCancel} disabled={isSaving} className="px-3 py-2 bg-[#F0F7FF] border border-[#D1D5DB] hover:bg-[#D9E9FF] text-primary rounded-md flex items-center gap-1 transition-colors cursor-pointer text-xs disabled:opacity-50 disabled:cursor-not-allowed">
             <X className="h-3 w-3 md:w-4 md:h-4" />
             Cancel
           </button>

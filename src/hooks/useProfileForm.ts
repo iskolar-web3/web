@@ -1,10 +1,14 @@
 import { useState, useCallback } from 'react';
 import { profileService } from '@/services/profile.service';
-import { useToast } from '@/hooks/useToast';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
 import { formatDateToString } from '@/utils/profile.utils';
 import type { UserProfile } from '@/types/profile.types';
+
+interface ToastMethods {
+  showSuccess: (title: string, message: string, duration?: number) => void;
+  showError: (title: string, message: string, duration?: number) => void;
+}
 
 /**
  * Custom hook for managing profile edit functionality
@@ -12,16 +16,18 @@ import type { UserProfile } from '@/types/profile.types';
  * 
  * @param profile - Current user profile
  * @param setProfile - Function to update profile state
+ * @param toastMethods - Toast notification methods from useToast hook
  * @returns Object containing edit state and handlers
  */
 export function useProfileForm<T extends UserProfile>(
   profile: T | null,
-  setProfile: (profile: T | null) => void
+  setProfile: (profile: T | null) => void,
+  toastMethods: ToastMethods
 ) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editedProfile, setEditedProfile] = useState<T | null>(null);
-  const { showSuccess, showError } = useToast();
+  const { showSuccess, showError } = toastMethods;
 
   const handleEditClick = useCallback(() => {
     setEditedProfile(profile);

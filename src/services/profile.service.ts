@@ -218,9 +218,13 @@ class ProfileService {
    * Includes authentication data and onboarding profile data
    * @returns Promise resolving to success status, message, and optional user profile
    */
-  async getUserProfile(): Promise<{ success: boolean; message: string; profile?: UserProfile }> {
+  async getUserProfile(id: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    profile?: UserProfile 
+  }> {
     try {
-      const response = await authService.authenticatedRequest<{ profile?: UserProfile }>('/profile/me', {
+      const response = await authService.authenticatedRequest<{ profile?: UserProfile }>(`/profile/${id}`, {
         method: 'GET'
       });
 
