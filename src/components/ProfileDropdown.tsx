@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User as UserIcon, AlertCircle } from 'lucide-react';
+import { User as UserIcon } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { profileService } from '@/services/profile.service';
 import type { UserProfile } from '@/types/profile.types';
@@ -9,7 +9,7 @@ import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
-import { mockOrganizationSponsorUser, mockStudentUser, mockGovernmentSponsorUser, mockIndividualSponsorUser } from '@/mocks/userProfile.mock';
+import { mockStudentUser } from '@/mocks/userProfile.mock';
 
 const USE_MOCK_DATA = true;
 
@@ -60,13 +60,14 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const result = await profileService.getUserProfile();
+        const result = await profileService.getUserProfile(userProfile?.user_id || '');
         if (result.success && result.profile) {
           setUserProfile(result.profile);
         } else {
+          // Mock data fallback for development
           if (USE_MOCK_DATA) {
             logger.info('Using mock data for development');
-            setUserProfile(mockGovernmentSponsorUser);
+            setUserProfile(mockStudentUser);
           } else {
             showError(`Error`, result.message || 'Failed to load profile', 2500);
           }

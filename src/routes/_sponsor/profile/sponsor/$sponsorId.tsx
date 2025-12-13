@@ -20,8 +20,20 @@ import type {
   GovernmentSponsorProfile, 
 } from '@/types/profile.types';
 import { getDisplayName } from '@/utils/profile.utils';
+import { z } from 'zod';
 
 export const Route = createFileRoute('/_sponsor/profile/sponsor/$sponsorId')({
+  // params: {
+  //   parse: (params) => {
+  //     const schema = z.object({
+  //       sponsorId: z.string().uuid('Invalid ID format'),
+  //     });
+  //     return schema.parse(params);
+  //   },
+  //   stringify: (params) => ({
+  //     sponsorId: params.sponsorId,
+  //   }),
+  // },
   component: SponsorProfile,
 });
 

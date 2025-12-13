@@ -15,8 +15,20 @@ import InfoField from '@/components/profile/InfoField';
 import SelectField from '@/components/profile/SelectField';
 import DateField from '@/components/profile/DateField';
 import type { StudentProfile } from '@/types/profile.types';
+import { z } from 'zod';
 
 export const Route = createFileRoute('/_student/profile/student/$studentId')({
+  // params: {
+  //   parse: (params) => {
+  //     const schema = z.object({
+  //       studentId: z.string().uuid('Invalid ID format'),
+  //     });
+  //     return schema.parse(params);
+  //   },
+  //   stringify: (params) => ({
+  //     studentId: params.studentId,
+  //   }),
+  // },
   component: StudentProfilePage,
 });
 

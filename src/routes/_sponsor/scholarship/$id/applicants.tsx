@@ -36,6 +36,7 @@ import {
   mockBulkUpdateApplicationStatus
 } from '@/mocks/scholarshipApplicants.mock';
 import { useScholarshipApplicants } from '@/hooks/queries/useScholarshipApplicants';
+import z from 'zod';
 
 const USE_MOCK_DATA = true;
 
@@ -52,6 +53,17 @@ interface Applicant extends ScholarshipApplication {
 }
 
 export const Route = createFileRoute('/_sponsor/scholarship/$id/applicants')({
+  // params: {
+  //   parse: (params) => {
+  //     const schema = z.object({
+  //       id: z.string().uuid('Invalid ID format'),
+  //     });
+  //     return schema.parse(params);
+  //   },
+  //   stringify: (params) => ({
+  //     id: params.id,
+  //   }),
+  // },
   component: ApplicantsListPage,
 });
 

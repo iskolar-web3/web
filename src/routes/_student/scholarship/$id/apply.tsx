@@ -36,6 +36,17 @@ import { scholarshipManagementService } from '@/services/scholarshipManagement.s
 const USE_MOCK_DATA = true;
 
 export const Route = createFileRoute('/_student/scholarship/$id/apply')({
+  // params: {
+  //   parse: (params) => {
+  //     const schema = z.object({
+  //       id: z.string().uuid('Invalid ID format'),
+  //     });
+  //     return schema.parse(params);
+  //   },
+  //   stringify: (params) => ({
+  //     id: params.id,
+  //   }),
+  // },
   component: ApplyScholarshipPage,
 });
 
