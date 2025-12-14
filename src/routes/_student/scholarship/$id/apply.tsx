@@ -10,6 +10,7 @@ import {
   Loader2,
   AlertCircle,
   CalendarDays,
+  UserIcon,
 } from 'lucide-react';
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -807,11 +808,17 @@ function ApplyScholarshipPage() {
           <h1 className="text-xl md:text-2xl text-primary mb-3">{scholarship?.title}</h1>
           <div className="flex items-center gap-2 text-xs md:text-sm text-[#6B7280] mb-2">
             <div className="flex items-center gap-2">
-              <img
-                src={scholarship?.sponsor?.profile_url || "src/logo.svg"}
-                alt="Sponsor Profile"
-                className="w-4 h-4 bg-white/20 rounded-full flex-shrink-0 object-cover overflow-hidden block"
-              />
+              <div className="w-4 h-4 rounded-full bg-card flex items-center justify-center flex-shrink-0">
+                {scholarship?.sponsor?.profile_url ? (
+                  <img
+                    src={scholarship?.sponsor?.profile_url}
+                    alt={scholarship.sponsor.name}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <UserIcon className="w-full h-full text-secondary" />
+                )}
+              </div>
               <span>{scholarship?.sponsor?.name || 'Unknown Sponsor'}</span>
             </div>
           </div>

@@ -10,10 +10,10 @@ import Toast from '@/components/Toast';
 import InfoField from '@/components/profile/InfoField';
 import SelectField from '@/components/profile/SelectField';
 import DateField from '@/components/profile/DateField';
-import { ProfileSkeleton } from '@/components/profile/ProfileSkeleton';
-import { ProfileError } from '@/components/profile/ProfileError';
-import { ProfileHeader } from '@/components/profile/ProfileHeader';
-import { EditHeader } from '@/components/profile/EditHeader';
+import ProfileSkeleton from '@/components/profile/ProfileSkeleton';
+import ProfileError from '@/components/profile/ProfileError';
+import ProfileHeader from '@/components/profile/ProfileHeader';
+import EditHeader from '@/components/profile/EditHeader';
 import type { 
   IndividualSponsorProfile, 
   OrganizationSponsorProfile, 

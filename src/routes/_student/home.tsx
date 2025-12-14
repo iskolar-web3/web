@@ -4,7 +4,7 @@ import { Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useApplications } from '@/hooks/useApplications';
-import { ApplicationDetailsModal, statusStyles } from '@/components/student/ApplicationDetailsModal';
+import ApplicationDetailsModal, { statusStyles } from '@/components/student/ApplicationDetailsDrawer';
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/useToast';

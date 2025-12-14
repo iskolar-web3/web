@@ -8,7 +8,7 @@ import type { JSX } from 'react';
  * Shows animated placeholder elements while profile data is loading
  * @returns Loading skeleton component with animated placeholders
  */
-export function ProfileSkeleton(): JSX.Element {
+export default function ProfileSkeleton(): JSX.Element {
   return (
     <div className="min-h-screen">
       <div className="max-w-2xl mx-auto space-y-6 p-4 md:p-0">

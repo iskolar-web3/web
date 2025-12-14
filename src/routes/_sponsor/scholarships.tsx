@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FilterSelect from '@/components/sponsor/Filters';
 import ScholarshipCard from '@/components/sponsor/ScholarshipCard';
 import ScholarshipCardSkeleton from '@/components/ScholarshipCardSkeleton';
-import ScholarshipDetailsModal from '@/components/sponsor/ScholarshipDetailsModal';
+import ScholarshipDetailsModal from '@/components/sponsor/ScholarshipDetailsDrawer';
 import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from '@/components/Toast';

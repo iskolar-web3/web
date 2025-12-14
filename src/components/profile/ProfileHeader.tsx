@@ -23,7 +23,7 @@ interface ProfileHeaderProps {
  * @param props - Component props
  * @returns Profile header component with user information
  */
-export function ProfileHeader({ name, role, email, contactNumber }: ProfileHeaderProps): JSX.Element {
+export default function ProfileHeader({ name, role, email, contactNumber }: ProfileHeaderProps): JSX.Element {
   return (
     <div className="flex-1 text-center md:text-left mt-4 md:mt-6">
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">

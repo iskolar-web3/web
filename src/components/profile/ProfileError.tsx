@@ -15,7 +15,7 @@ interface ProfileErrorProps {
  * @param props - Component props
  * @returns Error display component with retry functionality
  */
-export function ProfileError({ error }: ProfileErrorProps): JSX.Element {
+export default function ProfileError({ error }: ProfileErrorProps): JSX.Element {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center max-w-md mx-auto p-6">

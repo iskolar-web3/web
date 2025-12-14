@@ -19,13 +19,14 @@ import {
 } from "@/components/ui/select";
 import Toast from '@/components/Toast';
 import ScholarshipPreviewCard from '@/components/sponsor/ScholarshipPreviewCard';
-import ScholarshipFullPreviewModal from '@/components/student/ScholarshipFullPreviewModal';
+import ScholarshipFullPreviewModal from '@/components/sponsor/ScholarshipFullPreviewDrawer';
 import CustomFormFieldModal from '@/components/sponsor/CustomFormFieldModal';
 import CustomFormFieldsList from '@/components/sponsor/CustomFormFieldsList';
 import DescriptionModal from '@/components/sponsor/DescriptionModal';
 import { useScholarshipForm, type ScholarshipFormData, type CustomFieldType } from '@/hooks/useScholarshipForm';
 import { useScholarshipPreview } from '@/hooks/useScholarshipPreview';
 import { useToast } from '@/hooks/useToast';
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
 import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
@@ -35,6 +36,8 @@ export const Route = createFileRoute('/_sponsor/create')({
 });
 
 function CreateScholarship() {
+  usePageTitle('Create');
+
   const {
     form,
     imagePreview,
@@ -259,7 +262,7 @@ function CreateScholarship() {
                   type="button"
                   disabled={loading}
                   onClick={() => setShowDescriptionModal(true)}
-                  className="w-full flex items-center gap-2 px-4 py-3 rounded-lg bg-[#F3F4F6] border text-[#6B7280] text-sm hover:bg-muted transition-colors"
+                  className="w-full cursor-pointer flex items-center gap-2 px-4 py-3 rounded-lg bg-[#F3F4F6] border text-[#6B7280] text-sm hover:bg-muted transition-colors"
                 >
                   <span className="text-[#8B9CB5]">☰</span>
                   {description ? 'Edit Description' : 'Add Description'}
@@ -447,7 +450,7 @@ function CreateScholarship() {
               type="button"
               disabled={loading}
               onClick={() => openCustomFormModal()}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
+              className={`w-full flex cursor-pointer items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
                 errors.customFormFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
               } bg-[#E0ECFF] text-secondary text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
             >

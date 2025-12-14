@@ -25,7 +25,7 @@ interface EditHeaderProps {
  * @param props - Component props
  * @returns Edit header component with action buttons
  */
-export function EditHeader({ title, isEditing, isSaving, onEdit, onCancel, onSave }: EditHeaderProps): JSX.Element {
+export default function EditHeader({ title, isEditing, isSaving, onEdit, onCancel, onSave }: EditHeaderProps): JSX.Element {
   return (
     <div className="flex items-center justify-between mb-4">
       <h3 className="text-lg md:text-xl text-primary">{title}</h3>

@@ -83,9 +83,9 @@ export default function ScholarshipCard({ scholarship, index, onClick }: Scholar
             <div className="space-y-1.5 text-xs">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-card flex items-center justify-center flex-shrink-0">
-                  {scholarship.sponsor.profile_url ? (
+                  {scholarship?.sponsor?.profile_url ? (
                     <img
-                      src={scholarship.sponsor.profile_url}
+                      src={scholarship?.sponsor?.profile_url}
                       alt={scholarship.sponsor.name}
                       className="w-full h-full rounded-full object-cover"
                     />
