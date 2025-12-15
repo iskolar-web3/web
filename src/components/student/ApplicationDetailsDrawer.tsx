@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronsRight, Calendar, Coins, Users, Info, Check, Clock } from 'lucide-react';
 import type { Application, ApplicationStatus } from '@/types/application.types';
-import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting.utils';
 
 /**
  * Props for the ApplicationDetailsModal component
@@ -60,7 +60,7 @@ export const statusStyles: Record<
  * @param props - Component props
  * @returns Animated side panel modal with application details
  */
-export function ApplicationDetailsModal({ application, onClose }: ApplicationDetailsModalProps) {
+export default function ApplicationDetailsModal({ application, onClose }: ApplicationDetailsModalProps) {
   const [isExiting, setIsExiting] = useState(false);
 
   const statusStyle = statusStyles[application.status];

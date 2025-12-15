@@ -118,6 +118,8 @@ function ProfileSetup() {
   const [loading, setLoading] = useState(false);
   const [showPreloader, setShowPreloader] = useState(false)
   const { toast, showSuccess, showError } = useToast();
+
+  const [isSchoolUnavailable, setIsSchoolUnavailable] = useState(false)
   
   // Student form
   const studentForm = useForm<StudentFormData>({
@@ -360,7 +362,16 @@ function ProfileSetup() {
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'school') {
-        const schoolData = data as SchoolFormData;
+          const schoolData = data as SchoolFormData;
+
+          showError('Unavailable', 'The school role is not available yet.', 2450);
+          setIsSchoolUnavailable(true);
+          
+          setTimeout(() => {
+            navigate({ to: '/role-selection' });
+          }, 2500);
+          
+          return; 
 
         // const result = await profileService.setupSchoolProfile({
         //   role: selectedRole
@@ -392,7 +403,6 @@ function ProfileSetup() {
         //   setTimeout(() => setShowToast(false), 2000);
         // }
         
-        // For now, simulate successful profile setup to test preloader
         showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
         setTimeout(() => {
           setShowPreloader(true);
@@ -618,6 +628,7 @@ function ProfileSetup() {
                             studentForm.setValue('dateOfBirth', date, { shouldValidate: true })
                           }
                         }}
+                        captionLayout="dropdown" 
                         disabled={(date) => date > new Date()}
                         initialFocus
                       />
@@ -795,6 +806,7 @@ function ProfileSetup() {
                             individualSponsorForm.setValue('dateOfBirth', date, { shouldValidate: true })
                           }
                         }}
+                        captionLayout="dropdown"
                         disabled={(date) => date > new Date() || loading}
                         initialFocus
                       />

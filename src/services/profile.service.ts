@@ -1,88 +1,15 @@
 import { authService } from './auth.service';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/lib/errorHandler';
-
-/**
- * Student profile data structure for onboarding
- */
-export interface StudentProfileData {
-  /** User role identifier */
-  role: string;
-  /** Student's first name */
-  first_name: string;
-  /** Student's middle name */
-  middle_name: string;
-  /** Student's last name */
-  last_name: string;
-  /** Student's gender */
-  gender: string;
-  /** Student's date of birth in ISO format */
-  date_of_birth: string;
-  /** Student's contact phone number */
-  contact_number: string;
-}
-
-/**
- * Individual sponsor profile data structure for onboarding
- */
-export interface IndividualSponsorProfileData {
-  /** User role identifier */
-  role: string;
-  /** Sponsor's first name */
-  first_name: string;
-  /** Sponsor's middle name */
-  middle_name: string;
-  /** Sponsor's last name */
-  last_name: string;
-  /** Employment type */
-  employment_type: string;
-  /** Sponsor's date of birth in ISO format */
-  date_of_birth: string;
-  /** Sponsor's contact phone number */
-  contact_number: string;
-}
-
-/**
- * Organization sponsor profile data structure for onboarding
- */
-export interface OrganizationSponsorProfileData {
-  /** User role identifier */
-  role: string;
-  /** Organization's official name */
-  organization_name: string;
-  /** Type of organization */
-  organization_type: string;
-  /** Organization's contact phone number */
-  contact_number: string;
-}
-
-/**
- * Government sponsor profile data structure for onboarding
- */
-export interface GovernmentSponsorProfileData {
-  /** User role identifier */
-  role: string;
-  /** Government agency name */
-  agency_name: string;
-  /** Type of government agency */
-  agency_type: string;
-  /** Agency's contact phone number */
-  contact_number: string;
-}
-
-/**
- * School profile data structure for onboarding
- */
-export interface SchoolProfileData {
-  /** User role identifier */
-  role: string;
-  /** School's official name */
-  school_name: string;
-  /** Type of school */
-  school_type: string;
-  /** School's contact phone number */
-  contact_number: string;
-}
+import type {
+  UserProfile,
+  StudentProfileData,
+  IndividualSponsorProfileData,
+  OrganizationSponsorProfileData,
+  GovernmentSponsorProfileData,
+  SchoolProfileData,
+  ProfileUpdateData
+} from '@/types/profile.types';
 
 /**
  * API Response data types
@@ -110,6 +37,15 @@ interface SchoolProfileResponseData {
 
 interface ProfileStatusResponseData {
   user?: any;
+}
+
+interface ProfileUpdateResponseData {
+  profile?: UserProfile;
+  student?: any;
+  individual_sponsor?: any;
+  organization_sponsor?: any;
+  government_sponsor?: any;
+  school?: any;
 }
 
 /**
@@ -270,6 +206,85 @@ class ProfileService {
     } catch (error) {
       const handled = handleError(error);
       logger.error('Get profile status error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
+  }
+
+  /**
+   * Retrieves the current user's complete profile
+   * Includes authentication data and onboarding profile data
+   * @returns Promise resolving to success status, message, and optional user profile
+   */
+  async getUserProfile(id: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    profile?: UserProfile 
+  }> {
+    try {
+      const response = await authService.authenticatedRequest<{ profile?: UserProfile }>(`/profile/${id}`, {
+        method: 'GET'
+      });
+
+      return {
+        success: response.success,
+        message: response.message,
+        profile: response.data?.profile
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Get user profile error:', handled.raw);
+      return {
+        success: false,
+        message: handled.message
+      };
+    }
+  }
+
+  /**
+   * Updates the current user's profile
+   * Accepts partial profile data for any user type
+   * @param profileData - Partial profile data to update
+   * @returns Promise resolving to success status, message, and updated profile
+   */
+  async updateProfile(profileData: Partial<ProfileUpdateData>): Promise<{ 
+    success: boolean; 
+    message: string; 
+    profile?: UserProfile;
+  }> {
+    try {
+      const response = await authService.authenticatedRequest<ProfileUpdateResponseData>('/profile/profile', {
+        method: 'PUT',
+        body: JSON.stringify(profileData)
+      });
+
+      // Extract the profile from various possible response structures
+      let updatedProfile: UserProfile | undefined;
+      
+      if (response.data?.profile) {
+        updatedProfile = response.data.profile;
+      } else if (response.data?.student) {
+        updatedProfile = response.data.student;
+      } else if (response.data?.individual_sponsor) {
+        updatedProfile = response.data.individual_sponsor;
+      } else if (response.data?.organization_sponsor) {
+        updatedProfile = response.data.organization_sponsor;
+      } else if (response.data?.government_sponsor) {
+        updatedProfile = response.data.government_sponsor;
+      } else if (response.data?.school) {
+        updatedProfile = response.data.school;
+      }
+
+      return {
+        success: response.success,
+        message: response.message,
+        profile: updatedProfile
+      };
+    } catch (error) {
+      const handled = handleError(error);
+      logger.error('Update profile error:', handled.raw);
       return {
         success: false,
         message: handled.message

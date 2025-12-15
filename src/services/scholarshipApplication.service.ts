@@ -3,7 +3,7 @@ import { handleError, safeParseJSON } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
 import type { Scholarship } from '@/types/scholarship.types';
 import type { FormFieldResponse } from '@/types/form.types';
-import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
+import { fetchWithTimeout } from '@/utils/fetchWithTimeout.utils';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const DEFAULT_TIMEOUT = 10000;

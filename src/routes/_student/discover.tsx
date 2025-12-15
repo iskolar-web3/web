@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import type { Scholarship } from '@/types/scholarship.types';
-import ScholarshipDetailsModal from '@/components/student/ScholarshipDetailsModal';
+import ScholarshipDetailsModal from '@/components/student/ScholarshipDetailsDrawer';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import { useScholarships } from '@/hooks/queries/useScholarships';
 

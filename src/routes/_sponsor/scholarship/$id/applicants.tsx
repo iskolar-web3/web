@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, createElement } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,13 +23,19 @@ import {
   Mail,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import type { ScholarshipApplication } from '@/services/scholarshipApplication.service';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
-import { formatDateTime } from '@/utils/formatting';
+import { formatDateTime } from '@/utils/formatting.utils';
 import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
 import { 
   mockUpdateApplicationStatus,
@@ -52,6 +58,17 @@ interface Applicant extends ScholarshipApplication {
 }
 
 export const Route = createFileRoute('/_sponsor/scholarship/$id/applicants')({
+  // params: {
+  //   parse: (params) => {
+  //     const schema = z.object({
+  //       id: z.string().uuid('Invalid ID format'),
+  //     });
+  //     return schema.parse(params);
+  //   },
+  //   stringify: (params) => ({
+  //     id: params.id,
+  //   }),
+  // },
   component: ApplicantsListPage,
 });
 
@@ -196,7 +213,6 @@ function ApplicantsListPage() {
           setBulkRemarks('');
           setSelectedApplicantIds(new Set());
           setBulkMode(false);
-          setBulkMode(false);
           queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
 
         } else {
@@ -273,7 +289,6 @@ function ApplicantsListPage() {
           showSuccess('Success', `Applicant ${newStatus}`, 2000);
           setModalVisible(false);
           setConfirmationModal(false);
-          setDenialRemarks('');
           setDenialRemarks('');
           queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
 
@@ -693,19 +708,17 @@ function ApplicantsListPage() {
                 {/* Profile Header */}
                 <div className="mb-6">
                   {/* Status Badge */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      {(() => {
-                        const StatusIcon = getStatusIcon(selectedApplicant.status);
-                        return <StatusIcon className="w-5 h-5" style={{ color: getStatusColor(selectedApplicant.status) }} />;
-                      })()}
-                      <span
-                        className="text-sm font-medium capitalize"
-                        style={{ color: getStatusColor(selectedApplicant.status) }}
-                      >
-                        {selectedApplicant.status}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2 mb-4">
+                    {createElement(getStatusIcon(selectedApplicant.status), {
+                      className: 'w-5 h-5',
+                      style: { color: getStatusColor(selectedApplicant.status) },
+                    })}
+                    <span
+                      className="text-sm font-medium capitalize"
+                      style={{ color: getStatusColor(selectedApplicant.status) }}
+                    >
+                      {selectedApplicant.status}
+                    </span>
                   </div>
 
                   {/* Profile Image */}
@@ -728,42 +741,30 @@ function ApplicantsListPage() {
                     {selectedApplicant.student.full_name}
                   </h1>
                   
-                  {/* Contact Info - 2 Columns */}
-                  <div className="grid grid-cols-2 gap-3 text-[#6B7280]">
+                  {/* Contact Info */}
+                  <div className="space-y-2 text-[#6B7280]">
                     <div className="flex items-center gap-2">
                       <Mail size={17} className="flex-shrink-0" />
-                      <div className="col-span-2 flex items-start gap-2">
-                        <span className="text-xs md:text-sm truncate">{selectedApplicant.student.user.email}</span>
-                      </div>
+                      <span className="text-xs md:text-sm truncate">{selectedApplicant.student.user.email}</span>
                     </div>
                     
                     {selectedApplicant.student.gender && (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <User size={17} className="flex-shrink-0" />
-                          {selectedApplicant.student.gender && (
-                            <div className="col-span-1 flex items-start gap-2">
-                              <span className="text-xs md:text-sm capitalize">{selectedApplicant.student.gender}</span>
-                            </div>
-                          )}
+                      <div className="flex items-center gap-2">
+                        <User size={17} className="flex-shrink-0" />
+                        <div className="col-span-1 flex items-start gap-2">
+                          <span className="text-xs md:text-sm capitalize">{selectedApplicant.student.gender}</span>
                         </div>
-                      </>
+                      </div>
                     )}
 
                     <div className="flex items-center gap-2">
                       <Phone size={17} className="flex-shrink-0" />
-                       <div className="col-span-2 flex items-start gap-2">
-                        <span className="text-xs md:text-sm">{selectedApplicant.student.contact_number}</span>
-                      </div>
+                      <span className="text-xs md:text-sm">{selectedApplicant.student.contact_number}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <Calendar size={17} className="flex-shrink-0" />
-                       <div className={`${selectedApplicant.student.gender ? 'col-span-1' : 'col-span-2'} flex items-start gap-2`}>
-                        <span className="text-xs md:text-sm">
-                          {formatDateTime(selectedApplicant.applied_at)}
-                        </span>
-                      </div>
+                      <span className="text-xs md:text-sm">{formatDateTime(selectedApplicant.applied_at)}</span>
                     </div>
                   </div>
                 </div>
@@ -877,204 +878,166 @@ function ApplicantsListPage() {
       </AnimatePresence>
 
       {/* Bulk Action Confirmation Modal */}
-      <AnimatePresence>
-        {bulkActionModal && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+      <Dialog open={bulkActionModal} onOpenChange={(open) => {
+        setBulkActionModal(open);
+        if (!open) setBulkRemarks('');
+      }}>
+        <DialogContent className="bg-background border border-[#E5E7EB] px-6 py-4 w-[400px]" showCloseButton={true}>
+          <DialogHeader>
+            <h3 className="text-lg text-primary mb-1">
+              Bulk {bulkAction?.charAt(0).toUpperCase()}
+              {bulkAction?.slice(1)} Applications
+            </h3>
+            <p className="text-sm text-[#4B5563]">
+              Are you sure you want to {bulkAction} {selectedApplicantIds.size} applicant(s)?
+            </p>
+          </DialogHeader>
+
+          {bulkAction === 'denied' && (
+            <div className="mb-6">
+              <textarea
+                value={bulkRemarks}
+                onChange={(e) => setBulkRemarks(e.target.value)}
+                placeholder="Enter reason for denial (optional)..."
+                className="w-full px-4 py-3 rounded-md border border-[#E5E7EB] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none min-h-[100px]"
+              />
+              <p className="text-xs text-[#9CA3AF] mt-2 italic">
+                This will be visible to all selected applicants.
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="flex gap-3">
+            <button
               onClick={() => {
                 setBulkActionModal(false);
                 setBulkRemarks('');
               }}
-              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              disabled={isBulkUpdating}
+              className={`flex-1 px-2 py-2.5 text-sm rounded-md transition-colors ${
+                isBulkUpdating
+                  ? 'bg-[#CACAD2] text-[#9CA3AF] cursor-not-allowed'
+                  : 'bg-[#CACAD2] text-[#4B5563] hover:bg-[#B8B8C0] cursor-pointer'
+              }`}
             >
-              <div className="bg-background rounded-lg p-5 max-w-md w-full shadow-xl">
-                <h3 className="text-lg text-primary mb-1">
-                  Bulk {bulkAction?.charAt(0).toUpperCase()}
-                  {bulkAction?.slice(1)} Applications
-                </h3>
-                <p className="text-sm text-[#4B5563] mb-4">
-                  Are you sure you want to {bulkAction} {selectedApplicantIds.size} applicant(s)?
-                </p>
-
-                {bulkAction === 'denied' && (
-                  <div className="mb-6">
-                    <textarea
-                      value={bulkRemarks}
-                      onChange={(e) => setBulkRemarks(e.target.value)}
-                      placeholder="Enter reason for denial (optional)..."
-                      className="w-full px-4 py-3 rounded-md border border-[#E5E7EB] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none min-h-[100px]"
-                    />
-                    <p className="text-xs text-[#9CA3AF] mt-2 italic">
-                      This will be visible to all selected applicants.
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setBulkActionModal(false);
-                      setBulkRemarks('');
-                    }}
-                    disabled={isBulkUpdating}
-                    className={`flex-1 px-2 py-2.5 text-sm rounded-md transition-colors ${
-                      isBulkUpdating
-                        ? 'bg-[#CACAD2] text-[#9CA3AF] cursor-not-allowed'
-                        : 'bg-[#CACAD2] text-[#4B5563] hover:bg-[#B8B8C0] cursor-pointer'
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={executeBulkAction}
-                    disabled={isBulkUpdating}
-                    className={`flex-1 px-2 py-2.5 text-sm text-tertiary rounded-md transition-colors ${
-                      isBulkUpdating ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
-                    }`}
-                    style={{
-                      backgroundColor:
-                        bulkAction === 'approved'
-                          ? '#31D0AA'
-                          : bulkAction === 'shortlisted'
-                            ? '#8B5CF6'
-                            : '#EF4444',
-                    }}
-                  >
-                    {isBulkUpdating ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Processing...</span>
-                      </span>
-                    ) : (
-                      'Confirm'
-                    )}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Cancel
+            </button>
+            <button
+              onClick={executeBulkAction}
+              disabled={isBulkUpdating}
+              className={`flex-1 px-2 py-2.5 text-sm text-tertiary rounded-md transition-colors ${
+                isBulkUpdating ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
+              }`}
+              style={{
+                backgroundColor:
+                  bulkAction === 'approved'
+                    ? '#31D0AA'
+                    : bulkAction === 'shortlisted'
+                      ? '#8B5CF6'
+                      : '#EF4444',
+              }}
+            >
+              {isBulkUpdating ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </span>
+              ) : (
+                'Confirm'
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Confirmation Modal */}
-      <AnimatePresence>
-        {confirmationModal && pendingAction && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+      <Dialog open={confirmationModal} onOpenChange={(open) => {
+        setConfirmationModal(open);
+        if (!open) setDenialRemarks('');
+      }}>
+        <DialogContent className="bg-background border border-[#E5E7EB] py-4 px-6 w-[400px]" showCloseButton={true}>
+          <DialogHeader>
+            <h3 className="text-lg text-primary mb-1">
+              {pendingAction?.type === 'approved'
+                ? 'Approve Application'
+                : pendingAction?.type === 'shortlisted'
+                  ? 'Shortlist Application'
+                  : 'Deny Application'}
+            </h3>
+            <p className="text-sm text-[#4B5563]">
+              {pendingAction?.type === 'approved'
+                ? 'Are you sure you want to approve this application?'
+                : pendingAction?.type === 'shortlisted'
+                  ? 'Are you sure you want to shortlist this application?'
+                  : 'Are you sure you want to deny this application?'}
+            </p>
+          </DialogHeader>
+
+          {pendingAction?.type === 'denied' && (
+            <div className="mb-6">
+              <textarea
+                value={denialRemarks}
+                onChange={(e) => setDenialRemarks(e.target.value)}
+                placeholder="Enter reason for denial..."
+                className="w-full px-4 py-3 rounded-md border border-[#E5E7EB] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none min-h-[100px]"
+              />
+              <p className="text-xs text-[#9CA3AF] mt-2 italic">
+                This will be visible to the applicant (optional).
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="flex gap-3">
+            <button
               onClick={() => {
                 setConfirmationModal(false);
                 setDenialRemarks('');
               }}
-              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-2"
+              disabled={isUpdatingStatus}
+              className={`flex-1 px-2 py-2.5 text-sm rounded-md transition-colors ${
+                isUpdatingStatus
+                  ? 'bg-[#CACAD2] text-[#9CA3AF] cursor-not-allowed'
+                  : 'bg-[#CACAD2] text-[#4B5563] hover:bg-[#B8B8C0] cursor-pointer'
+              }`}
             >
-              <div className="bg-background rounded-lg p-6 max-w-md w-full shadow-xl">
-                <h3 className="text-lg text-primary mb-1">
-                  {pendingAction.type === 'approved'
-                    ? 'Approve Application'
-                    : pendingAction.type === 'shortlisted'
-                      ? 'Shortlist Application'
-                      : 'Deny Application'}
-                </h3>
-                <p className="text-sm text-[#4B5563] mb-4">
-                  {pendingAction.type === 'approved'
-                    ? 'Are you sure you want to approve this application?'
-                    : pendingAction.type === 'shortlisted'
-                      ? 'Are you sure you want to shortlist this application?'
-                      : 'Are you sure you want to deny this application?'}
-                </p>
-
-                {pendingAction.type === 'denied' && (
-                  <div className="mb-6">
-                    <textarea
-                      value={denialRemarks}
-                      onChange={(e) => setDenialRemarks(e.target.value)}
-                      placeholder="Enter reason for denial..."
-                      className="w-full px-4 py-3 rounded-md border border-[#E5E7EB] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none min-h-[100px]"
-                    />
-                    <p className="text-xs text-[#9CA3AF] mt-2 italic">
-                      This will be visible to the applicant (optional).
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setConfirmationModal(false);
-                      setDenialRemarks('');
-                    }}
-                    disabled={isUpdatingStatus}
-                    className={`flex-1 px-2 py-2.5 text-sm rounded-md transition-colors ${
-                      isUpdatingStatus
-                        ? 'bg-[#CACAD2] text-[#9CA3AF] cursor-not-allowed'
-                        : 'bg-[#CACAD2] text-[#4B5563] hover:bg-[#B8B8C0] cursor-pointer'
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      const remarks = pendingAction.type === 'denied' ? denialRemarks.trim() : undefined;
-                      handleUpdateStatus(pendingAction.applicationId, pendingAction.type, remarks);
-                    }}
-                    disabled={isUpdatingStatus}
-                    className={`flex-1 px-2 py-2.5 text-tertiary text-sm rounded-md transition-colors ${
-                      isUpdatingStatus ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
-                    }`}
-                    style={{
-                      backgroundColor:
-                        pendingAction.type === 'approved'
-                          ? '#31D0AA'
-                          : pendingAction.type === 'shortlisted'
-                            ? '#8B5CF6'
-                            : '#EF4444',
-                    }}
-                  >
-                    {isUpdatingStatus ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>
-                          {pendingAction.type === 'approved'
-                            ? 'Approving...'
-                            : pendingAction.type === 'shortlisted'
-                              ? 'Shortlisting...'
-                              : 'Denying...'}
-                        </span>
-                      </span>
-                    ) : (
-                      <span>
-                        {pendingAction.type === 'approved'
-                          ? 'Approve'
-                          : pendingAction.type === 'shortlisted'
-                            ? 'Shortlist'
-                            : 'Deny'}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (pendingAction) {
+                  const remarks = pendingAction.type === 'denied' ? denialRemarks.trim() : undefined;
+                  handleUpdateStatus(pendingAction.applicationId, pendingAction.type, remarks);
+                }
+              }}
+              disabled={isUpdatingStatus}
+              className={`flex-1 px-2 py-2.5 text-tertiary text-sm rounded-md transition-colors ${
+                isUpdatingStatus ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
+              }`}
+              style={{
+                backgroundColor:
+                  pendingAction?.type === 'approved'
+                    ? '#31D0AA'
+                    : pendingAction?.type === 'shortlisted'
+                      ? '#8B5CF6'
+                      : '#EF4444',
+              }}
+            >
+              {isUpdatingStatus ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </span>
+              ) : (
+                <span>
+                  {pendingAction?.type === 'approved'
+                    ? 'Approve'
+                    : pendingAction?.type === 'shortlisted'
+                      ? 'Shortlist'
+                      : 'Deny'}
+                </span>
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from "@tanstack/react-router";
-import { Calendar, Users, Coins, ChevronsRight, LockKeyhole } from 'lucide-react';
+import { Calendar, Users, Coins, ChevronsRight, LockKeyhole, UserIcon } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
-import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting.utils';
 import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
 
 /**
@@ -141,11 +141,17 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             {/* Sponsor and Deadline */}
             <div className="space-y-3 mb-4 text-[#6B7280]">
               <div className="flex items-center gap-2">
-                <img
-                  src={scholarship.sponsor?.profile_url || "src/logo.svg"}
-                  alt="Sponsor Profile"
-                  className="w-5.5 h-5.5 bg-white/20 rounded-full flex-shrink-0 object-cover overflow-hidden block"
-                />
+                <div className="w-5.5 h-5.5 rounded-full flex items-center justify-center flex-shrink-0">
+                  {scholarship?.sponsor?.profile_url ? (
+                    <img
+                      src={scholarship?.sponsor?.profile_url}
+                      alt={scholarship.sponsor.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="w-full h-full" />
+                  )}
+                </div>
                 <span className="text-sm">{scholarship.sponsor?.name || 'Sponsor'}</span>
               </div>
               <div className="flex items-center gap-2">

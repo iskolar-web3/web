@@ -18,9 +18,16 @@ import {
   Trash2, 
   Archive,
   AlertCircle, 
+  UserIcon,
   Loader2 } from 'lucide-react';
 import { useState, useCallback } from 'react';
-import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting.utils';
 
 /**
  * Props for the ScholarshipDetailsModal component (sponsor view)
@@ -256,11 +263,17 @@ export default function ScholarshipDetailsModal({
             {/* Sponsor and Deadline */}
             <div className="space-y-3 mb-4 text-[#6B7280]">
               <div className="flex items-center gap-2">
-                <img
-                  src={scholarship.sponsor?.profile_url || 'src/logo.svg'}
-                  alt="Sponsor Profile"
-                  className="w-5.5 h-5.5 bg-white/20 rounded-full flex-shrink-0 object-cover overflow-hidden block"
-                />
+                <div className="w-5.5 h-5.5 rounded-full flex items-center justify-center flex-shrink-0">
+                  {scholarship?.sponsor?.profile_url ? (
+                    <img
+                      src={scholarship?.sponsor?.profile_url}
+                      alt={scholarship.sponsor.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="w-full h-full" />
+                  )}
+                </div>
                 <span className="text-sm">{scholarship.sponsor?.name || 'iSkolar'}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -431,16 +444,9 @@ export default function ScholarshipDetailsModal({
         </motion.div>
 
         {/* Delete Confirmation Modal */}
-        {showDeleteModal && (
-          <div className="absolute inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="bg-[#F0F7FF] rounded-xl shadow-2xl max-w-sm w-full p-5"
-              onClick={(e) => e.stopPropagation()}
-            >
+        <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+          <DialogContent className="bg-tertiary border-0 py-4 px-6 w-[400px]" showCloseButton={true}>
+            <DialogHeader>
               <div className="text-center">
                 <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-1 ${
                   isClosed() ? 'text-[#F59E0B]' : 'text-[#EF4444]'
@@ -457,37 +463,37 @@ export default function ScholarshipDetailsModal({
                   }
                 </p>
               </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={loading}
-                  className={`flex-1 px-4 py-2 cursor-pointer text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 ${
-                    loading && "opacity-60 cursor-not-allowed"
-                  }`}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  disabled={loading}
-                  className={`flex-1 px-4 py-2 cursor-pointer text-sm text-tertiary rounded-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
-                    isClosed() 
-                      ? 'bg-[#F59E0B] hover:bg-[#D97706]' 
-                      : 'bg-[#EF4444] hover:bg-[#DC2626]'
-                  } ${loading && "opacity-60 cursor-not-allowed"}`}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    </span>
-                  ) : (
-                    isClosed() ? 'Archive' : 'Delete'
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
+            </DialogHeader>
+            <DialogFooter className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={loading}
+                className={`flex-1 px-4 py-2 cursor-pointer text-sm bg-tertiary border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 ${
+                  loading && "opacity-60 cursor-not-allowed"
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={loading}
+                className={`flex-1 px-4 py-2 cursor-pointer text-sm text-tertiary rounded-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+                  isClosed() 
+                    ? 'bg-[#F59E0B] hover:bg-[#D97706]' 
+                    : 'bg-[#EF4444] hover:bg-[#DC2626]'
+                } ${loading && "opacity-60 cursor-not-allowed"}`}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  </span>
+                ) : (
+                  isClosed() ? 'Archive' : 'Delete'
+                )}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AnimatePresence>
   );

@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { normalizeText, normalizeArray } from '@/utils/normalize';
+import { normalizeText, normalizeArray } from '@/utils/normalize.utils';
 
 /**
  * Available custom form field types for scholarship applications

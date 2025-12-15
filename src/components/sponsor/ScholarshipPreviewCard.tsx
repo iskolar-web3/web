@@ -1,6 +1,6 @@
-import { Calendar, Users, Coins, Images } from 'lucide-react';
+import { Calendar, Users, Coins, Images, UserIcon } from 'lucide-react';
 import type { Scholarship } from '@/types/scholarship.types';
-import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting';
+import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting.utils';
 
 /**
  * Props for the ScholarshipPreviewCard component
@@ -65,11 +65,17 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
             )}
 
             <div className="flex items-center gap-2 text-xs mb-1.5">
-              <img
-                src={scholarship.sponsor?.profile_url || "src/logo.svg"}
-                alt="Sponsor Profile"
-                className="w-4 h-4 bg-white/20 rounded-full flex-shrink-0 object-cover overflow-hidden block"
-              />
+              <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0">
+                {scholarship?.sponsor?.profile_url ? (
+                  <img
+                    src={scholarship?.sponsor?.profile_url}
+                    alt={scholarship.sponsor.name}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <UserIcon className="w-full h-full" />
+                )}
+              </div>
               <span>{scholarship.sponsor?.name || 'iSkolar'}</span>
             </div>
 
