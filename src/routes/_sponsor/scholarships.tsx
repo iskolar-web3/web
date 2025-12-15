@@ -65,12 +65,8 @@ function Scholarships() {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = async () => {
-    if (!scholarshipToDelete) return;
-
+  const handleDrawerDelete = async (scholarship: Scholarship) => {
     try {
-      setIsDeleting(true);
-      
       if (USE_MOCK_DATA) {
         // Mock delete
         await mockApiDelay(1000);
@@ -79,7 +75,7 @@ function Scholarships() {
         queryClient.invalidateQueries({ queryKey: ['my-scholarships'] });
 
       } else {
-        const response = await scholarshipManagementService.deleteScholarship(scholarshipToDelete.scholarship_id);
+        const response = await scholarshipManagementService.deleteScholarship(scholarship.scholarship_id);
         
         if(response.success) {
           showSuccess('Success', response.message, 2000);
@@ -92,6 +88,15 @@ function Scholarships() {
       const handled = handleError(error, 'Failed to delete scholarship.');
       logger.error('Delete scholarship error:', handled.raw);
       showError(`Error ${handled.code}`, handled.message, 2500);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!scholarshipToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      await handleDrawerDelete(scholarshipToDelete);
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -498,7 +503,7 @@ function Scholarships() {
           scholarship={selectedScholarship}
           onClose={() => setSelectedScholarship(null)}
           onEdit={handleEdit}
-          onDelete={handleDelete}
+          onDelete={handleDrawerDelete}
           onViewApplicants={handleViewApplicants}
         />
       )}
