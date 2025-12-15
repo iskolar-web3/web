@@ -23,6 +23,12 @@ import {
   Mail,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -36,7 +42,6 @@ import {
   mockBulkUpdateApplicationStatus
 } from '@/mocks/scholarshipApplicants.mock';
 import { useScholarshipApplicants } from '@/hooks/queries/useScholarshipApplicants';
-import z from 'zod';
 
 const USE_MOCK_DATA = true;
 
@@ -889,204 +894,174 @@ function ApplicantsListPage() {
       </AnimatePresence>
 
       {/* Bulk Action Confirmation Modal */}
-      <AnimatePresence>
-        {bulkActionModal && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+      <Dialog open={bulkActionModal} onOpenChange={(open) => {
+        setBulkActionModal(open);
+        if (!open) setBulkRemarks('');
+      }}>
+        <DialogContent className="bg-background border border-[#E5E7EB] p-5 max-w-md" showCloseButton={true}>
+          <DialogHeader>
+            <h3 className="text-lg text-primary mb-1">
+              Bulk {bulkAction?.charAt(0).toUpperCase()}
+              {bulkAction?.slice(1)} Applications
+            </h3>
+            <p className="text-sm text-[#4B5563]">
+              Are you sure you want to {bulkAction} {selectedApplicantIds.size} applicant(s)?
+            </p>
+          </DialogHeader>
+
+          {bulkAction === 'denied' && (
+            <div className="mb-6">
+              <textarea
+                value={bulkRemarks}
+                onChange={(e) => setBulkRemarks(e.target.value)}
+                placeholder="Enter reason for denial (optional)..."
+                className="w-full px-4 py-3 rounded-md border border-[#E5E7EB] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none min-h-[100px]"
+              />
+              <p className="text-xs text-[#9CA3AF] mt-2 italic">
+                This will be visible to all selected applicants.
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="flex gap-3">
+            <button
               onClick={() => {
                 setBulkActionModal(false);
                 setBulkRemarks('');
               }}
-              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              disabled={isBulkUpdating}
+              className={`flex-1 px-2 py-2.5 text-sm rounded-md transition-colors ${
+                isBulkUpdating
+                  ? 'bg-[#CACAD2] text-[#9CA3AF] cursor-not-allowed'
+                  : 'bg-[#CACAD2] text-[#4B5563] hover:bg-[#B8B8C0] cursor-pointer'
+              }`}
             >
-              <div className="bg-background rounded-lg p-5 max-w-md w-full shadow-xl">
-                <h3 className="text-lg text-primary mb-1">
-                  Bulk {bulkAction?.charAt(0).toUpperCase()}
-                  {bulkAction?.slice(1)} Applications
-                </h3>
-                <p className="text-sm text-[#4B5563] mb-4">
-                  Are you sure you want to {bulkAction} {selectedApplicantIds.size} applicant(s)?
-                </p>
-
-                {bulkAction === 'denied' && (
-                  <div className="mb-6">
-                    <textarea
-                      value={bulkRemarks}
-                      onChange={(e) => setBulkRemarks(e.target.value)}
-                      placeholder="Enter reason for denial (optional)..."
-                      className="w-full px-4 py-3 rounded-md border border-[#E5E7EB] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none min-h-[100px]"
-                    />
-                    <p className="text-xs text-[#9CA3AF] mt-2 italic">
-                      This will be visible to all selected applicants.
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setBulkActionModal(false);
-                      setBulkRemarks('');
-                    }}
-                    disabled={isBulkUpdating}
-                    className={`flex-1 px-2 py-2.5 text-sm rounded-md transition-colors ${
-                      isBulkUpdating
-                        ? 'bg-[#CACAD2] text-[#9CA3AF] cursor-not-allowed'
-                        : 'bg-[#CACAD2] text-[#4B5563] hover:bg-[#B8B8C0] cursor-pointer'
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={executeBulkAction}
-                    disabled={isBulkUpdating}
-                    className={`flex-1 px-2 py-2.5 text-sm text-tertiary rounded-md transition-colors ${
-                      isBulkUpdating ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
-                    }`}
-                    style={{
-                      backgroundColor:
-                        bulkAction === 'approved'
-                          ? '#31D0AA'
-                          : bulkAction === 'shortlisted'
-                            ? '#8B5CF6'
-                            : '#EF4444',
-                    }}
-                  >
-                    {isBulkUpdating ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Processing...</span>
-                      </span>
-                    ) : (
-                      'Confirm'
-                    )}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Cancel
+            </button>
+            <button
+              onClick={executeBulkAction}
+              disabled={isBulkUpdating}
+              className={`flex-1 px-2 py-2.5 text-sm text-tertiary rounded-md transition-colors ${
+                isBulkUpdating ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
+              }`}
+              style={{
+                backgroundColor:
+                  bulkAction === 'approved'
+                    ? '#31D0AA'
+                    : bulkAction === 'shortlisted'
+                      ? '#8B5CF6'
+                      : '#EF4444',
+              }}
+            >
+              {isBulkUpdating ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Processing...</span>
+                </span>
+              ) : (
+                'Confirm'
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Confirmation Modal */}
-      <AnimatePresence>
-        {confirmationModal && pendingAction && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+      <Dialog open={confirmationModal} onOpenChange={(open) => {
+        setConfirmationModal(open);
+        if (!open) setDenialRemarks('');
+      }}>
+        <DialogContent className="bg-background border border-[#E5E7EB] py-4 px-6 w-[400px]" showCloseButton={true}>
+          <DialogHeader>
+            <h3 className="text-lg text-primary mb-1">
+              {pendingAction?.type === 'approved'
+                ? 'Approve Application'
+                : pendingAction?.type === 'shortlisted'
+                  ? 'Shortlist Application'
+                  : 'Deny Application'}
+            </h3>
+            <p className="text-sm text-[#4B5563]">
+              {pendingAction?.type === 'approved'
+                ? 'Are you sure you want to approve this application?'
+                : pendingAction?.type === 'shortlisted'
+                  ? 'Are you sure you want to shortlist this application?'
+                  : 'Are you sure you want to deny this application?'}
+            </p>
+          </DialogHeader>
+
+          {pendingAction?.type === 'denied' && (
+            <div className="mb-6">
+              <textarea
+                value={denialRemarks}
+                onChange={(e) => setDenialRemarks(e.target.value)}
+                placeholder="Enter reason for denial..."
+                className="w-full px-4 py-3 rounded-md border border-[#E5E7EB] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none min-h-[100px]"
+              />
+              <p className="text-xs text-[#9CA3AF] mt-2 italic">
+                This will be visible to the applicant (optional).
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="flex gap-3">
+            <button
               onClick={() => {
                 setConfirmationModal(false);
                 setDenialRemarks('');
               }}
-              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-2"
+              disabled={isUpdatingStatus}
+              className={`flex-1 px-2 py-2.5 text-sm rounded-md transition-colors ${
+                isUpdatingStatus
+                  ? 'bg-[#CACAD2] text-[#9CA3AF] cursor-not-allowed'
+                  : 'bg-[#CACAD2] text-[#4B5563] hover:bg-[#B8B8C0] cursor-pointer'
+              }`}
             >
-              <div className="bg-background rounded-lg p-6 max-w-md w-full shadow-xl">
-                <h3 className="text-lg text-primary mb-1">
-                  {pendingAction.type === 'approved'
-                    ? 'Approve Application'
-                    : pendingAction.type === 'shortlisted'
-                      ? 'Shortlist Application'
-                      : 'Deny Application'}
-                </h3>
-                <p className="text-sm text-[#4B5563] mb-4">
-                  {pendingAction.type === 'approved'
-                    ? 'Are you sure you want to approve this application?'
-                    : pendingAction.type === 'shortlisted'
-                      ? 'Are you sure you want to shortlist this application?'
-                      : 'Are you sure you want to deny this application?'}
-                </p>
-
-                {pendingAction.type === 'denied' && (
-                  <div className="mb-6">
-                    <textarea
-                      value={denialRemarks}
-                      onChange={(e) => setDenialRemarks(e.target.value)}
-                      placeholder="Enter reason for denial..."
-                      className="w-full px-4 py-3 rounded-md border border-[#E5E7EB] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none min-h-[100px]"
-                    />
-                    <p className="text-xs text-[#9CA3AF] mt-2 italic">
-                      This will be visible to the applicant (optional).
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setConfirmationModal(false);
-                      setDenialRemarks('');
-                    }}
-                    disabled={isUpdatingStatus}
-                    className={`flex-1 px-2 py-2.5 text-sm rounded-md transition-colors ${
-                      isUpdatingStatus
-                        ? 'bg-[#CACAD2] text-[#9CA3AF] cursor-not-allowed'
-                        : 'bg-[#CACAD2] text-[#4B5563] hover:bg-[#B8B8C0] cursor-pointer'
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      const remarks = pendingAction.type === 'denied' ? denialRemarks.trim() : undefined;
-                      handleUpdateStatus(pendingAction.applicationId, pendingAction.type, remarks);
-                    }}
-                    disabled={isUpdatingStatus}
-                    className={`flex-1 px-2 py-2.5 text-tertiary text-sm rounded-md transition-colors ${
-                      isUpdatingStatus ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
-                    }`}
-                    style={{
-                      backgroundColor:
-                        pendingAction.type === 'approved'
-                          ? '#31D0AA'
-                          : pendingAction.type === 'shortlisted'
-                            ? '#8B5CF6'
-                            : '#EF4444',
-                    }}
-                  >
-                    {isUpdatingStatus ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>
-                          {pendingAction.type === 'approved'
-                            ? 'Approving...'
-                            : pendingAction.type === 'shortlisted'
-                              ? 'Shortlisting...'
-                              : 'Denying...'}
-                        </span>
-                      </span>
-                    ) : (
-                      <span>
-                        {pendingAction.type === 'approved'
-                          ? 'Approve'
-                          : pendingAction.type === 'shortlisted'
-                            ? 'Shortlist'
-                            : 'Deny'}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (pendingAction) {
+                  const remarks = pendingAction.type === 'denied' ? denialRemarks.trim() : undefined;
+                  handleUpdateStatus(pendingAction.applicationId, pendingAction.type, remarks);
+                }
+              }}
+              disabled={isUpdatingStatus}
+              className={`flex-1 px-2 py-2.5 text-tertiary text-sm rounded-md transition-colors ${
+                isUpdatingStatus ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'
+              }`}
+              style={{
+                backgroundColor:
+                  pendingAction?.type === 'approved'
+                    ? '#31D0AA'
+                    : pendingAction?.type === 'shortlisted'
+                      ? '#8B5CF6'
+                      : '#EF4444',
+              }}
+            >
+              {isUpdatingStatus ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>
+                    {pendingAction?.type === 'approved'
+                      ? 'Approving...'
+                      : pendingAction?.type === 'shortlisted'
+                        ? 'Shortlisting...'
+                        : 'Denying...'}
+                  </span>
+                </span>
+              ) : (
+                <span>
+                  {pendingAction?.type === 'approved'
+                    ? 'Approve'
+                    : pendingAction?.type === 'shortlisted'
+                      ? 'Shortlist'
+                      : 'Deny'}
+                </span>
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

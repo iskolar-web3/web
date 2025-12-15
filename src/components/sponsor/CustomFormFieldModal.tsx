@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
-import { X, Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -137,8 +143,6 @@ export default function CustomFormFieldModal({
     setDropdownOptionInput('');
   }, [editingField, isOpen]);
 
-  if (!isOpen) return null;
-
   /**
    * Handles saving the form field
    * Validates and normalizes input before calling onSave callback
@@ -172,16 +176,13 @@ export default function CustomFormFieldModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-tertiary border-0 py-4 px-6 max-w-md max-h-[90vh] overflow-y-auto" showCloseButton={true}>
+        <DialogHeader>
           <h3 className="text-lg text-secondary">
             {editingField ? 'Edit Field' : 'Add Form Field'}
           </h3>
-          <button onClick={onClose} className="text-[#4A5568] hover:text-secondary">
-            <X size={24} />
-          </button>
-        </div>
+        </DialogHeader>
 
         <div className="space-y-4">
           <div>
@@ -283,7 +284,7 @@ export default function CustomFormFieldModal({
           )}
         </div>
 
-        <div className="flex gap-3 mt-6">
+        <DialogFooter className="flex gap-3 mt-6">
           <button
             onClick={onClose}
             className="flex-1 py-2.5 border border-[#C4CBD5] cursor-pointer text-sm rounded-md text-[#4A5568] hover:bg-gray-50 transition-colors"
@@ -296,9 +297,9 @@ export default function CustomFormFieldModal({
           >
             {editingField ? 'Update' : 'Add'} Field
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

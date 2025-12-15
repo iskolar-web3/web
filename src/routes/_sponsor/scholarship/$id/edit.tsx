@@ -30,6 +30,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -830,21 +836,18 @@ function EditScholarshipPage() {
       </div>
 
       {showDescriptionModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-lg w-full">
-            <div className="flex justify-between items-center mb-4">
+        <Dialog open={showDescriptionModal} onOpenChange={setShowDescriptionModal}>
+          <DialogContent className="bg-[#F0F7FF] border-0 px-6 py-4 max-w-md" showCloseButton={true}>
+            <DialogHeader>
               <h3 className="text-lg text-secondary">Scholarship Description</h3>
-              <button onClick={() => setShowDescriptionModal(false)} className="text-[#4A5568] cursor-pointer hover:text-secondary">
-                <X size={22} />
-              </button>
-            </div>
+            </DialogHeader>
             <textarea
               value={tempDescription}
               onChange={(event) => setTempDescription(event.target.value)}
               placeholder="Enter detailed description of the scholarship program..."
               className="w-full h-48 px-4 py-3 rounded-lg border border-[#C4CBD5] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none"
             />
-            <div className="flex gap-3 mt-4">
+            <DialogFooter className="flex gap-3 mt-4">
               <button
                 onClick={() => setShowDescriptionModal(false)}
                 className="flex-1 py-2.5 cursor-pointer border border-[#C4CBD5] rounded-lg text-sm text-[#4A5568] bg-gray-50 hover:bg-[#F0F7FF] transition-colors"
@@ -860,22 +863,19 @@ function EditScholarshipPage() {
               >
                 Save
               </button>
-            </div>
-          </div>
-        </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
 
       {showCustomFieldModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-[#F0F7FF] rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
+        <Dialog open={showCustomFieldModal} onOpenChange={setShowCustomFieldModal}>
+          <DialogContent className="bg-[#F0F7FF] border-0 p-6 max-w-lg max-h-[90vh] overflow-y-auto" showCloseButton={true}>
+            <DialogHeader>
               <h3 className="text-lg text-secondary">
                 {editingFieldIndex !== null ? 'Edit Field' : 'Add Form Field'}
               </h3>
-              <button onClick={resetCustomFieldState} className="text-[#4A5568] hover:text-secondary">
-                <X size={24} />
-              </button>
-            </div>
+            </DialogHeader>
 
             <div className="space-y-4">
               <div>
@@ -978,7 +978,7 @@ function EditScholarshipPage() {
               )}
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <DialogFooter className="flex gap-3 mt-6">
               <button
                 onClick={resetCustomFieldState}
                 className="flex-1 py-2.5 cursor-pointer border border-[#C4CBD5] text-sm rounded-lg text-[#4A5568] hover:bg-gray-50 transition-colors"
@@ -991,9 +991,9 @@ function EditScholarshipPage() {
               >
                 {editingFieldIndex !== null ? 'Update' : 'Add'} Field
               </button>
-            </div>
-          </div>
-        </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
