@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, createElement } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -213,7 +213,6 @@ function ApplicantsListPage() {
           setBulkRemarks('');
           setSelectedApplicantIds(new Set());
           setBulkMode(false);
-          setBulkMode(false);
           queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
 
         } else {
@@ -290,7 +289,6 @@ function ApplicantsListPage() {
           showSuccess('Success', `Applicant ${newStatus}`, 2000);
           setModalVisible(false);
           setConfirmationModal(false);
-          setDenialRemarks('');
           setDenialRemarks('');
           queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
 
@@ -710,19 +708,17 @@ function ApplicantsListPage() {
                 {/* Profile Header */}
                 <div className="mb-6">
                   {/* Status Badge */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      {(() => {
-                        const StatusIcon = getStatusIcon(selectedApplicant.status);
-                        return <StatusIcon className="w-5 h-5" style={{ color: getStatusColor(selectedApplicant.status) }} />;
-                      })()}
-                      <span
-                        className="text-sm font-medium capitalize"
-                        style={{ color: getStatusColor(selectedApplicant.status) }}
-                      >
-                        {selectedApplicant.status}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2 mb-4">
+                    {createElement(getStatusIcon(selectedApplicant.status), {
+                      className: 'w-5 h-5',
+                      style: { color: getStatusColor(selectedApplicant.status) },
+                    })}
+                    <span
+                      className="text-sm font-medium capitalize"
+                      style={{ color: getStatusColor(selectedApplicant.status) }}
+                    >
+                      {selectedApplicant.status}
+                    </span>
                   </div>
 
                   {/* Profile Image */}
@@ -745,42 +741,30 @@ function ApplicantsListPage() {
                     {selectedApplicant.student.full_name}
                   </h1>
                   
-                  {/* Contact Info - 2 Columns */}
-                  <div className="grid grid-cols-2 gap-3 text-[#6B7280]">
+                  {/* Contact Info */}
+                  <div className="space-y-2 text-[#6B7280]">
                     <div className="flex items-center gap-2">
                       <Mail size={17} className="flex-shrink-0" />
-                      <div className="col-span-2 flex items-start gap-2">
-                        <span className="text-xs md:text-sm truncate">{selectedApplicant.student.user.email}</span>
-                      </div>
+                      <span className="text-xs md:text-sm truncate">{selectedApplicant.student.user.email}</span>
                     </div>
                     
                     {selectedApplicant.student.gender && (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <User size={17} className="flex-shrink-0" />
-                          {selectedApplicant.student.gender && (
-                            <div className="col-span-1 flex items-start gap-2">
-                              <span className="text-xs md:text-sm capitalize">{selectedApplicant.student.gender}</span>
-                            </div>
-                          )}
+                      <div className="flex items-center gap-2">
+                        <User size={17} className="flex-shrink-0" />
+                        <div className="col-span-1 flex items-start gap-2">
+                          <span className="text-xs md:text-sm capitalize">{selectedApplicant.student.gender}</span>
                         </div>
-                      </>
+                      </div>
                     )}
 
                     <div className="flex items-center gap-2">
                       <Phone size={17} className="flex-shrink-0" />
-                       <div className="col-span-2 flex items-start gap-2">
-                        <span className="text-xs md:text-sm">{selectedApplicant.student.contact_number}</span>
-                      </div>
+                      <span className="text-xs md:text-sm">{selectedApplicant.student.contact_number}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <Calendar size={17} className="flex-shrink-0" />
-                       <div className={`${selectedApplicant.student.gender ? 'col-span-1' : 'col-span-2'} flex items-start gap-2`}>
-                        <span className="text-xs md:text-sm">
-                          {formatDateTime(selectedApplicant.applied_at)}
-                        </span>
-                      </div>
+                      <span className="text-xs md:text-sm">{formatDateTime(selectedApplicant.applied_at)}</span>
                     </div>
                   </div>
                 </div>
@@ -898,7 +882,7 @@ function ApplicantsListPage() {
         setBulkActionModal(open);
         if (!open) setBulkRemarks('');
       }}>
-        <DialogContent className="bg-background border border-[#E5E7EB] p-5 max-w-md" showCloseButton={true}>
+        <DialogContent className="bg-background border border-[#E5E7EB] px-6 py-4 w-[400px]" showCloseButton={true}>
           <DialogHeader>
             <h3 className="text-lg text-primary mb-1">
               Bulk {bulkAction?.charAt(0).toUpperCase()}
@@ -956,7 +940,6 @@ function ApplicantsListPage() {
               {isBulkUpdating ? (
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Processing...</span>
                 </span>
               ) : (
                 'Confirm'
@@ -1041,13 +1024,6 @@ function ApplicantsListPage() {
               {isUpdatingStatus ? (
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>
-                    {pendingAction?.type === 'approved'
-                      ? 'Approving...'
-                      : pendingAction?.type === 'shortlisted'
-                        ? 'Shortlisting...'
-                        : 'Denying...'}
-                  </span>
                 </span>
               ) : (
                 <span>

@@ -30,13 +30,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import Toast from '@/components/Toast';
+import DescriptionModal from '@/components/sponsor/DescriptionModal';
+import CustomFormFieldModal from '@/components/sponsor/CustomFormFieldModal';
 import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Scholarship } from '@/types/scholarship.types';
@@ -141,14 +137,8 @@ function EditScholarshipPage() {
   const [criteriaInput, setCriteriaInput] = useState('');
   const [documentsInput, setDocumentsInput] = useState('');
   const [showDescriptionModal, setShowDescriptionModal] = useState(false);
-  const [tempDescription, setTempDescription] = useState('');
   const [showCustomFieldModal, setShowCustomFieldModal] = useState(false);
   const [editingFieldIndex, setEditingFieldIndex] = useState<number | null>(null);
-  const [newFieldType, setNewFieldType] = useState<CustomFieldType>('text');
-  const [newFieldLabel, setNewFieldLabel] = useState('');
-  const [newFieldRequired, setNewFieldRequired] = useState(false);
-  const [dropdownOptions, setDropdownOptions] = useState<string[]>([]);
-  const [dropdownOptionInput, setDropdownOptionInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { toast, showSuccess, showError } = useToast();
@@ -277,55 +267,25 @@ function EditScholarshipPage() {
   };
 
   const openCustomFormModal = (index?: number) => {
-    if (typeof index === 'number') {
-      const field = customFormFields[index];
-      setEditingFieldIndex(index);
-      setNewFieldType(field.type as CustomFieldType);
-      setNewFieldLabel(field.label);
-      setNewFieldRequired(field.required);
-      setDropdownOptions(field.options || []);
-    } else {
-      setEditingFieldIndex(null);
-      setNewFieldType('text');
-      setNewFieldLabel('');
-      setNewFieldRequired(false);
-      setDropdownOptions([]);
-    }
-    setDropdownOptionInput('');
+    setEditingFieldIndex(typeof index === 'number' ? index : null);
     setShowCustomFieldModal(true);
   };
 
-  const resetCustomFieldState = () => {
-    setShowCustomFieldModal(false);
-    setEditingFieldIndex(null);
-    setNewFieldLabel('');
-    setNewFieldRequired(false);
-    setDropdownOptions([]);
-    setDropdownOptionInput('');
-  };
-
-  const saveCustomFormField = () => {
-    if (!newFieldLabel.trim()) return;
-
-    const newField = {
-      type: newFieldType,
-      label: newFieldLabel.trim(),
-      required: newFieldRequired,
-      ...((newFieldType === 'dropdown' || newFieldType === 'checkbox' || newFieldType === 'multiple_choice') && dropdownOptions.length > 0
-        ? { options: dropdownOptions }
-        : {}),
-    };
-
+  const handleSaveCustomField = (field: {
+    type: CustomFieldType;
+    label: string;
+    required: boolean;
+    options?: string[];
+  }) => {
     if (editingFieldIndex !== null) {
-      const updatedFields = customFormFields.map((field, index) =>
-        index === editingFieldIndex ? newField : field
+      const updatedFields = customFormFields.map((f, i) =>
+        i === editingFieldIndex ? field : f
       );
       setValue('customFormFields', updatedFields, { shouldValidate: true });
     } else {
-      setValue('customFormFields', [...customFormFields, newField], { shouldValidate: true });
+      setValue('customFormFields', [...customFormFields, field], { shouldValidate: true });
     }
-
-    resetCustomFieldState();
+    setEditingFieldIndex(null);
   };
 
   const removeCustomFormField = (index: number) => {
@@ -594,10 +554,7 @@ function EditScholarshipPage() {
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={() => {
-                    setTempDescription(description || '');
-                    setShowDescriptionModal(true);
-                  }}
+                  onClick={() => setShowDescriptionModal(true)}
                   className="w-full cursor-pointer flex items-center gap-2 px-4 py-3 rounded-lg border bg-[#F3F4F6] text-[#6B7280] text-sm hover:bg-muted transition-colors"
                 >
                   <span className="text-[#8B9CB5]">☰</span>
@@ -835,166 +792,22 @@ function EditScholarshipPage() {
         </div>
       </div>
 
-      {showDescriptionModal && (
-        <Dialog open={showDescriptionModal} onOpenChange={setShowDescriptionModal}>
-          <DialogContent className="bg-[#F0F7FF] border-0 px-6 py-4 max-w-md" showCloseButton={true}>
-            <DialogHeader>
-              <h3 className="text-lg text-secondary">Scholarship Description</h3>
-            </DialogHeader>
-            <textarea
-              value={tempDescription}
-              onChange={(event) => setTempDescription(event.target.value)}
-              placeholder="Enter detailed description of the scholarship program..."
-              className="w-full h-48 px-4 py-3 rounded-lg border border-[#C4CBD5] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6] resize-none"
-            />
-            <DialogFooter className="flex gap-3 mt-4">
-              <button
-                onClick={() => setShowDescriptionModal(false)}
-                className="flex-1 py-2.5 cursor-pointer border border-[#C4CBD5] rounded-lg text-sm text-[#4A5568] bg-gray-50 hover:bg-[#F0F7FF] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setValue('description', tempDescription);
-                  setShowDescriptionModal(false);
-                }}
-                className="flex-1 py-2.5 cursor-pointer bg-[#3A52A6] text-sm text-tertiary rounded-lg hover:bg-[#2A4296] transition-colors"
-              >
-                Save
-              </button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <DescriptionModal
+        isOpen={showDescriptionModal}
+        onClose={() => setShowDescriptionModal(false)}
+        description={description || ''}
+        onSave={(desc) => setValue('description', desc)}
+      />
 
-      {showCustomFieldModal && (
-        <Dialog open={showCustomFieldModal} onOpenChange={setShowCustomFieldModal}>
-          <DialogContent className="bg-[#F0F7FF] border-0 p-6 max-w-lg max-h-[90vh] overflow-y-auto" showCloseButton={true}>
-            <DialogHeader>
-              <h3 className="text-lg text-secondary">
-                {editingFieldIndex !== null ? 'Edit Field' : 'Add Form Field'}
-              </h3>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-[#4A5568] mb-2">Field Type</label>
-                <Select value={newFieldType} onValueChange={(value) => setNewFieldType(value as CustomFieldType)}>
-                  <SelectTrigger className="w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {customFieldTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        <div className="flex items-center gap-2">
-                          {renderFieldTypeIcon(type)}
-                          <span>{getFieldTypeLabel(type)}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm text-[#4A5568] mb-2">Field Label</label>
-                <input
-                  value={newFieldLabel}
-                  onChange={(event) => setNewFieldLabel(event.target.value)}
-                  placeholder="e.g., Full Name, Email, etc."
-                  className="w-full px-4 py-3 rounded-lg border border-[#C4CBD5] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newFieldRequired}
-                    onChange={(event) => setNewFieldRequired(event.target.checked)}
-                    className="w-5 h-5 rounded border-[#C4CBD5] text-secondary focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
-                  />
-                  <span className="text-sm text-primary">Required Field</span>
-                </label>
-              </div>
-
-              {(newFieldType === 'dropdown' || newFieldType === 'checkbox' || newFieldType === 'multiple_choice') && (
-                <div>
-                  <label className="block text-sm text-[#4A5568] mb-2">
-                    {newFieldType === 'checkbox'
-                      ? 'Checkbox Options'
-                      : newFieldType === 'multiple_choice'
-                      ? 'Choices'
-                      : 'Dropdown Options'}
-                  </label>
-                  <div className="flex gap-2 mb-2">
-                    <input
-                      value={dropdownOptionInput}
-                      onChange={(event) => setDropdownOptionInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault();
-                          const trimmed = dropdownOptionInput.trim();
-                          if (trimmed && !dropdownOptions.includes(trimmed)) {
-                            setDropdownOptions([...dropdownOptions, trimmed]);
-                            setDropdownOptionInput('');
-                          }
-                        }
-                      }}
-                      placeholder="Enter option"
-                      className="flex-1 px-4 py-3 rounded-lg border border-[#C4CBD5] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const trimmed = dropdownOptionInput.trim();
-                        if (trimmed && !dropdownOptions.includes(trimmed)) {
-                          setDropdownOptions([...dropdownOptions, trimmed]);
-                          setDropdownOptionInput('');
-                        }
-                      }}
-                      className="w-11 h-11 bg-[#3A52A6] text-tertiary rounded-lg flex items-center justify-center hover:bg-[#2A4296] transition-colors"
-                    >
-                      <Plus size={20} />
-                    </button>
-                  </div>
-                  {dropdownOptions.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {dropdownOptions.map((option, index) => (
-                        <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#E0ECFF] text-secondary text-sm rounded-lg">
-                          {option}
-                          <button
-                            onClick={() => setDropdownOptions(dropdownOptions.filter((_, i) => i !== index))}
-                            className="hover:text-[#2A4296]"
-                          >
-                            <X size={14} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <DialogFooter className="flex gap-3 mt-6">
-              <button
-                onClick={resetCustomFieldState}
-                className="flex-1 py-2.5 cursor-pointer border border-[#C4CBD5] text-sm rounded-lg text-[#4A5568] hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={saveCustomFormField}
-                className="flex-1 py-2.5 cursor-pointer bg-[#3A52A6] text-tertiary text-sm rounded-lg hover:bg-[#2A4296] transition-colors"
-              >
-                {editingFieldIndex !== null ? 'Update' : 'Add'} Field
-              </button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <CustomFormFieldModal
+        isOpen={showCustomFieldModal}
+        onClose={() => {
+          setShowCustomFieldModal(false);
+          setEditingFieldIndex(null);
+        }}
+        onSave={handleSaveCustomField}
+        editingField={editingFieldIndex !== null ? customFormFields[editingFieldIndex] : null}
+      />
     </div>
   );
 }
