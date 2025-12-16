@@ -9,10 +9,10 @@ import TeamSection from "@/components/landing/about/Team"
 import { useEffect } from 'react'
 
 export const Route = createFileRoute('/_landing/about/')({
-  component: AboutPage,
+  component: About,
 })
 
-function AboutPage() {
+function About() {
   usePageTitle("About Us")
 
   useEffect(() => {
