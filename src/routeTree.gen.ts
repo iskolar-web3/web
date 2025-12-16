@@ -21,6 +21,8 @@ import { Route as SponsorCreateRouteImport } from './routes/_sponsor/create'
 import { Route as OnboardingWelcomeRouteImport } from './routes/_onboarding/welcome'
 import { Route as OnboardingRoleSelectionRouteImport } from './routes/_onboarding/role-selection'
 import { Route as OnboardingProfileSetupRouteImport } from './routes/_onboarding/profile-setup'
+import { Route as LandingMissionVisionRouteImport } from './routes/_landing/mission-vision'
+import { Route as LandingCompanyOverviewRouteImport } from './routes/_landing/company-overview'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as StudentScholarshipIdApplyRouteImport } from './routes/_student/scholarship/$id/apply'
@@ -85,6 +87,16 @@ const OnboardingProfileSetupRoute = OnboardingProfileSetupRouteImport.update({
   path: '/profile-setup',
   getParentRoute: () => OnboardingRoute,
 } as any)
+const LandingMissionVisionRoute = LandingMissionVisionRouteImport.update({
+  id: '/_landing/mission-vision',
+  path: '/mission-vision',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingCompanyOverviewRoute = LandingCompanyOverviewRouteImport.update({
+  id: '/_landing/company-overview',
+  path: '/company-overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -130,6 +142,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/company-overview': typeof LandingCompanyOverviewRoute
+  '/mission-vision': typeof LandingMissionVisionRoute
   '/profile-setup': typeof OnboardingProfileSetupRoute
   '/role-selection': typeof OnboardingRoleSelectionRoute
   '/welcome': typeof OnboardingWelcomeRoute
@@ -147,6 +161,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/company-overview': typeof LandingCompanyOverviewRoute
+  '/mission-vision': typeof LandingMissionVisionRoute
   '/profile-setup': typeof OnboardingProfileSetupRoute
   '/role-selection': typeof OnboardingRoleSelectionRoute
   '/welcome': typeof OnboardingWelcomeRoute
@@ -169,6 +185,8 @@ export interface FileRoutesById {
   '/_student': typeof StudentRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/_landing/company-overview': typeof LandingCompanyOverviewRoute
+  '/_landing/mission-vision': typeof LandingMissionVisionRoute
   '/_onboarding/profile-setup': typeof OnboardingProfileSetupRoute
   '/_onboarding/role-selection': typeof OnboardingRoleSelectionRoute
   '/_onboarding/welcome': typeof OnboardingWelcomeRoute
@@ -188,6 +206,8 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/company-overview'
+    | '/mission-vision'
     | '/profile-setup'
     | '/role-selection'
     | '/welcome'
@@ -205,6 +225,8 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/company-overview'
+    | '/mission-vision'
     | '/profile-setup'
     | '/role-selection'
     | '/welcome'
@@ -226,6 +248,8 @@ export interface FileRouteTypes {
     | '/_student'
     | '/_auth/login'
     | '/_auth/register'
+    | '/_landing/company-overview'
+    | '/_landing/mission-vision'
     | '/_onboarding/profile-setup'
     | '/_onboarding/role-selection'
     | '/_onboarding/welcome'
@@ -246,6 +270,8 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRouteWithChildren
   SponsorRoute: typeof SponsorRouteWithChildren
   StudentRoute: typeof StudentRouteWithChildren
+  LandingCompanyOverviewRoute: typeof LandingCompanyOverviewRoute
+  LandingMissionVisionRoute: typeof LandingMissionVisionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -333,6 +359,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile-setup'
       preLoaderRoute: typeof OnboardingProfileSetupRouteImport
       parentRoute: typeof OnboardingRoute
+    }
+    '/_landing/mission-vision': {
+      id: '/_landing/mission-vision'
+      path: '/mission-vision'
+      fullPath: '/mission-vision'
+      preLoaderRoute: typeof LandingMissionVisionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_landing/company-overview': {
+      id: '/_landing/company-overview'
+      path: '/company-overview'
+      fullPath: '/company-overview'
+      preLoaderRoute: typeof LandingCompanyOverviewRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_auth/register': {
       id: '/_auth/register'
@@ -456,6 +496,8 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRouteWithChildren,
   SponsorRoute: SponsorRouteWithChildren,
   StudentRoute: StudentRouteWithChildren,
+  LandingCompanyOverviewRoute: LandingCompanyOverviewRoute,
+  LandingMissionVisionRoute: LandingMissionVisionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

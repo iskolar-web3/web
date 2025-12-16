@@ -123,7 +123,7 @@ export default function AnimatedBackground() {
           }
         }
       `}</style>
-      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 25 }}>
         {icons.map((icon) => (
           <div
             key={icon.id}

@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Search } from "lucide-react"
 import { MotionContainer, MotionItem } from "@/components/landing/MotionContainer"
 import { motion } from "framer-motion"
 

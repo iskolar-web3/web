@@ -2,16 +2,19 @@ import { Facebook, Linkedin, Twitter, Mail } from "lucide-react"
 import { useState } from "react"
 
 const quickLinks = [
-  { name: "Home", href: "#home" },
-  { name: "Features", href: "#features" },
-  { name: "Roadmap", href: "#roadmap" },
-  { name: "About", href: "#about" },
-  { name: "FAQs", href: "#faqs" },
+  { name: "Home", href: "/#home" },
+  { name: "Features", href: "/#features" },
+  { name: "Roadmap", href: "/#roadmap" },
+  { name: "Company Overview", href: "/company-overview" },
+  { name: "Mission & Vision", href: "/mission-vision" },
+  { name: "Our Team", href: "/team" },
+  { name: "Partnerships", href: "/partnerships" },
+  { name: "FAQs", href: "/#faqs" },
 ]
 
 const legalLinks = [
-  { name: "Privacy Policy", href: "#privacy" },
-  { name: "Terms & Conditions", href: "#terms" },
+  { name: "Privacy Policy", href: "/privacy-policy" },
+  { name: "Terms & Conditions", href: "/terms" },
 ]
 
 const socialLinks = [
@@ -36,28 +39,8 @@ export function Footer() {
 
   return (
     <footer className="bg-background text-tertiary relative z-20">
-      {/* CTA Section */}
-      <div id="get-started" className="bg-secondary py-80 px-4">
-        <div className="text-center">
-          <h2 className="text-3xl sm:text-4xl text-tertiary mb-4 text-balance">
-            Ready to Start Your Scholarship Journey?
-          </h2>
-          <p className="text-tertiary/80 text-lg mb-8 max-w-2xl mx-auto">
-            Join students, sponsors, and schools preparing for the future of scholarship management.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="#"
-              className="inline-flex items-center justify-center px-8 py-4 bg-tertiary text-secondary rounded-md hover:bg-tertiary/75 transition-colors"
-            >
-              Get Early Access
-            </a>
-          </div>
-        </div>
-      </div>
-
       {/* Main Footer */}
-      <div className="py-24 px-6 md:px-26">
+      <div className="py-28 px-6 md:px-26">
         <div className="">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {/* Brand */}

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { MotionContainer, MotionItem } from "@/components/landing/MotionContainer"
 import { ChevronDown } from "lucide-react"
+import { CTA } from "./CTA"
 
 const faqs = [
   {
@@ -86,7 +87,7 @@ export function FAQ() {
   }
 
   return (
-    <section id="faqs" className="py-20 lg:py-32 px-4 bg-gray-50/50 relative z-20">
+    <section id="faqs" className="py-20 lg:py-32 bg-gray-50/50 relative z-20">
       <MotionContainer className="max-w-3xl mx-auto">
         {/* Section Header */}
         <MotionItem className="text-center mb-12">
@@ -116,12 +117,15 @@ export function FAQ() {
           <p className="text-secondary/80 mb-4">Still have questions?</p>
           <a
             href="mailto:scholarpass23@gmail.com"
-            className="inline-flex items-center text-secondary hover:underline"
+            className="inline-flex items-center text-secondary hover:underline mb-16"
           >
             Contact us at scholarpass23@gmail.com
           </a>
         </MotionItem>
       </MotionContainer>
+
+      {/* CTA */}
+      <CTA/>
     </section>
   )
 }

@@ -98,10 +98,6 @@ export function Features() {
             <div className="relative" style={{ minHeight: '750px', zIndex: 2 }}>
               {features.map((feature, index) => {
                 let positionClasses = ""
-                // delayMultiplier logic is handled by specific MotionItem delay override or utilizing stagger effectively. 
-                // Since this uses absolute positioning, simple stagger might not look correct if valid DOM order != visual order.
-                // Re-calculating delay based on "visual" flow if needed, but here simple mapping index is roughly visual order except center.
-                // Let's use custom delay for precise control similar to original.
                 
                 let delay = 0
                 switch (feature.position) {

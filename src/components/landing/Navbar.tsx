@@ -2,15 +2,15 @@ import { useState, useEffect } from "react"
 import { Menu, X, ChevronDown } from "lucide-react"
 
 const navLinks = [
-  { name: "Home", href: "#home" },
+  { name: "Home", href: "/" },
   { name: "Features", href: "#features" },
   { name: "Roadmap", href: "#roadmap" },
   {
     name: "About",
     href: "#about",
     dropdown: [
-      { name: "Company Overview", href: "#about" },
-      { name: "Mission & Vision", href: "#mission" },
+      { name: "Company Overview", href: "/company-overview" },
+      { name: "Mission & Vision", href: "/mission-vision" },
       { name: "Our Team", href: "#team" },
       { name: "Partnerships", href: "#partnerships", comingSoon: true },
     ],
@@ -28,8 +28,20 @@ export default function Navbar() {
       setIsScrolled(window.scrollY > 20)
     }
     window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (activeDropdown && !(event.target as Element).closest('.relative')) {
+        setActiveDropdown(null)
+      }
+    }
+    document.addEventListener('click', handleClickOutside)
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [activeDropdown])
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
@@ -78,18 +90,29 @@ export default function Navbar() {
                 <div
                   key={link.name}
                   className="relative"
-                  onMouseEnter={() => link.dropdown && setActiveDropdown(link.name)}
-                  onMouseLeave={() => setActiveDropdown(null)}
                 >
                   <a
                     href={link.href}
-                    onClick={(e) => handleNavClick(e, link.href)}
+                    onClick={(e) => {
+                      if (link.dropdown) {
+                        e.preventDefault()
+                        setActiveDropdown(activeDropdown === link.name ? null : link.name)
+                      } else {
+                        handleNavClick(e, link.href)
+                      }
+                    }}
                     className={`flex items-center gap-1 text-md transition-colors hover:text-secondary/80 ${
                       isScrolled ? "text-secondary" : "text-secondary"
-                    }`}
+                    } ${activeDropdown === link.name ? "text-secondary/80" : ""}`}
                   >
                     {link.name}
-                    {link.dropdown && <ChevronDown className="w-4 h-4" />}
+                    {link.dropdown && (
+                      <ChevronDown 
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          activeDropdown === link.name ? "rotate-180" : ""
+                        }`} 
+                      />
+                    )}
                   </a>
 
                   {/* Dropdown */}
@@ -99,8 +122,14 @@ export default function Navbar() {
                         <a
                           key={item.name}
                           href={item.href}
-                          onClick={(e) => handleNavClick(e, item.href)}
-                          className="flex items-center justify-between px-4 py-2 text-sm text-secondary hover:bg-secondary/75 hover:text-secondary/75 transition-colors"
+                          onClick={(e) => {
+                            if (item.href.startsWith('#')) {
+                                handleNavClick(e, item.href);
+                            } 
+                            // If it's a real page navigation, let it happen but close dropdown
+                            setActiveDropdown(null);
+                          }}
+                          className="flex items-center justify-between px-4 py-2 text-sm text-secondary transition-colors"
                         >
                           {item.name}
                           {item.comingSoon && (
