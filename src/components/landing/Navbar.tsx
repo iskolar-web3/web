@@ -1,0 +1,220 @@
+import { useState, useEffect } from "react"
+import { Menu, X, ChevronDown } from "lucide-react"
+
+const navLinks = [
+  { name: "Home", href: "/#home" },
+  { name: "Features", href: "#features" },
+  { name: "Roadmap", href: "#roadmap" },
+  { name: "FAQs", href: "#faqs" },
+  {
+    name: "About",
+    href: "/about",
+    dropdown: [
+      { name: "Company Overview", href: "/about#company-overview" },
+      { name: "Mission & Vision", href: "/about#mission-vision" },
+      { name: "Our Team", href: "/about#team" },
+      { name: "Partnerships", href: "/about#partnerships", comingSoon: true },
+    ],
+  },
+]
+
+export default function Navbar() {
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener("scroll", handleScroll)
+    
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (activeDropdown && !(event.target as Element).closest('.relative')) {
+        setActiveDropdown(null)
+      }
+    }
+    document.addEventListener('click', handleClickOutside)
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [activeDropdown])
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#')) {
+      e.preventDefault()
+      const element = document.querySelector(href)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+      }
+      setIsMobileMenuOpen(false)
+    }
+  }
+
+  return (
+    <>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .dropdown-enter {
+          animation: fadeIn 0.2s ease-out;
+        }
+      `}</style>
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled ? "bg-card shadow-md" : "bg-transparent"
+        }`}
+        style={{ backdropFilter: isScrolled ? 'blur(12px)' : 'none' }}
+      >
+        <div className="px-4 sm:px-12 lg:px-26">
+          <div className="flex items-center justify-between h-16 lg:h-20">
+            {/* Logo */}
+            <a href="#home" onClick={(e) => handleNavClick(e, '#home')}>
+              <div className="w-25 h-10 md:w-34 md:h-14 flex items-center justify-center">
+                <img
+                  src={"/logo2.png"}
+                  alt="Logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </a>
+
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-8">
+              {navLinks.map((link) => (
+                <div
+                  key={link.name}
+                  className="relative"
+                >
+                  <a
+                    href={link.href}
+                    onClick={(e) => {
+                      if (link.dropdown) {
+                        e.preventDefault()
+                        setActiveDropdown(activeDropdown === link.name ? null : link.name)
+                      } else {
+                        handleNavClick(e, link.href)
+                      }
+                    }}
+                    className={`flex items-center gap-1 text-md transition-colors hover:text-secondary/80 ${
+                      isScrolled ? "text-secondary" : "text-secondary"
+                    } ${activeDropdown === link.name ? "text-secondary/80" : ""}`}
+                  >
+                    {link.name}
+                    {link.dropdown && (
+                      <ChevronDown 
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          activeDropdown === link.name ? "rotate-180" : ""
+                        }`} 
+                      />
+                    )}
+                  </a>
+
+                  {/* Dropdown */}
+                  {link.dropdown && activeDropdown === link.name && (
+                    <div className="absolute top-full left-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-gray-200 py-2 dropdown-enter">
+                      {link.dropdown.map((item) => (
+                        <a
+                          key={item.name}
+                          href={item.href}
+                          onClick={(e) => {
+                            if (item.href.startsWith('#')) {
+                                handleNavClick(e, item.href);
+                            } 
+                            // If it's a real page navigation, let it happen but close dropdown
+                            setActiveDropdown(null);
+                          }}
+                          className="flex items-center justify-between px-4 py-2 text-sm text-secondary transition-colors"
+                        >
+                          {item.name}
+                          {item.comingSoon && (
+                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                              Soon
+                            </span>
+                          )}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* CTA Button */}
+            <div className="hidden lg:block">
+              <a
+                href="/login"
+                className="inline-flex items-center justify-center text-sm px-6 py-2 bg-transparent border-2 border-secondary hover:bg-secondary text-secondary hover:text-tertiary rounded-md transition-colors"
+              >
+                Get Started
+              </a>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="lg:hidden p-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6 text-gray-900" />
+              ) : (
+                <Menu className="w-6 h-6 text-gray-900" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-white border-t border-gray-200">
+            <div className="px-4 py-4 space-y-2">
+              {navLinks.map((link) => (
+                <div key={link.name}>
+                  <a
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    className="block py-2 text-secondary hover:text-secondary"
+                  >
+                    {link.name}
+                  </a>
+                  {link.dropdown && (
+                    <div className="pl-4 space-y-1">
+                      {link.dropdown.map((item) => (
+                        <a
+                          key={item.name}
+                          href={item.href}
+                          onClick={(e) => handleNavClick(e, item.href)}
+                          className="flex items-center gap-2 py-1.5 text-sm text-secondary/75 hover:text-secondary/80"
+                        >
+                          {item.name}
+                          {item.comingSoon && (
+                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                              Soon
+                            </span>
+                          )}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              <a
+                href="#get-started"
+                onClick={(e) => handleNavClick(e, '#get-started')}
+                className="block w-full mt-4 px-6 py-2 bg-secondary hover:bg-secondary/80 text-tertiary rounded-md text-center transition-colors"
+              >
+                Get Started
+              </a>
+            </div>
+          </div>
+        )}
+      </nav>
+    </>
+  )
+}
