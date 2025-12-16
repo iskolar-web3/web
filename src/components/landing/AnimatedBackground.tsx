@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react"
 
-type IconType = "graduationCap" | "book" | "certificate" | "pencil" | "lightbulb" | "star" | "trophy"
+type IconType = 
+  | "graduationCap" | "book" | "certificate" | "pencil" 
+  | "lightbulb" | "star" | "trophy" | "atom" 
+  | "globe" | "calculator" | "ruler" | "scroll" | "palette"
 
 interface FloatingIcon {
   id: number
@@ -12,9 +15,23 @@ interface FloatingIcon {
   opacity: number
   type: IconType
   rotation: number
+  color: string
 }
 
-const iconTypes: IconType[] = ["graduationCap", "book", "certificate", "pencil", "lightbulb", "star", "trophy"]
+const iconTypes: IconType[] = [
+  "graduationCap", "book", "certificate", "pencil", 
+  "lightbulb", "star", "trophy", "atom", 
+  "globe", "calculator", "ruler", "scroll", "palette"
+]
+
+const colors = [
+  '#60a5fa', // Soft Blue
+  '#2dd4bf', // Teal
+  '#818cf8', // Indigo
+  '#a78bfa', // Violet
+  '#34d399', // Emerald
+  '#f472b6', // Pink
+]
 
 function GraduationCap({ className }: { className?: string }) {
   return (
@@ -72,24 +89,75 @@ function Trophy({ className }: { className?: string }) {
   )
 }
 
+function Atom({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+      <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(0 12 12)" />
+      <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)" />
+      <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+    </svg>
+  )
+}
+
+function Globe({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  )
+}
+
+function Calculator({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+      <path d="M7 7h10v2H7zm0 4h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z"/>
+    </svg>
+  )
+}
+
+function Ruler({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M2 6h20v4h-2V8h-2v2h-2V8h-2v2h-2V8H8v2H6V8H4v2H2V6zm20 8H2v4h2v-2h2v2h2v-2h2v2h2v-2h2v2h2v-2h2v2h2v-4z"/>
+    </svg>
+  )
+}
+
+function Scroll({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-1c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM5 5h4.18C9.07 5.38 9 5.83 9 6.29V19H5V5zm14 14h-4V6.29c0-.46-.07-.91-.18-1.29H19v14z"/>
+    </svg>
+  )
+}
+
+function Palette({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+    </svg>
+  )
+}
+
 function IconRenderer({ type, className }: { type: IconType; className?: string }) {
   switch (type) {
-    case "graduationCap":
-      return <GraduationCap className={className} />
-    case "book":
-      return <Book className={className} />
-    case "certificate":
-      return <Certificate className={className} />
-    case "pencil":
-      return <Pencil className={className} />
-    case "lightbulb":
-      return <Lightbulb className={className} />
-    case "star":
-      return <Star className={className} />
-    case "trophy":
-      return <Trophy className={className} />
-    default:
-      return <GraduationCap className={className} />
+    case "graduationCap": return <GraduationCap className={className} />
+    case "book": return <Book className={className} />
+    case "certificate": return <Certificate className={className} />
+    case "pencil": return <Pencil className={className} />
+    case "lightbulb": return <Lightbulb className={className} />
+    case "star": return <Star className={className} />
+    case "trophy": return <Trophy className={className} />
+    case "atom": return <Atom className={className} />
+    case "globe": return <Globe className={className} />
+    case "calculator": return <Calculator className={className} />
+    case "ruler": return <Ruler className={className} />
+    case "scroll": return <Scroll className={className} />
+    case "palette": return <Palette className={className} />
+    default: return <GraduationCap className={className} />
   }
 }
 
@@ -97,16 +165,18 @@ export default function AnimatedBackground() {
   const [icons, setIcons] = useState<FloatingIcon[]>([])
 
   useEffect(() => {
-    const generatedIcons: FloatingIcon[] = Array.from({ length: 18 }, (_, i) => ({
+    // Increased count for better coverage
+    const generatedIcons: FloatingIcon[] = Array.from({ length: 25 }, (_, i) => ({
       id: i,
-      size: Math.random() * 32 + 18,
+      size: Math.random() * 40 + 20, 
       x: Math.random() * 100,
       y: Math.random() * 100,
-      delay: Math.random() * 5,
-      duration: Math.random() * 6 + 8,
-      opacity: Math.random() * 0.12 + 0.04,
+      delay: Math.random() * 20,
+      duration: Math.random() * 20 + 20, 
+      opacity: Math.random() * 0.15 + 0.05, 
       type: iconTypes[Math.floor(Math.random() * iconTypes.length)],
-      rotation: Math.random() * 30 - 15,
+      rotation: Math.random() * 360, // Full rotation start
+      color: colors[Math.floor(Math.random() * colors.length)],
     }))
     setIcons(generatedIcons)
   }, [])
@@ -114,12 +184,21 @@ export default function AnimatedBackground() {
   return (
     <>
       <style>{`
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px) rotate(var(--rotation));
+        @keyframes float-complex {
+          0% {
+            transform: translate(0, 0) rotate(var(--rotation));
+          }
+          25% {
+            transform: translate(10px, -15px) rotate(calc(var(--rotation) + 5deg));
           }
           50% {
-            transform: translateY(-20px) rotate(var(--rotation));
+            transform: translate(0, -25px) rotate(calc(var(--rotation) + 10deg));
+          }
+          75% {
+            transform: translate(-10px, -15px) rotate(calc(var(--rotation) + 5deg));
+          }
+          100% {
+            transform: translate(0, 0) rotate(var(--rotation));
           }
         }
       `}</style>
@@ -134,9 +213,9 @@ export default function AnimatedBackground() {
               width: icon.size,
               height: icon.size,
               opacity: icon.opacity,
-              color: '#3b82f6',
-              animation: `float ${icon.duration}s ease-in-out infinite`,
-              animationDelay: `${icon.delay}s`,
+              color: icon.color,
+              animation: `float-complex ${icon.duration}s ease-in-out infinite`,
+              animationDelay: `-${icon.delay}s`, 
               // @ts-ignore
               '--rotation': `${icon.rotation}deg`,
             }}

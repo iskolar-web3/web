@@ -95,7 +95,7 @@ export function TargetUsers() {
                     transition: { delay: index * 0.15, duration: 0.5 }
                 }
               }}
-              whileHover={{ y: -4, transition: { duration: 0.3 } }}
+              whileHover={{ y: -2, transition: { duration: 0.15 } }}
             >
               <div className="relative bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-500 border border-secondary/15 overflow-hidden h-full flex flex-col">
                 {/* Title and Subtitle */}
