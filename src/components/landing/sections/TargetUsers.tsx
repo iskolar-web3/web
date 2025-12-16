@@ -1,4 +1,4 @@
-import { useScrollAnimation } from "@/hooks/useScrollAnimation"
+import { MotionContainer, MotionItem } from "@/components/landing/MotionContainer"
 import {
   GraduationCap,
   Building2,
@@ -60,22 +60,15 @@ const userTypes = [
 ]
 
 export function TargetUsers() {
-  const { ref, isVisible } = useScrollAnimation()
-
   return (
     <section id="about" className="py-20 lg:py-32 px-6 md:px-26 bg-background to-blue-50 relative overflow-hidden">
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
       
-      <div
-        ref={ref}
-        className={`relative z-10 transition-all duration-1000 ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-        }`}
-      >
+      <MotionContainer className="relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-20">
+        <MotionItem className="text-center mb-20">
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full mb-2">
             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
             <span className="text-sm text-secondary uppercase tracking-wider">Who It's For</span>
@@ -86,22 +79,28 @@ export function TargetUsers() {
           <p className="text-lg text-secondary/80 max-w-2xl mx-auto text-pretty">
             iSkolar serves every stakeholder in the scholarship journey
           </p>
-        </div>
+        </MotionItem>
 
         {/* User Type Cards */}
         <div className="grid lg:grid-cols-3 gap-6">
           {userTypes.map((user, index) => (
-            <div
+            <MotionItem
               key={user.title}
-              className={`group relative transition-all duration-500 hover:translate-y-[-4px] ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
+              className="group relative h-full"
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { 
+                    opacity: 1, 
+                    y: 0,
+                    transition: { delay: index * 0.15, duration: 0.5 }
+                }
+              }}
+              whileHover={{ y: -4, transition: { duration: 0.3 } }}
             >
               <div className="relative bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-500 border border-secondary/15 overflow-hidden h-full flex flex-col">
                 {/* Title and Subtitle */}
                 <div className="pt-6 px-8 pb-3">
-                  <h3 className="text-2xl font-semibold text-secondary">{user.title}</h3>
+                  <h3 className="text-2xl text-secondary">{user.title}</h3>
                   <p className="text-secondary/90 text-sm mt-1">{user.subtitle}</p>
                 </div>
 
@@ -139,10 +138,10 @@ export function TargetUsers() {
                 {/* Top accent line */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
-            </div>
+            </MotionItem>
           ))}
         </div>
-      </div>
+      </MotionContainer>
     </section>
   )
 }

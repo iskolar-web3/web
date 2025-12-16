@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useScrollAnimation } from "@/hooks/useScrollAnimation"
+import { MotionContainer, MotionItem } from "@/components/landing/MotionContainer"
 import { ChevronDown } from "lucide-react"
 
 const faqs = [
@@ -35,14 +35,24 @@ const faqs = [
   },
 ]
 
-function AccordionItem({ question, answer, isOpen, onToggle, delay }) {
+interface AccordionItemProps {
+  question: string
+  answer: string
+  isOpen: boolean
+  onToggle: () => void
+}
+
+function AccordionItem({ question, answer, isOpen, onToggle }: AccordionItemProps) {
   return (
-    <div
-      className={`bg-card rounded-md border border-border px-6 overflow-hidden transition-all duration-500 opacity-0 translate-y-10`}
-      style={{ 
-        transitionDelay: `${delay}ms`,
-        opacity: 1,
-        transform: 'translateY(0)'
+    <MotionItem
+      className="bg-card rounded-md border border-border px-6 overflow-hidden"
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: { duration: 0.5 }
+        }
       }}
     >
       <button
@@ -64,35 +74,32 @@ function AccordionItem({ question, answer, isOpen, onToggle, delay }) {
       >
         <p className="text-secondary/80 leading-relaxed">{answer}</p>
       </div>
-    </div>
+    </MotionItem>
   )
 }
 
 export function FAQ() {
-  const { ref, isVisible } = useScrollAnimation()
-  const [openIndex, setOpenIndex] = useState(null)
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
 
-  const handleToggle = (index) => {
+  const handleToggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index)
   }
 
   return (
-    <section id="faqs" className="py-20 lg:py-32 px-4 bg-gray-50/50">
-      <div
-        ref={ref}
-        className={`max-w-3xl mx-auto transition-all duration-1000 ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-        }`}
-      >
+    <section id="faqs" className="py-20 lg:py-32 px-4 bg-gray-50/50 relative z-20">
+      <MotionContainer className="max-w-3xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-6">
+        <MotionItem className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-secondary mt-4 text-balance">
             FAQ
           </h2>
-        </div>
+        </MotionItem>
 
         {/* FAQ Accordion */}
-        <div className="space-y-4">
+        <MotionContainer 
+            className="space-y-4"
+            staggerDelay={0.1}
+        >
           {faqs.map((faq, index) => (
             <AccordionItem
               key={index}
@@ -100,13 +107,12 @@ export function FAQ() {
               answer={faq.answer}
               isOpen={openIndex === index}
               onToggle={() => handleToggle(index)}
-              delay={isVisible ? index * 100 : 0}
             />
           ))}
-        </div>
+        </MotionContainer>
 
         {/* CTA */}
-        <div className="mt-26 text-center">
+        <MotionItem className="mt-26 text-center">
           <p className="text-secondary/80 mb-4">Still have questions?</p>
           <a
             href="mailto:scholarpass23@gmail.com"
@@ -114,8 +120,8 @@ export function FAQ() {
           >
             Contact us at scholarpass23@gmail.com
           </a>
-        </div>
-      </div>
+        </MotionItem>
+      </MotionContainer>
     </section>
   )
 }

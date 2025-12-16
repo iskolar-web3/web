@@ -1,4 +1,4 @@
-import { useScrollAnimation } from "@/hooks/useScrollAnimation"
+import { MotionContainer, MotionItem } from "@/components/landing/MotionContainer"
 import { Rocket, Sparkles, Building, Globe } from "lucide-react"
 
 const milestones = [
@@ -37,18 +37,11 @@ const milestones = [
 ]
 
 export function Roadmap() {
-  const { ref, isVisible } = useScrollAnimation()
-
   return (
     <section id="roadmap" className="py-20 lg:py-32 px-4 bg-background">
-      <div
-        ref={ref}
-        className={`max-w-5xl mx-auto transition-all duration-1000 ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-        }`}
-      >
+      <MotionContainer className="max-w-5xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <MotionItem className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-2">
             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
             <span className="text-sm font-medium text-secondary uppercase tracking-wider">Roadmap</span>
@@ -59,7 +52,7 @@ export function Roadmap() {
           <p className="text-lg text-secondary/80 max-w-2xl mx-auto text-pretty">
             We're building iSkolar step by step, ensuring quality and impact at every milestone.
           </p>
-        </div>
+        </MotionItem>
 
         {/* Timeline */}
         <div className="relative">
@@ -69,12 +62,17 @@ export function Roadmap() {
           {/* Milestone Items */}
           <div className="space-y-12 lg:space-y-16">
             {milestones.map((milestone, index) => (
-              <div
+              <MotionItem
                 key={milestone.quarter}
-                className={`relative pl-12 lg:pl-0 transition-all duration-700 ${
-                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-                }`}
-                style={{ transitionDelay: `${index * 200}ms` }}
+                className="relative pl-12 lg:pl-0"
+                variants={{
+                    hidden: { opacity: 0, y: 30 },
+                    visible: { 
+                        opacity: 1, 
+                        y: 0, 
+                        transition: { delay: index * 0.2, duration: 0.7 } 
+                    }
+                }}
               >
                 <div
                   className={`lg:flex items-center gap-8 ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"}`}
@@ -98,11 +96,11 @@ export function Roadmap() {
                   {/* Spacer for alternating layout */}
                   <div className="hidden lg:block lg:w-[calc(50%-2rem)]" />
                 </div>
-              </div>
+              </MotionItem>
             ))}
           </div>
         </div>
-      </div>
+      </MotionContainer>
     </section>
   )
 }

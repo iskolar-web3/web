@@ -35,7 +35,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-background text-tertiary">
+    <footer className="bg-background text-tertiary relative z-20">
       {/* CTA Section */}
       <div id="get-started" className="bg-secondary py-80 px-4">
         <div className="text-center">
@@ -83,7 +83,7 @@ export function Footer() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary transition-colors"
+                    className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center hover:bg-secondary/90 transition-colors"
                     aria-label={social.name}
                   >
                     <social.icon className="w-5 h-5" />
@@ -135,7 +135,7 @@ export function Footer() {
 
           <div className="mt-12 pt-8 border-t border-secondary/80 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-secondary text-sm">&copy; {new Date().getFullYear()} iSkolar. All rights reserved.</p>
-            <p className="text-secondary text-sm">Made for students, made by students.</p>
+            <p className="text-secondary text-sm">Made For Students, Made By Students.</p>
           </div>
         </div>
       </div>

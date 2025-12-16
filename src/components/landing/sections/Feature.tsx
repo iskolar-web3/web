@@ -1,5 +1,5 @@
-import { useScrollAnimation } from "@/hooks/useScrollAnimation"
 import { PlusCircle, Search, ClipboardList, Users, Wallet } from "lucide-react"
+import { MotionContainer, MotionItem } from "@/components/landing/MotionContainer"
 
 const features = [
   {
@@ -40,22 +40,15 @@ const features = [
 ]
 
 export function Features() {
-  const { ref, isVisible } = useScrollAnimation()
-
   return (
     <section id="features" className="py-16 lg:py-28 px-6 md:px-26 bg-background">
-      <div
-        ref={ref}
-        className={`mx-auto transition-all duration-1000 ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-        }`}
-      >
+      <MotionContainer className="mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-20">
+        <MotionItem className="text-center mb-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-2">
             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
             <span className="text-sm text-secondary uppercase tracking-wider">
-              Platform Features
+              Core Features
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-secondary mt-4 mb-6 text-balance">
@@ -64,19 +57,16 @@ export function Features() {
           <p className="text-lg text-secondary/80 max-w-2xl mx-auto text-pretty">
             Comprehensive tools for every step of the scholarship journey.
           </p>
-        </div>
+        </MotionItem>
 
         {/* V-Shape Staircase Layout */}
         <div className="relative">
           {/* Mobile: Simple Stack */}
           <div className="lg:hidden space-y-6">
-            {features.map((feature, index) => (
-              <div
+            {features.map((feature) => (
+              <MotionItem
                 key={feature.title}
-                className={`group relative overflow-hidden bg-card rounded-lg border-2 border-secondary/10 p-6 transition-all duration-500 hover:border-[#6073F2]/30 hover:shadow-lg ${
-                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-                }`}
-                style={{ transitionDelay: `${index * 100}ms` }}
+                className="group relative overflow-hidden bg-card rounded-lg border-2 border-secondary/10 p-6 transition-all duration-500 hover:border-[#6073F2]/30 hover:shadow-lg"
               >
                 {/* Background Icon */}
                 <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-400 pointer-events-none">
@@ -99,7 +89,7 @@ export function Features() {
                     {feature.description}
                   </p>
                 </div>
-              </div>
+              </MotionItem>
             ))}
           </div>
 
@@ -108,38 +98,63 @@ export function Features() {
             <div className="relative" style={{ minHeight: '750px', zIndex: 2 }}>
               {features.map((feature, index) => {
                 let positionClasses = ""
-                let delayMultiplier = 0
-
+                // delayMultiplier logic is handled by specific MotionItem delay override or utilizing stagger effectively. 
+                // Since this uses absolute positioning, simple stagger might not look correct if valid DOM order != visual order.
+                // Re-calculating delay based on "visual" flow if needed, but here simple mapping index is roughly visual order except center.
+                // Let's use custom delay for precise control similar to original.
+                
+                let delay = 0
                 switch (feature.position) {
                   case "left-top":
                     positionClasses = "absolute left-0 top-0"
-                    delayMultiplier = 0
+                    delay = 0
                     break
                   case "left-bottom":
-                    positionClasses = "absolute left-50 top-[250px]"
-                    delayMultiplier = 1
+                    positionClasses = "absolute left-30 top-[250px]"
+                    delay = 0.15
                     break
                   case "center":
                     positionClasses = "absolute left-1/2 -translate-x-1/2 top-[400px]"
-                    delayMultiplier = 2
+                    delay = 0.3
                     break
                   case "right-bottom":
-                    positionClasses = "absolute right-50 top-[250px]"
-                    delayMultiplier = 4
-                    break
+                    positionClasses = "absolute right-30 top-[250px]"
+                    delay = 0.6 // Show after right-top to make it symmetrical? Or just flow left to right?
+                    // Original code:
+                    // left-top: 0
+                    // left-bottom: 1
+                    // center: 2
+                    // right-top: 3
+                    // right-bottom: 4
+                    // So flow is LeftTop -> LeftBottom -> Center -> RightTop -> RightBottom
+                    delay = 0.6
+                     break
                   case "right-top":
                     positionClasses = "absolute right-0 top-0"
-                    delayMultiplier = 3
+                    delay = 0.45
                     break
                 }
-
+                
+                // Correcting the sequence to match original intent: LeftTop(0), LeftBottom(1), Center(2), RightTop(3), RightBottom(4)
+                 if (feature.position === "right-top") delay = 0.45
+                 if (feature.position === "right-bottom") delay = 0.6
+                
                 return (
-                  <div
+                  <MotionItem
                     key={feature.title}
-                    className={`${positionClasses} w-[320px] transition-all duration-700 ${
-                      isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-                    }`}
-                    style={{ transitionDelay: `${delayMultiplier * 150}ms` }}
+                    className={`${positionClasses} w-[320px]`}
+                    variants={{
+                        hidden: { opacity: 0, y: 50 },
+                        visible: { 
+                            opacity: 1, 
+                            y: 0,
+                            transition: {
+                                delay: delay, 
+                                duration: 0.7,
+                                ease: "easeOut"
+                            }
+                        }
+                    }}
                   >
                     <div className="group relative overflow-hidden bg-card rounded-3xl border border-secondary/5 p-8 transition-all duration-400 hover:border-secondary/15 hover:shadow-lg hover:-translate-y-1 shadow-sm">
                       {/* Background Icon */}
@@ -162,16 +177,22 @@ export function Features() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </MotionItem>
                 )
               })}
 
               {/* Center Text Component */}
-              <div
-                className={`absolute left-1/2 -translate-x-1/2 transition-all top-10 duration-700 ${
-                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-                }`}
-                style={{ transitionDelay: '300ms', zIndex: 3 }}
+              <MotionItem
+                className="absolute left-1/2 -translate-x-1/2 top-10"
+                style={{ zIndex: 3 }}
+                variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: { 
+                        opacity: 1, 
+                        y: 0,
+                        transition: { delay: 0.3, duration: 0.7 }
+                    }
+                }}
               >
                 <div className="text-center max-w-md px-6 py-8">
                   <h3 className="text-3xl text-secondary mb-3 font-medium">
@@ -181,11 +202,11 @@ export function Features() {
                     Every feature works together to create a unified scholarship management experience
                   </p>
                 </div>
-              </div>
+              </MotionItem>
             </div>
           </div>
         </div>
-      </div>
+      </MotionContainer>
     </section>
   )
 }
