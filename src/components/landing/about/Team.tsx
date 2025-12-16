@@ -30,7 +30,7 @@ export default function TeamSection() {
           <h2 className="text-4xl md:text-5xl mb-4 text-center text-secondary">
             Meet Our Team
           </h2>
-          <p className="text-center text-secondary/70 mb-16 max-w-2xl mx-auto text-lg">
+          <p className="text-center text-secondary/80 mb-16 max-w-2xl mx-auto text-lg">
             The dreamers, builders, and students behind iSkolar.
           </p>
           

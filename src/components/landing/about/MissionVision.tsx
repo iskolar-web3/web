@@ -6,7 +6,7 @@ export default function MissionVisionSection() {
     <div id="mission-vision" className="bg-background py-36 text-secondary relative z-10 w-full overflow-hidden">
       <MotionContainer>
         <div className="px-4 sm:px-12 lg:px-26 max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl mb-10 text-center text-secondary">
+          <h2 className="text-4xl md:text-5xl mb-12 text-center text-secondary">
             Mission & Vision
           </h2>
           

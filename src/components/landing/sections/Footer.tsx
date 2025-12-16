@@ -1,15 +1,15 @@
-import { Facebook, Linkedin, Twitter, Mail } from "lucide-react"
+import { Facebook, Linkedin, Github, Mail, Instagram } from "lucide-react"
 import { useState } from "react"
 
 const quickLinks = [
   { name: "Home", href: "/#home" },
   { name: "Features", href: "/#features" },
   { name: "Roadmap", href: "/#roadmap" },
-  { name: "Company Overview", href: "/company-overview" },
-  { name: "Mission & Vision", href: "/mission-vision" },
-  { name: "Our Team", href: "/team" },
-  { name: "Partnerships", href: "/partnerships" },
   { name: "FAQs", href: "/#faqs" },
+  { name: "Company Overview", href: "/about/#company-overview" },
+  { name: "Mission & Vision", href: "/about/#mission-vision" },
+  { name: "Our Team", href: "/about/#team" },
+  { name: "Partnerships", href: "/about/#partnerships" },
 ]
 
 const legalLinks = [
@@ -18,9 +18,10 @@ const legalLinks = [
 ]
 
 const socialLinks = [
-  { name: "Facebook", icon: Facebook, href: "https://facebook.com" },
-  { name: "LinkedIn", icon: Linkedin, href: "https://linkedin.com" },
-  { name: "X (Twitter)", icon: Twitter, href: "https://twitter.com" },
+  { name: "Facebook", icon: Facebook, href: "https://www.facebook.com/profile.php?id=61575967087555" },
+  { name: "LinkedIn", icon: Linkedin, href: "https://www.linkedin.com/company/107364901" },
+  { name: "Instagram", icon: Instagram, href: "https://www.instagram.com/iskolar_web3/" },
+  { name: "Github", icon: Github, href: "https://github.com/iskolar-web3" },
 ]
 
 export function Footer() {
@@ -39,6 +40,9 @@ export function Footer() {
 
   return (
     <footer className="bg-background text-tertiary relative z-20">
+      {/* Horizontal line at top */}
+      <div className="border-t border-secondary/20"></div>
+
       {/* Main Footer */}
       <div className="py-28 px-6 md:px-26">
         <div className="">
@@ -116,7 +120,7 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-secondary/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mt-12 pt-8 border-t border-secondary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-secondary text-sm">&copy; {new Date().getFullYear()} iSkolar. All rights reserved.</p>
             <p className="text-secondary text-sm">Made For Students, Made By Students.</p>
           </div>
