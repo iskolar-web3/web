@@ -2,20 +2,20 @@ import { useState, useEffect } from "react"
 import { Menu, X, ChevronDown } from "lucide-react"
 
 const navLinks = [
-  { name: "Home", href: "/" },
+  { name: "Home", href: "/#home" },
   { name: "Features", href: "#features" },
   { name: "Roadmap", href: "#roadmap" },
+  { name: "FAQs", href: "#faqs" },
   {
     name: "About",
-    href: "#about",
+    href: "/about",
     dropdown: [
-      { name: "Company Overview", href: "/company-overview" },
-      { name: "Mission & Vision", href: "/mission-vision" },
-      { name: "Our Team", href: "#team" },
-      { name: "Partnerships", href: "#partnerships", comingSoon: true },
+      { name: "Company Overview", href: "/about#company-overview" },
+      { name: "Mission & Vision", href: "/about#mission-vision" },
+      { name: "Our Team", href: "/about#team" },
+      { name: "Partnerships", href: "/about#partnerships", comingSoon: true },
     ],
   },
-  { name: "FAQs", href: "#faqs" },
 ]
 
 export default function Navbar() {
@@ -134,7 +134,7 @@ export default function Navbar() {
                           {item.name}
                           {item.comingSoon && (
                             <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                              Coming Soon
+                              Soon
                             </span>
                           )}
                         </a>
