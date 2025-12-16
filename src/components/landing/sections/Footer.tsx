@@ -9,12 +9,11 @@ const quickLinks = [
   { name: "Company Overview", href: "/about/#company-overview" },
   { name: "Mission & Vision", href: "/about/#mission-vision" },
   { name: "Our Team", href: "/about/#team" },
-  { name: "Partnerships", href: "/about/#partnerships" },
 ]
 
 const legalLinks = [
-  { name: "Privacy Policy", href: "/legal/#privacy-policy" },
-  { name: "Terms & Conditions", href: "/legal/#terms" },
+  { name: "Privacy Policy", href: "/#home" },
+  { name: "Terms & Conditions", href: "/#home" },
 ]
 
 const socialLinks = [
@@ -44,7 +43,7 @@ export function Footer() {
       <div className="border-t border-secondary/20"></div>
 
       {/* Main Footer */}
-      <div className="py-28 px-6 md:px-26">
+      <div className="pt-30 pb-16 px-6 md:px-26">
         <div className="">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {/* Brand */}

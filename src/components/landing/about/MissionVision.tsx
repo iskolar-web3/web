@@ -18,7 +18,7 @@ export default function MissionVisionSection() {
               </div>
               <h3 className="text-2xl mb-4 text-secondary">Our Mission</h3>
               <p className="text-lg text-secondary/80 leading-relaxed">
-                To make education accessible and transparent by connecting students, sponsors, and schools through a blockchain-powered scholarship system that ensures accountability, trust, and impact.
+                To make education accessible and transparent by connecting students, sponsors, and schools through an AI- and blockchain-powered scholarship system that ensures accountability, trust, and impact.
               </p>
             </div>
 

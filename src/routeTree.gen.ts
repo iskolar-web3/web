@@ -23,7 +23,6 @@ import { Route as OnboardingRoleSelectionRouteImport } from './routes/_onboardin
 import { Route as OnboardingProfileSetupRouteImport } from './routes/_onboarding/profile-setup'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
-import { Route as LandingLegalIndexRouteImport } from './routes/_landing/legal/index'
 import { Route as LandingAboutIndexRouteImport } from './routes/_landing/about/index'
 import { Route as StudentScholarshipIdApplyRouteImport } from './routes/_student/scholarship/$id/apply'
 import { Route as StudentProfileStudentStudentIdRouteImport } from './routes/_student/profile/student/$studentId'
@@ -97,11 +96,6 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRoute,
 } as any)
-const LandingLegalIndexRoute = LandingLegalIndexRouteImport.update({
-  id: '/_landing/legal/',
-  path: '/legal/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LandingAboutIndexRoute = LandingAboutIndexRouteImport.update({
   id: '/_landing/about/',
   path: '/about/',
@@ -150,7 +144,6 @@ export interface FileRoutesByFullPath {
   '/discover': typeof StudentDiscoverRoute
   '/home': typeof StudentHomeRoute
   '/about': typeof LandingAboutIndexRoute
-  '/legal': typeof LandingLegalIndexRoute
   '/profile/sponsor/$sponsorId': typeof SponsorProfileSponsorSponsorIdRoute
   '/scholarship/$id/applicants': typeof SponsorScholarshipIdApplicantsRoute
   '/scholarship/$id/edit': typeof SponsorScholarshipIdEditRoute
@@ -169,7 +162,6 @@ export interface FileRoutesByTo {
   '/discover': typeof StudentDiscoverRoute
   '/home': typeof StudentHomeRoute
   '/about': typeof LandingAboutIndexRoute
-  '/legal': typeof LandingLegalIndexRoute
   '/profile/sponsor/$sponsorId': typeof SponsorProfileSponsorSponsorIdRoute
   '/scholarship/$id/applicants': typeof SponsorScholarshipIdApplicantsRoute
   '/scholarship/$id/edit': typeof SponsorScholarshipIdEditRoute
@@ -193,7 +185,6 @@ export interface FileRoutesById {
   '/_student/discover': typeof StudentDiscoverRoute
   '/_student/home': typeof StudentHomeRoute
   '/_landing/about/': typeof LandingAboutIndexRoute
-  '/_landing/legal/': typeof LandingLegalIndexRoute
   '/_sponsor/profile/sponsor/$sponsorId': typeof SponsorProfileSponsorSponsorIdRoute
   '/_sponsor/scholarship/$id/applicants': typeof SponsorScholarshipIdApplicantsRoute
   '/_sponsor/scholarship/$id/edit': typeof SponsorScholarshipIdEditRoute
@@ -214,7 +205,6 @@ export interface FileRouteTypes {
     | '/discover'
     | '/home'
     | '/about'
-    | '/legal'
     | '/profile/sponsor/$sponsorId'
     | '/scholarship/$id/applicants'
     | '/scholarship/$id/edit'
@@ -233,7 +223,6 @@ export interface FileRouteTypes {
     | '/discover'
     | '/home'
     | '/about'
-    | '/legal'
     | '/profile/sponsor/$sponsorId'
     | '/scholarship/$id/applicants'
     | '/scholarship/$id/edit'
@@ -256,7 +245,6 @@ export interface FileRouteTypes {
     | '/_student/discover'
     | '/_student/home'
     | '/_landing/about/'
-    | '/_landing/legal/'
     | '/_sponsor/profile/sponsor/$sponsorId'
     | '/_sponsor/scholarship/$id/applicants'
     | '/_sponsor/scholarship/$id/edit'
@@ -271,7 +259,6 @@ export interface RootRouteChildren {
   SponsorRoute: typeof SponsorRouteWithChildren
   StudentRoute: typeof StudentRouteWithChildren
   LandingAboutIndexRoute: typeof LandingAboutIndexRoute
-  LandingLegalIndexRoute: typeof LandingLegalIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -373,13 +360,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
-    }
-    '/_landing/legal/': {
-      id: '/_landing/legal/'
-      path: '/legal'
-      fullPath: '/legal'
-      preLoaderRoute: typeof LandingLegalIndexRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_landing/about/': {
       id: '/_landing/about/'
@@ -497,7 +477,6 @@ const rootRouteChildren: RootRouteChildren = {
   SponsorRoute: SponsorRouteWithChildren,
   StudentRoute: StudentRouteWithChildren,
   LandingAboutIndexRoute: LandingAboutIndexRoute,
-  LandingLegalIndexRoute: LandingLegalIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

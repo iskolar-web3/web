@@ -96,49 +96,23 @@ export function Features() {
           {/* Desktop: V-Shape Staircase with Arrow */}
           <div className="hidden lg:block relative">
             <div className="relative" style={{ minHeight: '750px', zIndex: 2 }}>
-              {features.map((feature, index) => {
-                let positionClasses = ""
-                
-                let delay = 0
-                switch (feature.position) {
-                  case "left-top":
-                    positionClasses = "absolute left-0 top-0"
-                    delay = 0
-                    break
-                  case "left-bottom":
-                    positionClasses = "absolute left-30 top-[250px]"
-                    delay = 0.15
-                    break
-                  case "center":
-                    positionClasses = "absolute left-1/2 -translate-x-1/2 top-[400px]"
-                    delay = 0.3
-                    break
-                  case "right-bottom":
-                    positionClasses = "absolute right-30 top-[250px]"
-                    delay = 0.6 // Show after right-top to make it symmetrical? Or just flow left to right?
-                    // Original code:
-                    // left-top: 0
-                    // left-bottom: 1
-                    // center: 2
-                    // right-top: 3
-                    // right-bottom: 4
-                    // So flow is LeftTop -> LeftBottom -> Center -> RightTop -> RightBottom
-                    delay = 0.6
-                     break
-                  case "right-top":
-                    positionClasses = "absolute right-0 top-0"
-                    delay = 0.45
-                    break
+              {features.map((feature) => {
+                const positionConfig: Record<string, { className: string, delay: number }> = {
+                  "left-top": { className: "absolute left-0 top-0", delay: 0 },
+                  "left-bottom": { className: "absolute left-30 top-[250px]", delay: 0.15 },
+                  "center": { className: "absolute left-1/2 -translate-x-1/2 top-[400px]", delay: 0.3 },
+                  "right-top": { className: "absolute right-0 top-0", delay: 0.45 },
+                  "right-bottom": { className: "absolute right-30 top-[250px]", delay: 0.6 },
                 }
-                
-                // Correcting the sequence to match original intent: LeftTop(0), LeftBottom(1), Center(2), RightTop(3), RightBottom(4)
-                 if (feature.position === "right-top") delay = 0.45
-                 if (feature.position === "right-bottom") delay = 0.6
+
+                const config = positionConfig[feature.position] || { className: "", delay: 0 }
+                /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+                const { className: positionClasses, delay } = config
                 
                 return (
                   <MotionItem
                     key={feature.title}
-                    className={`${positionClasses} w-[320px]`}
+                    className={`${positionClasses} w-full max-w-[320px]`}
                     variants={{
                         hidden: { opacity: 0, y: 50 },
                         visible: { 

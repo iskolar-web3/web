@@ -54,14 +54,14 @@ export function Problem() {
               staggerDelay={0.15}
             >
               {/* Column 1: Problem Number */}
-              <MotionItem className="flex items-center justify-start group/number">
+              <MotionItem className="flex items-center justify-center md:justify-start group/number">
                 <span className="text-3xl md:text-4xl font-semibold text-secondary/80 group-hover:text-secondary transition-opacity duration-400">
                   #{problem.number}
                 </span>
               </MotionItem>
 
               {/* Column 2: Images */}
-               <MotionItem className="flex items-center col-span-2 justify-start group/image">
+               <MotionItem className="flex items-center col-span-2 justify-center md:justify-start group/image">
                 <div className="relative w-46 h-30 md:w-74 md:h-48 flex items-center p-1 border-2 border-secondary justify-center overflow-hidden rounded-lg">
                   {/* Gradient background */}
                   <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-secondary/10 group-hover:from-secondary/30 group-hover/image:from-secondary/30 rounded-lg group-hover:to-secondary/15 group-hover/image:to-secondary/15 transition-all duration-400" />
@@ -77,14 +77,14 @@ export function Problem() {
               </MotionItem>
 
               {/* Column 3: Title */}
-              <MotionItem className="flex items-center col-span-2 justify-start group/title">
+              <MotionItem className="flex items-center col-span-2 justify-center md:justify-start group/title">
                 <h3 className="text-xl md:text-2xl text-secondary/80 mb-2 group-hover:text-secondary group-hover/title:text-secondary transition-colors duration-400">
                   {problem.title}
                 </h3>
               </MotionItem>
 
               {/* Column 4: Description */}
-              <MotionItem className="flex items-center col-span-2 justify-start group/description">
+              <MotionItem className="flex items-center col-span-2 justify-center md:justify-start group/description">
                 <p className="text-base text-secondary/80 leading-relaxed group-hover:text-secondary group-hover/description:text-secondary transition-opacity duration-400">
                   {problem.description}
                 </p>
