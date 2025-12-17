@@ -50,7 +50,7 @@ export default function TeamSection() {
                   </MotionItem>
 
                   <MotionItem>
-                      <Card image="/team/CFO.jpg" name="Jessele Francisco" role="CFO" link="https://www.linkedin.com/in/maria-jeselle-francisco-736491369/" />  
+                      <Card image="/team/CFO.jpg" name="Jeselle Francisco" role="CFO" link="https://www.linkedin.com/in/maria-jeselle-francisco-736491369/" />  
                   </MotionItem>
               </div>
           </div>
