@@ -158,7 +158,7 @@ function EditScholarshipPage() {
       status: (scholarship.status === 'closed' ? 'closed' : 'active') as 'active' | 'closed',
       title: scholarship.title || '',
       description: scholarship.description || '',
-      imageUrl: scholarship.image_url || '/src/logo.svg',
+      imageUrl: scholarship.image_url || '/logo.jpg',
       totalAmount: scholarship.total_amount ? String(scholarship.total_amount) : '',
       totalSlot: scholarship.total_slot ? String(scholarship.total_slot) : '',
       applicationDeadline: scholarship.application_deadline ? new Date(scholarship.application_deadline) : undefined,

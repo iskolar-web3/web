@@ -121,7 +121,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             {/* Image Banner */}
             <div className="relative w-full aspect-square mb-5 rounded-lg overflow-hidden shadow-[0_0_20px_2px_rgba(0,0,0,0.2)]">
               <img
-                src={scholarship.image_url || "public/background.jpg"}
+                src={scholarship.image_url || "/logo.jpg"}
                 alt={scholarship.title}
                 className="w-full h-full object-cover"
               />

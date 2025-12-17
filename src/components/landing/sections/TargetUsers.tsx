@@ -66,7 +66,7 @@ export function TargetUsers() {
       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
       
-      <MotionContainer className="relative z-10">
+      <MotionContainer className="relative z-26">
         {/* Section Header */}
         <MotionItem className="text-center mb-20">
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full mb-2">

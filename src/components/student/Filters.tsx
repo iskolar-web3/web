@@ -53,19 +53,16 @@ export default function Filters({ title, options, value, onChange }: FilterProps
               className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto custom-scrollbar"
             >
               {options.map((option, i) => (
-                <motion.button
+                <button
                   key={i}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: i * 0.02 }}
                   onClick={() => {
                     onChange(option);
                     setIsOpen(false);
                   }}
-                  className="w-full px-4 py-2 text-[11px] md:text-xs text-left text-primary hover:bg-[#F3F4F6]"
+                  className="w-full px-4 py-2 text-[11px] md:text-xs text-left text-primary hover:bg-[#F3F4F6] transition-colors"
                 >
                   {option}
-                </motion.button>
+                </button>
               ))}
             </motion.div>
           )}

@@ -35,7 +35,7 @@ export function useScholarshipPreview(formData: {
     required_documents: formData.requiredDocuments,
     sponsor: {
       name: 'iSkolar',
-      profile_url: 'src/logo.svg',
+      profile_url: '/logo.jpg',
     },
   }), [formData]);
 

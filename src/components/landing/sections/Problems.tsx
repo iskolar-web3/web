@@ -29,7 +29,7 @@ export function Problem() {
     <section id="problem" className="py-16 lg:py-28 px-6 md:px-26 bg-background relative z-20">
       <MotionContainer className="max-w-8xl mx-auto">
         {/* Section Header */}
-        <MotionItem className="text-center mb-30">
+        <MotionItem className="relative z-26 text-center mb-30">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-2">
             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
             <span className="text-sm text-secondary uppercase tracking-wider">
@@ -84,7 +84,7 @@ export function Problem() {
               </MotionItem>
 
               {/* Column 4: Description */}
-              <MotionItem className="flex items-center col-span-2 justify-center md:justify-start group/description">
+              <MotionItem className="flex items-center text-center md:text-start col-span-2 justify-center md:justify-start group/description">
                 <p className="text-base text-secondary/80 leading-relaxed group-hover:text-secondary group-hover/description:text-secondary transition-opacity duration-400">
                   {problem.description}
                 </p>

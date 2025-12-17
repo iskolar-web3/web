@@ -1,5 +1,4 @@
 import { Facebook, Linkedin, Github, Mail, Instagram } from "lucide-react"
-import { useState } from "react"
 
 const quickLinks = [
   { name: "Home", href: "/#home" },
@@ -24,8 +23,6 @@ const socialLinks = [
 ]
 
 export function Footer() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       e.preventDefault()
@@ -33,18 +30,18 @@ export function Footer() {
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' })
       }
-      setIsMobileMenuOpen(false)
+// setIsMobileMenuOpen(false) // Removed unused call
     }
   }
 
   return (
-    <footer className="bg-background text-tertiary relative z-20">
+    <footer className="bg-background text-tertiary">
       {/* Horizontal line at top */}
       <div className="border-t border-secondary/20"></div>
 
       {/* Main Footer */}
       <div className="pt-30 pb-16 px-6 md:px-26">
-        <div className="">
+        <div className="relative z-26">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {/* Brand */}
             <div className="sm:col-span-2 lg:col-span-1">

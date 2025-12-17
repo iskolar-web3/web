@@ -1,7 +1,7 @@
 export function CTA() {
   return (  
     <section id="get-started" className="bg-secondary py-75 px-4">
-      <div className="text-center">
+      <div className="text-center relative z-26">
         <h2 className="text-3xl sm:text-4xl text-tertiary mb-4 text-balance">
           Ready to Start Your Scholarship Journey?
         </h2>

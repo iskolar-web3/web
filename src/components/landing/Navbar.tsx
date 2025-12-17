@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Menu, X, ChevronDown } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 const navLinks = [
   { name: "Home", href: "/#home" },
@@ -56,17 +57,8 @@ export default function Navbar() {
 
   return (
     <>
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .dropdown-enter {
-          animation: fadeIn 0.2s ease-out;
-        }
-      `}</style>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           isScrolled ? "bg-card shadow-md" : "bg-transparent"
         }`}
         style={{ backdropFilter: isScrolled ? 'blur(12px)' : 'none' }}
@@ -74,7 +66,7 @@ export default function Navbar() {
         <div className="px-4 sm:px-12 lg:px-26">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
-            <a href="#home" onClick={(e) => handleNavClick(e, '#home')}>
+            <a href="/#home" onClick={(e) => handleNavClick(e, '/#home')}>
               <div className="w-25 h-10 md:w-34 md:h-14 flex items-center justify-center">
                 <img
                   src={"/logo2.png"}
@@ -116,31 +108,39 @@ export default function Navbar() {
                   </a>
 
                   {/* Dropdown */}
-                  {link.dropdown && activeDropdown === link.name && (
-                    <div className="absolute top-full left-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-gray-200 py-2 dropdown-enter">
-                      {link.dropdown.map((item) => (
-                        <a
-                          key={item.name}
-                          href={item.href}
-                          onClick={(e) => {
-                            if (item.href.startsWith('#')) {
-                                handleNavClick(e, item.href);
-                            } 
-                            // If it's a real page navigation, let it happen but close dropdown
-                            setActiveDropdown(null);
-                          }}
-                          className="flex items-center justify-between px-4 py-2 text-sm text-secondary transition-colors"
-                        >
-                          {item.name}
-                          {item.comingSoon && (
-                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                              Soon
-                            </span>
-                          )}
-                        </a>
-                      ))}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {link.dropdown && activeDropdown === link.name && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute top-full left-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-gray-200 py-2"
+                      >
+                        {link.dropdown.map((item) => (
+                          <a
+                            key={item.name}
+                            href={item.href}
+                            onClick={(e) => {
+                              if (item.href.startsWith('#')) {
+                                  handleNavClick(e, item.href);
+                              } 
+                              // If it's a real page navigation, let it happen but close dropdown
+                              setActiveDropdown(null);
+                            }}
+                            className="flex items-center justify-between px-4 py-2 text-sm text-secondary transition-colors"
+                          >
+                            {item.name}
+                            {item.comingSoon && (
+                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                Soon
+                              </span>
+                            )}
+                          </a>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))}
             </div>
@@ -162,9 +162,9 @@ export default function Navbar() {
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? (
-                <X className="w-6 h-6 text-gray-900" />
+                <X className="w-6 h-6 text-secondary" />
               ) : (
-                <Menu className="w-6 h-6 text-gray-900" />
+                <Menu className="w-6 h-6 text-secondary" />
               )}
             </button>
           </div>
@@ -172,7 +172,7 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-200">
+          <div className="lg:hidden bg-card border-t border-gray-200">
             <div className="px-4 py-4 space-y-2">
               {navLinks.map((link) => (
                 <div key={link.name}>
@@ -194,7 +194,7 @@ export default function Navbar() {
                         >
                           {item.name}
                           {item.comingSoon && (
-                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] bg-secondary text-tertiary px-2 py-1 rounded-full">
                               Soon
                             </span>
                           )}
@@ -205,9 +205,9 @@ export default function Navbar() {
                 </div>
               ))}
               <a
-                href="#get-started"
-                onClick={(e) => handleNavClick(e, '#get-started')}
-                className="block w-full mt-4 px-6 py-2 bg-secondary hover:bg-secondary/80 text-tertiary rounded-md text-center transition-colors"
+                href="/login"
+                onClick={(e) => handleNavClick(e, '/login')}
+                className="block w-full mt-4 px-6 py-2 text-sm bg-secondary hover:bg-secondary/80 text-tertiary rounded-md text-center transition-colors"
               >
                 Get Started
               </a>

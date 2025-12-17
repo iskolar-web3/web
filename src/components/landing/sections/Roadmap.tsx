@@ -38,8 +38,8 @@ const milestones = [
 
 export function Roadmap() {
   return (
-    <section id="roadmap" className="py-20 lg:py-32 px-4 bg-background">
-      <MotionContainer className="max-w-5xl mx-auto">
+    <section id="roadmap" className="py-20 lg:py-32 px-5 bg-background">
+      <MotionContainer className="max-w-5xl mx-auto relative z-26">
         {/* Section Header */}
         <MotionItem className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-2">

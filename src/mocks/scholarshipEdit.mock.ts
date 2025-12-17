@@ -28,11 +28,11 @@ export const mockScholarshipEdit: Scholarship = {
     { type: 'email', label: 'Email Address', required: true },
     { type: 'file', label: 'Upload Transcript', required: true },
   ],
-  image_url: '/src/logo.svg',
+  image_url: '/logo.jpg',
   sponsor: {
     name: 'Sponsor Name',
     email: 'sponsor@example.com',
-    profile_url: 'src/logo.svg',
+    profile_url: '/logo.jpg',
   },
   applications_count: 120,
   created_at: new Date().toISOString(),
