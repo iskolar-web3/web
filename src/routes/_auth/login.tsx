@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -11,8 +11,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { handleError } from '@/lib/errorHandler';
-import { logger } from "@/lib/logger";
+// import { handleError } from '@/lib/errorHandler';
+// import { logger } from "@/lib/logger";
 // import { authService } from '@/services/auth.service';
 // import { profileService } from '@/services/profile.service';
 
@@ -80,7 +80,7 @@ function LoginPage(): JSX.Element {
     },
   });
   
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (_data: LoginFormData) => {
     // try {
     //   setLoading(true);
 
@@ -154,7 +154,7 @@ function LoginPage(): JSX.Element {
       
       {!showPreloader && (
       <motion.div 
-        className="rounded-3xl py-6 px-10 md:py-8 md:px-12 lg:py-6 lg:px-10 sm:py-5 sm:px-6 shadow-[1px_1px_4px_1px_rgba(96,126,242,0.5)] bg-[#F0F7FF] min-h-[520px] sm:min-h-[480px] w-full max-w-md mx-auto"
+        className="rounded-3xl py-6 px-10 md:py-8 md:px-12 lg:py-6 lg:px-10 sm:py-5 sm:px-6 shadow-[1px_1px_4px_1px_rgba(96,126,242,0.5)] bg-[#F0F7FF] min-h-[450px] sm:min-h-[480px] w-full max-w-md mx-auto"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 20 }}

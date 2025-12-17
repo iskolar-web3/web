@@ -54,20 +54,17 @@ export default function FilterSelect({
               transition={{ duration: 0.2 }}
               className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto custom-scrollbar"
             >
-              {options.map((option, index) => (
-                <motion.button
+              {options.map((option) => (
+                <button
                   key={option}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.02 }}
                   onClick={() => {
                     onChange(option);
                     setIsOpen(false);
                   }}
-                  className="w-full px-4 py-2 text-[11px] md:text-xs text-left text-primary hover:bg-[#F3F4F6]"
+                  className="w-full px-4 py-2 text-[11px] md:text-xs text-left text-primary hover:bg-[#F3F4F6] transition-colors"
                 >
                   {option}
-                </motion.button>
+                </button>
               ))}
             </motion.div>
           )}

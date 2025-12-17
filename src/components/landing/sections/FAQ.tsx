@@ -87,8 +87,8 @@ export function FAQ() {
   }
 
   return (
-    <section id="faqs" className="py-20 lg:py-32 bg-gray-50/50 relative z-20">
-      <MotionContainer className="max-w-3xl mx-auto">
+    <section id="faqs" className="py-20 lg:py-32 bg-gray-50/50">
+      <MotionContainer className="max-w-3xl mx-auto relative z-26">
         {/* Section Header */}
         <MotionItem className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-secondary mt-4 text-balance">
@@ -98,7 +98,7 @@ export function FAQ() {
 
         {/* FAQ Accordion */}
         <MotionContainer 
-            className="space-y-4"
+            className="space-y-4 px-6"
             staggerDelay={0.1}
         >
           {faqs.map((faq, index) => (
@@ -113,7 +113,7 @@ export function FAQ() {
         </MotionContainer>
 
         {/* CTA */}
-        <MotionItem className="mt-26 text-center">
+        <MotionItem className="mt-26 text-center relative z-26">
           <p className="text-secondary/80 mb-4">Still have questions?</p>
           <a
             href="mailto:scholarpass23@gmail.com"

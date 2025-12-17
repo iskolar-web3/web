@@ -20,7 +20,7 @@ export const mockScholarships: Scholarship[] = Array(23).fill(null).map((_, i) =
   sponsor: { 
     name: 'Sponsor name',
     email: 'sponsor@example.com',
-    profile_url: 'src/logo.svg',
+    profile_url: '/logo.jpg',
   },
   application_deadline: 'September 21, 2025',
   total_amount: 10000000,
@@ -34,7 +34,7 @@ export const mockScholarships: Scholarship[] = Array(23).fill(null).map((_, i) =
     'School ID', 
     'Government ID'
   ],
-  image_url: 'src/logo.svg',
+  image_url: '/logo.jpg',
   description: "The Commission on Higher Education (CHED) Merit Scholarship Program awards full or half merit scholarships to high-performing incoming college students in CHED-priority courses. It's designed to help academically excellent but financially needy students access tertiary education.",
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString()
@@ -51,14 +51,14 @@ export const mockSponsorScholarships: Scholarship[] = Array(5).fill(null).map((_
   sponsor: {
     name: 'Sponsor name',
     email: 'sponsor@example.com',
-    profile_url: 'src/logo.svg',
+    profile_url: '/logo.jpg',
   },
   application_deadline: 'September 21, 2025',
   total_amount: 40000000,
   total_slot: 400,
   criteria: ['1st Year', 'LGU', 'Male', 'BSCS', 'BSIT', 'BSIS'],
   required_documents: ["Voter's Certificate", 'Birth Certificate', 'COR', 'Barangay ID'],
-  image_url: 'src/logo.svg',
+  image_url: '/logo.jpg',
   description:
     "The Commission on Higher Education (CHED) Merit Scholarship Program awards full or half merit scholarships to high-performing incoming college students in CHED-priority courses. It's designed to help academically excellent but financially needy students access tertiary education.",
   created_at: new Date().toISOString(),

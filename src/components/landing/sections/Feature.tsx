@@ -60,7 +60,7 @@ export function Features() {
         </MotionItem>
 
         {/* V-Shape Staircase Layout */}
-        <div className="relative">
+        <div className="relative z-26">
           {/* Mobile: Simple Stack */}
           <div className="lg:hidden space-y-6">
             {features.map((feature) => (
@@ -94,7 +94,7 @@ export function Features() {
           </div>
 
           {/* Desktop: V-Shape Staircase with Arrow */}
-          <div className="hidden lg:block relative">
+          <div className="hidden lg:block relative z-26">
             <div className="relative" style={{ minHeight: '750px', zIndex: 2 }}>
               {features.map((feature) => {
                 const positionConfig: Record<string, { className: string, delay: number }> = {

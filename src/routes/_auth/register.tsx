@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -10,8 +10,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react"; 
-import { handleError } from '@/lib/errorHandler';
-import { logger } from "@/lib/logger";
+// import { handleError } from '@/lib/errorHandler';
+// import { logger } from "@/lib/logger";
 // import { authService } from '@/services/auth.service';
 // import { profileService } from '@/services/profile.service';
 
@@ -85,7 +85,7 @@ function RegisterPage(): JSX.Element {
     mode: "onBlur", 
   });
   
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (_data: RegisterFormData) => {
     // try {
     //   setLoading(true);
 

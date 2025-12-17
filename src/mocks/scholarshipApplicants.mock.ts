@@ -31,11 +31,11 @@ export const mockScholarshipForApplicants: Scholarship = {
     { type: 'file', label: 'Upload Transcript', required: true },
     { type: 'textarea', label: 'Personal Statement', required: true },
   ],
-  image_url: '/src/logo.svg',
+  image_url: '/logo.jpg',
   sponsor: {
     name: 'Commission on Higher Education',
     email: 'ched@example.com',
-    profile_url: 'src/logo.svg',
+    profile_url: '/logo.jpg',
   },
   applications_count: 120,
   created_at: new Date().toISOString(),
@@ -45,7 +45,7 @@ export const mockScholarshipForApplicants: Scholarship = {
 /**
  * Generate mock applicants with various statuses
  */
-export const generateMockApplicants = (count: number, scholarshipId: string): ScholarshipApplication[] => {
+export const generateMockApplicants = (count: number, _scholarshipId: string): ScholarshipApplication[] => {
   const statuses: Array<'pending' | 'shortlisted' | 'approved' | 'denied'> = [
     'pending',
     'shortlisted',
@@ -82,7 +82,7 @@ export const generateMockApplicants = (count: number, scholarshipId: string): Sc
     return {
       scholarship_application_id: `${index + 1}`,
       student_id: `${index + 1}`,
-      scholarship_id: scholarshipId,
+      scholarship_id: _scholarshipId,
       status,
       custom_form_response: [
         { label: 'Full Name', value: fullName },
@@ -123,7 +123,7 @@ export const mockApplicants = generateMockApplicants(76, '1');
 /**
  * Mock API responses
  */
-export const mockGetScholarshipApplications = async (scholarshipId: string) => {
+export const mockGetScholarshipApplications = async (_scholarshipId: string) => {
   await mockApiDelay(2000);
   
   return {

@@ -6,9 +6,9 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="relative min-h-[100dvh] flex items-center justify-center flex-shrink-0 pt-20 pb-16 overflow-hidden support-[min-height:100dvh]:min-h-[100dvh]"
+      className="relative min-h-[100dvh] px-6 flex items-center justify-center flex-shrink-0 pt-20 pb-16 overflow-hidden support-[min-height:100dvh]:min-h-[100dvh]"
     >
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 z-26 overflow-hidden pointer-events-none">
         {/* Graduation cap shape with animated gradient */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}

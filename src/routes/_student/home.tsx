@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Calendar, Users, Coins, Files, ArrowRight } from 'lucide-react';
+import { Calendar, Users, Coins, Files, ArrowRight, UserIcon, Clock, CheckCircle, XCircle, Award, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useApplications } from '@/hooks/useApplications';
@@ -29,7 +29,7 @@ function Home() {
 
 
   const {
-    applications,
+    // applications,
     setApplications,
     filteredApplications,
     selectedFilter,
@@ -75,7 +75,7 @@ function Home() {
                       key={filter.key}
                       type="button"
                       onClick={() => setSelectedFilter(filter.key)}
-                      className={`relative px-4 py-1.5 rounded-sm transition-all cursor-pointer ${
+                      className={`relative px-3 md:px-4 py-1.5 rounded-sm transition-all cursor-pointer ${
                         isActive
                           ? 'bg-[#607EF2] text-tertiary shadow-md'
                           : 'text-[#E5E7EB]/80 hover:text-tertiary'
@@ -230,45 +230,66 @@ function Home() {
 
                           <div className="flex-1 px-3 py-2 text-[#F9FAFB]">
                             <div className="flex items-start justify-between gap-2">
-                              <div className="space-y-1">
-                                <h3 className="text-lg md:text-xl line-clamp-1">
+                              <div className="space-y-1 flex-1 min-w-0">
+                                <h3 className="text-lg md:text-xl line-clamp-1 pr-2">
                                   {application.scholarship.title}
                                 </h3>
 
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                  <span className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded">
+                                <div className="flex gap-1 mb-3">
+                                  <span className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded whitespace-nowrap">
                                     {application.scholarship.type}
                                   </span>
-                                  <span className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded">
+                                  <span className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded whitespace-nowrap">
                                     {application.scholarship.purpose}
                                   </span>
                                 </div>
 
                                 <div className="space-y-1.5 text-xs">
                                   <div className="flex items-center gap-2">
-                                    <img
-                                      src={application.scholarship.sponsor.profile_url}
-                                      alt="Sponsor Profile"
-                                      className="w-4 h-4 bg-white/20 rounded-full flex-shrink-0 object-cover"
-                                    />
-                                    <span>{application.scholarship.sponsor.name}</span>
+                                    <div className="w-4 h-4 rounded-full bg-card flex items-center justify-center flex-shrink-0">
+                                      {application.scholarship?.sponsor?.profile_url ? (
+                                        <img
+                                          src={application.scholarship?.sponsor?.profile_url}
+                                          alt={application.scholarship.sponsor.name}
+                                          className="w-full h-full rounded-full object-cover"
+                                        />
+                                      ) : (
+                                        <UserIcon className="w-full h-full text-secondary" />
+                                      )}
+                                    </div>
+                                    <span className="truncate">{application.scholarship.sponsor.name}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <Calendar size={16} />
-                                    <span>{application.scholarship.application_deadline}</span>
+                                    <Calendar size={16} className="flex-shrink-0" />
+                                    <span className="truncate">{application.scholarship.application_deadline}</span>
                                   </div>
                                 </div>
                               </div>
 
-                              <div className="flex flex-col items-end gap-1 mt-1">
+                              <div className="flex flex-col items-end gap-1 mt-1 flex-shrink-0">
                                 <div
-                                  className={`inline-flex items-center gap-1 rounded-sm border px-3 py-0.5 text-[11px] ${
-                                    statusStyles[application.status].bg
-                                  } ${statusStyles[application.status].text} ${
-                                    statusStyles[application.status].border
+                                  className={`${
+                                    {
+                                      pending: 'text-[#FCD34D]',
+                                      shortlisted: 'text-[#FDBA74]',
+                                      approved: 'text-[#6EE7B7]',
+                                      denied: 'text-[#EF4444]',
+                                      granted: 'text-[#C7D2FE]',
+                                    }[application.status]
                                   }`}
-                                >
-                                  <span>{statusStyles[application.status].label}</span>
+                                  title={statusStyles[application.status].label}
+                                > 
+                                  {(() => {
+                                    const statusIcons = {
+                                      pending: Clock,
+                                      shortlisted: FileText,
+                                      approved: CheckCircle,
+                                      denied: XCircle,
+                                      granted: Award,
+                                    };
+                                    const Icon = statusIcons[application.status];
+                                    return <Icon size={20} />;
+                                  })()}
                                 </div>
                               </div>
                             </div>

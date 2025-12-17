@@ -224,7 +224,7 @@ function RoleSelection() {
       {toast && <Toast {...toast} />}
 
       <motion.div 
-        className="text-center px-8 md:px-10 py-8 sm:py-10 md:py-12 relative"
+        className="text-center py-8 sm:py-10 md:py-12 relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
@@ -369,13 +369,13 @@ function RoleSelection() {
           <motion.button
             onClick={handleSelect}
             disabled={!canContinue || loading}
-            className={`px-50 sm:px-75 md:px-22 lg:px-29 py-3 sm:py-3.5 md:py-3 rounded-lg text-sm sm:text-base md:text-base transition-all duration-300 ${
+            className={`px-38 sm:px-40 md:px-22 lg:px-29 py-3 sm:py-3.5 md:py-3 rounded-lg text-sm sm:text-base md:text-base transition-all duration-300 ${
               canContinue && !loading
                 ? 'bg-[#EFA508] hover:bg-[#D89407] text-tertiary cursor-pointer shadow-md hover:shadow-lg'
                 : 'bg-[#9CA3AF] text-tertiary cursor-not-allowed'
             }`}
-            whileHover={canContinue ? { scale: 1.05 } : {}}
-            whileTap={canContinue ? { scale: 0.95 } : {}}
+            whileHover={canContinue && !loading ? { scale: 1.05 } : {}}
+            whileTap={canContinue && !loading ? { scale: 0.95 } : {}}
           >
             {loading ? (
               <span className="flex items-center justify-center">

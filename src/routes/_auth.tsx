@@ -14,7 +14,7 @@ function AuthLayout(): JSX.Element {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center"
+      className="min-h-screen flex items-center justify-center px-6"
       style={{
         backgroundImage: "url('/background.jpg')",
         backgroundSize: 'cover',

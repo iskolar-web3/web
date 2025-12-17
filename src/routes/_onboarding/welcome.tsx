@@ -91,7 +91,7 @@ function WelcomePage() {
 
   return (
     <motion.div 
-      className="text-center px-2 sm:px-4"
+      className="text-center"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -151,7 +151,7 @@ function WelcomePage() {
           to="/role-selection"
         >
           <button
-            className="bg-[#EFA508] cursor-pointer text-xs sm:text-sm md:text-sm text-tertiary py-2.5 px-16 sm:py-3 sm:px-22 md:py-3 md:px-28 lg:px-30 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+            className="bg-[#EFA508] cursor-pointer text-xs sm:text-sm md:text-sm text-tertiary py-2.5 px-16 sm:py-3 sm:px-22 md:py-3 md:px-28 lg:px-30 rounded-md transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             Get Started
           </button>

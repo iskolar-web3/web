@@ -49,7 +49,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: Scholar
             className="w-32 h-32 bg-white/10 flex-shrink-0 overflow-hidden"
           >
             <img
-              src={scholarship.image_url || "src/logo.svg"}
+              src={scholarship.image_url || "/logo.jpg"}
               alt="Preview"
               className="w-full h-full object-cover"
             />
@@ -60,7 +60,7 @@ export default function ScholarshipCard({ scholarship, index, onClick }: Scholar
             <h3 className="text-xl mb-1 line-clamp-1">{scholarship.title}</h3>
             
             {/* Badges */}
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex gap-2 mb-3">
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}

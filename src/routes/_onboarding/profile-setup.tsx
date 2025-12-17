@@ -119,7 +119,7 @@ function ProfileSetup() {
   const [showPreloader, setShowPreloader] = useState(false)
   const { toast, showSuccess, showError } = useToast();
 
-  const [isSchoolUnavailable, setIsSchoolUnavailable] = useState(false)
+  // const [isSchoolUnavailable, setIsSchoolUnavailable] = useState(false)
   
   // Student form
   const studentForm = useForm<StudentFormData>({
@@ -198,14 +198,14 @@ function ProfileSetup() {
     setRoleValidationError(false)
   }, [role, navigate])
 
-  const onSubmit = async (data: StudentFormData | IndividualSponsorFormData | OrganizationSponsorFormData | GovernmentSponsorFormData | SchoolFormData) => {
+  const onSubmit = async (_data: StudentFormData | IndividualSponsorFormData | OrganizationSponsorFormData | GovernmentSponsorFormData | SchoolFormData) => {
     try {
       setLoading(true);
 
       if (selectedRole === 'student') {
-        const studentData = data as StudentFormData;
+        // const studentData = data as StudentFormData;
 
-        const formattedDate = studentData.dateOfBirth.toISOString().split('T')[0];
+        // const formattedDate = studentData.dateOfBirth.toISOString().split('T')[0];
 
         // const result = await profileService.setupStudentProfile({
         //   role: selectedRole
@@ -244,9 +244,9 @@ function ProfileSetup() {
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'individual_sponsor') {
-        const individualSponsorData = data as IndividualSponsorFormData;
+        // const individualSponsorData = data as IndividualSponsorFormData;
 
-        const formattedDate = individualSponsorData.dateOfBirth.toISOString().split('T')[0];
+        // const formattedDate = individualSponsorData.dateOfBirth.toISOString().split('T')[0];
 
         // const result = await profileService.setupIndividualSponsorProfile({
         //   role: selectedRole
@@ -286,7 +286,7 @@ function ProfileSetup() {
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'organization_sponsor') {
-        const organizationSponsorData = data as OrganizationSponsorFormData;
+        // const organizationSponsorData = data as OrganizationSponsorFormData;
 
         // const result = await profileService.setupOrganizationSponsorProfile({
         //   role: selectedRole
@@ -324,7 +324,7 @@ function ProfileSetup() {
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'government_sponsor') {
-        const governmentSponsorData = data as GovernmentSponsorFormData;
+        // const governmentSponsorData = data as GovernmentSponsorFormData;
 
         // const result = await profileService.setupGovernmentSponsorProfile({
         //   role: selectedRole
@@ -362,10 +362,10 @@ function ProfileSetup() {
           setShowPreloader(true);
         }, 1250);
       } else if (selectedRole === 'school') {
-          const schoolData = data as SchoolFormData;
+          // const schoolData = data as SchoolFormData;
 
           showError('Unavailable', 'The school role is not available yet.', 2450);
-          setIsSchoolUnavailable(true);
+          // setIsSchoolUnavailable(true);
           
           setTimeout(() => {
             navigate({ to: '/role-selection' });
@@ -442,7 +442,7 @@ function ProfileSetup() {
         {toast && <Toast {...toast} />}
 
         <motion.div 
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12"
+          className="min-h-screen flex items-center justify-center py-8 sm:py-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
@@ -488,7 +488,7 @@ function ProfileSetup() {
 
       {!showPreloader && (
       <motion.div 
-        className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12"
+        className="min-h-screen flex items-center justify-center py-8 sm:py-12"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}

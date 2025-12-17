@@ -3,9 +3,9 @@ import { Target, Lightbulb, Globe } from "lucide-react"
 
 export default function MissionVisionSection() {
   return (
-    <div id="mission-vision" className="bg-background py-36 text-secondary relative z-10 w-full overflow-hidden">
+    <div id="mission-vision" className="bg-background py-36 text-secondary w-full overflow-hidden">
       <MotionContainer>
-        <div className="px-4 sm:px-12 lg:px-26 max-w-7xl mx-auto">
+        <div className="px-4 sm:px-12 lg:px-26 max-w-7xl mx-auto relative z-26">
           <h2 className="text-4xl md:text-5xl mb-12 text-center text-secondary">
             Mission & Vision
           </h2>
