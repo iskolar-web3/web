@@ -28,3 +28,16 @@ export type LoginResponse = {
 	user: User;
 	token: string;
 };
+
+export enum ContactType {
+	Phone = "phone",
+	// Insert other values
+}
+
+export const contactDetailSchema = z.object({
+	id: z.uuidv4(),
+	name: z.string().nonempty(),
+	code: z.enum(ContactType),
+	value: z.string().nonempty(),
+});
+export type ContactDetail = z.infer<typeof contactDetailSchema>;

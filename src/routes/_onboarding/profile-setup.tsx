@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2 } from "lucide-react"; 
+import { Contact, Loader2 } from "lucide-react"; 
 import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
@@ -25,6 +25,10 @@ import {
 import { CalendarIcon } from "lucide-react"
 import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
+import { Gender, type Student } from '@/types/student'
+import { BACKEND_URL, type ApiResponse } from '@/lib/api'
+import { ContactType } from '@/types/user'
+import { useMutation } from '@tanstack/react-query'
 // import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute('/_onboarding/profile-setup')({
@@ -40,19 +44,24 @@ type Role = 'student' | 'individual_sponsor' | 'organization_sponsor' | 'governm
 
 const VALID_ROLES: Role[] = ['student', 'individual_sponsor', 'organization_sponsor', 'government_sponsor', 'school']
 
+const createContactRequestSchema = z.object({
+	value: z.string().nonempty({ error: 'Contact number is required' })
+        .regex(/^\d+$/, 'Contact number must contain only numbers')
+        .min(11, 'Contact number must be at least 11 digits'),
+	contactType: z.enum(ContactType),
+})
+
 // Student validation 
 const studentSchema = z.object({
+  userId: z.uuidv4(),
   firstName: z.string().min(1, 'First name is required'),
   middleName: z.string().optional(),
   lastName: z.string().min(1, 'Last name is required'),
-  gender: z.enum(['male', 'female'], { message: 'Please select a gender' }),
-  dateOfBirth: z.date().refine((date) => date <= new Date(), {
+  gender: z.enum(Gender, { message: 'Please select a gender' }),
+  birthDate: z.date().refine((date) => date <= new Date(), {
     message: 'Date of birth cannot be in the future',
   }),
-  contactNumber: z.string()
-    .min(1, 'Contact number is required')
-    .regex(/^\d+$/, 'Contact number must contain only numbers')
-    .min(11, 'Contact number must be at least 11 digits'),
+  contact: createContactRequestSchema,
 })
 
 // individual Sponsor validation
@@ -61,7 +70,7 @@ const individualSponsorSchema = z.object({
   middleName: z.string().optional(),
   lastName: z.string().min(1, 'Last name is required'),
   employmentType: z.enum(['employed', 'self_employed', 'freelancer', 'overseas_filipino_worker', 'student'], { message: 'Please select employment type' }),
-  dateOfBirth: z.date().refine((date) => date <= new Date(), {
+  birthDate: z.date().refine((date) => date <= new Date(), {
     message: 'Date of birth cannot be in the future',
   }),
   contactNumber: z.string()
@@ -106,6 +115,20 @@ type OrganizationSponsorFormData = z.infer<typeof organizationSponsorSchema>
 type GovernmentSponsorFormData = z.infer<typeof governmentSponsorSchema>
 type SchoolFormData = z.infer<typeof schoolSchema>
 
+async function createStudent(value: StudentFormData): Promise<Student> {
+	const response = await fetch(`${BACKEND_URL}/students`, {
+		method: "POST",
+		body: JSON.stringify(value),
+		headers: { "Content-Type": "application/json" },
+	});
+	const result: ApiResponse<Student> = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message || "Failed to create profile.");
+	}
+
+	return result.data;
+}
+
 function ProfileSetup() {
   usePageTitle("Profile Setup")
   
@@ -126,12 +149,18 @@ function ProfileSetup() {
     resolver: zodResolver(studentSchema),
     mode: "onBlur",
     defaultValues: {
+      // Hard code for now because I'm lazy
+      // Don't do this at home
+      userId: "5c819719-db5f-499d-bdda-1253736cf36c",
       firstName: '',
       middleName: '',
       lastName: '',
       gender: undefined,
-      dateOfBirth: undefined,
-      contactNumber: '',
+      birthDate: undefined,
+      contact: {
+          contactType: ContactType.Phone,
+          value: ""
+      },
     }
   })
 
@@ -144,7 +173,7 @@ function ProfileSetup() {
       middleName: '',
       lastName: '',
       employmentType: undefined,
-      dateOfBirth: undefined,
+      birthDate: undefined,
       contactNumber: '',
     }
   })
@@ -198,55 +227,27 @@ function ProfileSetup() {
     setRoleValidationError(false)
   }, [role, navigate])
 
-  const onSubmit = async (_data: StudentFormData | IndividualSponsorFormData | OrganizationSponsorFormData | GovernmentSponsorFormData | SchoolFormData) => {
+  const mutation = useMutation({
+      mutationFn: createStudent,
+      onSuccess: async () => {
+        showSuccess(`Success`, 'Your profile has been set up successfully!', 1250);
+        setLoading(false);
+        await navigate({ to: "/home" });
+      }
+  })
+
+  const onSubmit = async (value: StudentFormData | IndividualSponsorFormData | OrganizationSponsorFormData | GovernmentSponsorFormData | SchoolFormData) => {
     try {
       setLoading(true);
 
       if (selectedRole === 'student') {
-        // const studentData = data as StudentFormData;
+        const studentData = value as StudentFormData;
+        mutation.mutate(studentData)
 
-        // const formattedDate = studentData.dateOfBirth.toISOString().split('T')[0];
-
-        // const result = await profileService.setupStudentProfile({
-        //   role: selectedRole
-        //   first_name: studentData.firstName,
-        //   middle_name: studentData.middleName,
-        //   last_name: studentData.lastName,
-        //   gender: studentData.gender,
-        //   date_of_birth: formattedDate,
-        //   contact_number: studentData.contactNumber,
-        // });
-
-        // if (result.success) {
-        //   setToastConfig({
-        //     type: 'success',
-        //     title: 'Profile Created',
-        //     message: 'Your profile has been set up successfully!',
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => {
-        //     setShowToast(false)
-        //     setShowPreloader(true);
-        //   }, 1250);
-        // } else {
-        //   setToastConfig({
-        //     type: 'error',
-        //     title: 'Error',
-        //     message: result.message,
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => setShowToast(false), 2000);
-        // }
-        
-        // For now, simulate successful profile setup to test preloader
-        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
-        setTimeout(() => {
-          setShowPreloader(true);
-        }, 1250);
       } else if (selectedRole === 'individual_sponsor') {
         // const individualSponsorData = data as IndividualSponsorFormData;
 
-        // const formattedDate = individualSponsorData.dateOfBirth.toISOString().split('T')[0];
+        // const formattedDate = individualSponsorData.birthDate.toISOString().split('T')[0];
 
         // const result = await profileService.setupIndividualSponsorProfile({
         //   role: selectedRole
@@ -577,7 +578,7 @@ function ProfileSetup() {
                 <div>
                   <Select 
                     value={studentForm.watch('gender')} 
-                    onValueChange={(value) => studentForm.setValue('gender', value as 'male' | 'female', { shouldValidate: true })}
+                    onValueChange={(value) => studentForm.setValue('gender', value as Gender, { shouldValidate: true })}
                   >
                     <SelectTrigger className={`w-full px-4 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                       studentForm.formState.errors.gender
@@ -604,16 +605,16 @@ function ProfileSetup() {
                       <button
                         type="button"
                         className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
-                          studentForm.watch('dateOfBirth') ? 'text-primary' : 'text-gray-400'
+                          studentForm.watch('birthDate') ? 'text-primary' : 'text-gray-400'
                         } ${
-                          studentForm.formState.errors.dateOfBirth
+                          studentForm.formState.errors.birthDate
                             ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
                             : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
                         }`}
                       >
                         <span>
-                          {studentForm.watch('dateOfBirth') 
-                            ? studentForm.watch('dateOfBirth').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                          {studentForm.watch('birthDate') 
+                            ? studentForm.watch('birthDate').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
                             : 'Set birth date'}
                         </span>
                         <CalendarIcon className="h-4 w-4 opacity-50" />
@@ -622,10 +623,10 @@ function ProfileSetup() {
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={studentForm.watch('dateOfBirth')}
+                        selected={studentForm.watch('birthDate')}
                         onSelect={(date) => {
                           if (date) {
-                            studentForm.setValue('dateOfBirth', date, { shouldValidate: true })
+                            studentForm.setValue('birthDate', date, { shouldValidate: true })
                           }
                         }}
                         captionLayout="dropdown" 
@@ -634,9 +635,9 @@ function ProfileSetup() {
                       />
                     </PopoverContent>
                   </Popover>
-                  {studentForm.formState.errors.dateOfBirth && (
+                  {studentForm.formState.errors.birthDate && (
                     <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {studentForm.formState.errors.dateOfBirth.message}
+                      {studentForm.formState.errors.birthDate.message}
                     </p>
                   )}
                 </div>
@@ -644,9 +645,9 @@ function ProfileSetup() {
                 <div>
                   <input
                     type="tel"
-                    {...studentForm.register('contactNumber')}
+                    {...studentForm.register('contact.value')}
                     className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      studentForm.formState.errors.contactNumber
+                      studentForm.formState.errors.contact?.value
                         ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
                         : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                     }`}
@@ -654,12 +655,12 @@ function ProfileSetup() {
                     inputMode="numeric"
                     onChange={(e) => {
                       const numericValue = e.target.value.replace(/\D/g, '')
-                      studentForm.setValue('contactNumber', numericValue, { shouldValidate: true })
+                      studentForm.setValue('contact.value', numericValue, { shouldValidate: true })
                     }}
                   />
-                  {studentForm.formState.errors.contactNumber && (
+                  {studentForm.formState.errors.contact?.value && (
                     <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {studentForm.formState.errors.contactNumber.message}
+                      {studentForm.formState.errors.contact?.value?.message}
                     </p>
                   )}
                 </div>
@@ -782,16 +783,16 @@ function ProfileSetup() {
                       <button
                         type="button"
                         className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
-                          individualSponsorForm.watch('dateOfBirth') ? 'text-primary' : 'text-gray-400'
+                          individualSponsorForm.watch('birthDate') ? 'text-primary' : 'text-gray-400'
                         } ${
-                          individualSponsorForm.formState.errors.dateOfBirth
+                          individualSponsorForm.formState.errors.birthDate
                             ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
                             : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
                         }`}
                       >
                         <span>
-                          {individualSponsorForm.watch('dateOfBirth') 
-                            ? individualSponsorForm.watch('dateOfBirth').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                          {individualSponsorForm.watch('birthDate') 
+                            ? individualSponsorForm.watch('birthDate').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
                             : 'Set birth date'}
                         </span>
                         <CalendarIcon className="h-4 w-4 opacity-50" />
@@ -800,10 +801,10 @@ function ProfileSetup() {
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={individualSponsorForm.watch('dateOfBirth')}
+                        selected={individualSponsorForm.watch('birthDate')}
                         onSelect={(date) => {
                           if (date) {
-                            individualSponsorForm.setValue('dateOfBirth', date, { shouldValidate: true })
+                            individualSponsorForm.setValue('birthDate', date, { shouldValidate: true })
                           }
                         }}
                         captionLayout="dropdown"
@@ -812,9 +813,9 @@ function ProfileSetup() {
                       />
                     </PopoverContent>
                   </Popover>
-                  {individualSponsorForm.formState.errors.dateOfBirth && (
+                  {individualSponsorForm.formState.errors.birthDate && (
                     <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {individualSponsorForm.formState.errors.dateOfBirth.message}
+                      {individualSponsorForm.formState.errors.birthDate.message}
                     </p>
                   )}
                 </div>
