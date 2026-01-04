@@ -10,6 +10,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react"; 
+import { useMutation } from "@tanstack/react-query";
+import { BACKEND_URL, type ApiResponse } from "@/lib/api";
+import type { User } from "@/types/user";
 // import { handleError } from '@/lib/errorHandler';
 // import { logger } from "@/lib/logger";
 // import { authService } from '@/services/auth.service';
@@ -42,6 +45,20 @@ const registerSchema = z
   });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
+
+async function register(value: RegisterFormData): Promise<User> {
+	const response = await fetch(`${BACKEND_URL}/register`, {
+		method: "POST",
+		body: JSON.stringify(value),
+		headers: { "Content-Type": "application/json" },
+	});
+	const result: ApiResponse<User> = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message || "Login failed");
+	}
+
+	return result.data;
+}
 
 function RegisterPage(): JSX.Element {
   usePageTitle("Sign Up");
@@ -76,50 +93,23 @@ function RegisterPage(): JSX.Element {
   //   checkAuth();
   // }, []);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterFormData>({
+  const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     mode: "onBlur", 
   });
+
+  const mutation = useMutation({
+      mutationFn: register,
+      onSuccess: async () => {
+        showSuccess(`Success`, 'Login successful', 1250);
+        setLoading(false);
+        await navigate({ to: "/login" });
+      }
+  })
   
-  const onSubmit = async (_data: RegisterFormData) => {
-    // try {
-    //   setLoading(true);
-
-    //   const result = await authService.register({
-    //     email: data.email,
-    //     password: data.password,
-    //     confirm_password: data.confirmPassword,
-    //   })
-
-    //   if(result.success) {
-    //     showSuccess(`Success`, result.message, 1250); 
-    
-    //     setTimeout(() => {
-    //       navigate({ to: "/login" });
-    //     }, 1300);
-    //   } else {
-    //     showError(`Error`, result.error, 2500);
-    //   }
-    // } catch(error) {
-    //   const handled = handleError(error, 'Unable to load scholarship details.');
-    //   logger.error('Failed to load scholarship:', handled.raw);
-    //   showError(`Error`, error.message, 2500);
-    // } finally {
-    //   setLoading(false);
-    // }
-
-    // Simulate
+  const onSubmit = async (value: RegisterFormData) => {
     setLoading(true);
-    showSuccess(`Success`, 'Login successful', 1250);
-
-    setTimeout(() => {
-      setLoading(false);
-      navigate({ to: "/login" });
-    }, 1300);
+    mutation.mutate(value)
   };
 
   const handleGoogleSignUp = () => {
@@ -155,7 +145,7 @@ function RegisterPage(): JSX.Element {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
             <div>
               <label htmlFor="email" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Email
@@ -164,17 +154,17 @@ function RegisterPage(): JSX.Element {
                 id="email"
                 type="email"
                 placeholder="Enter Email"
-                {...register("email")}
+                {...form.register("email")}
                 disabled={loading}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
-                  errors.email
+                  form.formState.errors.email
                     ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                     : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
                 }`}
               />
-              {errors.email && (
+              {form.formState.errors.email && (
                 <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                  {errors.email.message}
+                  {form.formState.errors.email.message}
                 </p>
               )}
             </div>
@@ -188,10 +178,10 @@ function RegisterPage(): JSX.Element {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter Password"
-                  {...register("password")}
+                  {...form.register("password")}
                   disabled={loading}
                   className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
-                    errors.password
+                    form.formState.errors.password
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                       : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
                   }`}
@@ -209,9 +199,9 @@ function RegisterPage(): JSX.Element {
                   )}
                 </button>
               </div>
-              {errors.password && (
+              {form.formState.errors.password && (
                 <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                  {errors.password.message}
+                  {form.formState.errors.password.message}
                 </p>
               )}
             </div>
@@ -225,10 +215,10 @@ function RegisterPage(): JSX.Element {
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm Password"
-                  {...register("confirmPassword")}
+                  {...form.register("confirmPassword")}
                   disabled={loading}
                   className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
-                    errors.confirmPassword
+                    form.formState.errors.confirmPassword
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                       : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
                   }`}
@@ -246,9 +236,9 @@ function RegisterPage(): JSX.Element {
                   )}
                 </button>
               </div>
-              {errors.confirmPassword && (
+              {form.formState.errors.confirmPassword && (
                 <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                  {errors.confirmPassword.message}
+                  {form.formState.errors.confirmPassword.message}
                 </p>
               )}
             </div>
