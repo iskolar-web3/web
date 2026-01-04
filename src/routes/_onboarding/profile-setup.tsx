@@ -150,7 +150,8 @@ function ProfileSetup() {
     mode: "onBlur",
     defaultValues: {
       // Hard code for now because I'm lazy
-      // Don't do this at home
+      // TODO: Don't do this at home
+        // Implement a way to get the current user
       userId: "5c819719-db5f-499d-bdda-1253736cf36c",
       firstName: '',
       middleName: '',
