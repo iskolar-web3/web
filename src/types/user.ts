@@ -23,3 +23,8 @@ export const userSchema = z.object({
 });
 
 export type User = z.output<typeof userSchema>;
+
+export type LoginResponse = {
+	user: User;
+	token: string;
+};
