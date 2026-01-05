@@ -12,7 +12,7 @@ import { z } from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react"; 
 import { useMutation } from "@tanstack/react-query";
 import { BACKEND_URL, type ApiResponse } from "@/lib/api";
-import type { User } from "@/types/user";
+import type { User } from "@/lib/user/model";
 // import { handleError } from '@/lib/errorHandler';
 // import { logger } from "@/lib/logger";
 // import { authService } from '@/services/auth.service';

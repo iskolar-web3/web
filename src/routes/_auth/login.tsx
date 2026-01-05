@@ -11,10 +11,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import type { LoginResponse } from "@/types/user";
 import { BACKEND_URL, type ApiResponse } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { setCookie } from "@/lib/cookie";
+import type { AuthSession } from "@/lib/user/model";
+import { AUTH_TOKEN_KEY } from "@/lib/user/auth";
 // import { handleError } from '@/lib/errorHandler';
 // import { logger } from "@/lib/logger";
 // import { authService } from '@/services/auth.service';
@@ -39,13 +40,13 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-async function login(value: LoginFormData): Promise<LoginResponse> {
+async function login(value: LoginFormData): Promise<AuthSession> {
 	const response = await fetch(`${BACKEND_URL}/login`, {
 		method: "POST",
 		body: JSON.stringify(value),
 		headers: { "Content-Type": "application/json" },
 	});
-	const result: ApiResponse<LoginResponse> = await response.json();
+	const result: ApiResponse<AuthSession> = await response.json();
 	if (!response.ok) {
 		throw new Error(result.message || "Login failed");
 	}
@@ -99,7 +100,7 @@ function LoginPage(): JSX.Element {
       onSuccess: async (res) => {
         showSuccess(`Success`, 'Login successful', 1250);
         setLoading(false);
-        setCookie("token", res.token);
+        setCookie(AUTH_TOKEN_KEY, res.token);
         await navigate({ to: "/welcome" });
       }
   })
