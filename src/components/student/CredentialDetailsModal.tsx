@@ -1,8 +1,9 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, FileText, Loader2, Copy, Check } from 'lucide-react';
+import { ExternalLink, FileText } from 'lucide-react';
 import { type CredentialData } from '@/lib/contracts';
 import { getIPFSUrl } from '@/utils/ipfs.utils';
+import { useTokenURI } from '@/hooks/useNFTCredential';
 
 interface CredentialDetailsModalProps {
   isOpen: boolean;
@@ -17,15 +18,15 @@ export default function CredentialDetailsModal({
   tokenId, 
   credentialData 
 }: CredentialDetailsModalProps) {
+  const { tokenURI } = useTokenURI(tokenId);
+
   const documentUrl = credentialData.documentURI?.startsWith('ipfs://') 
     ? getIPFSUrl(credentialData.documentURI)
     : credentialData.documentURI;
 
-  const copyToClipboard = (text: string, setCopied: (val: boolean) => void) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const metadataUrl = tokenURI?.startsWith('ipfs://')
+    ? getIPFSUrl(tokenURI)
+    : tokenURI;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -65,6 +66,15 @@ export default function CredentialDetailsModal({
               >
                 <ExternalLink className="w-4 h-4" />
                 View Document
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full cursor-pointer flex items-center justify-center gap-2 h-10 border-primary/20 hover:border-primary/50 hover:bg-secondary/5 text-primary"
+                disabled={!metadataUrl}
+                onClick={() => metadataUrl && window.open(metadataUrl, '_blank')}
+              >
+                <ExternalLink className="w-4 h-4" />
+                View Metadata
               </Button>
             </div>
           </div>
