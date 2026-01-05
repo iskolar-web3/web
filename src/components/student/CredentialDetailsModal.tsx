@@ -45,14 +45,14 @@ export default function CredentialDetailsModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="!max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0">
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Status, Visuals, & Links */}
-          <div className="space-y-5">
-            {/*Status */}
-            <div className="flex items-center gap-2 text-xs uppercase">
-                <span className={`${credentialData.revoked ? 'text-[#EF4444]' : 'text-[#31D0AA]'}`}>{credentialData.revoked ? 'Revoked' : 'Active'}</span>
-            </div>
+        {/*Status */}
+        <div className="px-6 pt-4  flex items-center gap-2 text-xs uppercase">
+            <span className={`${credentialData.revoked ? 'text-[#EF4444]' : 'text-[#31D0AA]'}`}>{credentialData.revoked ? 'Revoked' : 'Active'}</span>
+        </div>
 
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Visuals & Links */}
+          <div className="space-y-5">
             {/* Document Preview */}
             <div className="w-full bg-gray-50 rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
               <div style={{ aspectRatio: '297/210' }} className="w-full relative group">
