@@ -1,4 +1,6 @@
 import imageCompression from 'browser-image-compression';
+import { logger } from '@/lib/logger';
+import { handleError } from '@/lib/errorHandler';
 
 /**
  * Compresses an image file using browser-image-compression
@@ -19,7 +21,8 @@ export const compressImage = async (file: File): Promise<File> => {
     const compressedFile = await imageCompression(file, options);
     return compressedFile;
   } catch (error) {
-    console.error('Image compression failed:', error);
+    const handled = handleError(error, 'Image compression failed');
+    logger.error('Image compression failed:', handled.raw);
     return file;
   }
 };
