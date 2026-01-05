@@ -15,7 +15,7 @@ import { BACKEND_URL, type ApiResponse } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { setCookie } from "@/lib/cookie";
 import type { AuthSession } from "@/lib/user/model";
-import { AUTH_TOKEN_KEY } from "@/lib/user/auth";
+import { REFRESH_TOKEN_KEY } from "@/lib/user/auth";
 // import { handleError } from '@/lib/errorHandler';
 // import { logger } from "@/lib/logger";
 // import { authService } from '@/services/auth.service';
@@ -100,7 +100,7 @@ function LoginPage(): JSX.Element {
       onSuccess: async (res) => {
         showSuccess(`Success`, 'Login successful', 1250);
         setLoading(false);
-        setCookie(AUTH_TOKEN_KEY, res.token);
+        setCookie(REFRESH_TOKEN_KEY, res.token);
         await navigate({ to: "/welcome" });
       }
   })
