@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Upload, FileText, Award, X, CheckCircle, Loader2, Wallet } from 'lucide-react';
 import {
   Dialog,
@@ -16,6 +16,11 @@ import { uploadToIPFS, uploadMetadataToIPFS, getIPFSUri, getIPFSUrl } from '@/ut
 import { type CredentialData } from '@/lib/contracts';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/lib/errorHandler';
+import {
+  loadPDFJS,
+  handleFileSelection,
+  formatFileSize,
+} from '@/utils/fileHandling.utils';
 
 interface CredentialEditModalProps {
   isOpen: boolean;
@@ -31,10 +36,6 @@ interface FormData {
   institution: string;
   issuedDate: string;
 }
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; 
-const ALLOWED_FILE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
-const PDFJS_VERSION = '3.11.174';
 
 export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenId, credentialData }: CredentialEditModalProps) {
   const [formData, setFormData] = useState<FormData>({
@@ -53,34 +54,12 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
-  const pdfjsLoadedRef = useRef(false);
   
   const { address, isConnected } = useAccount();
   const { updateCredential, isPending, isConfirming, isSuccess, error: contractError } = useUpdateCredential();
 
+  // Load PDF.js when modal opens
   useEffect(() => {
-    if (pdfjsLoadedRef.current) return;
-
-    const loadPDFJS = async () => {
-      if ((window as any).pdfjsLib) {
-        pdfjsLoadedRef.current = true;
-        return;
-      }
-
-      return new Promise<void>((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.min.js`;
-        script.onload = () => {
-          const pdfjsLib = (window as any).pdfjsLib;
-          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.js`;
-          pdfjsLoadedRef.current = true;
-          resolve();
-        };
-        script.onerror = () => reject(new Error('Failed to load PDF.js'));
-        document.head.appendChild(script);
-      });
-    };
-
     if (isOpen) {
       loadPDFJS().catch((err) => {
         const handled = handleError(err, 'Failed to load PDF.js library');
@@ -89,114 +68,52 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
     }
   }, [isOpen]);
 
-  const validateFile = useCallback((file: File): string | null => {
-    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      return 'Invalid file type. Please upload PNG, JPG, or PDF files only.';
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      return `File size exceeds 10MB limit. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`;
-    }
-    return null;
-  }, []);
-
   const handleInputChange = useCallback((field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setError(null);
     setUploadSuccess(false);
   }, []);
 
-  /**
-   * Generates a preview image from a PDF file
-   */
-  const generatePDFPreview = useCallback(async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      
-      fileReader.onload = async function() {
-        try {
-          const typedArray = new Uint8Array(this.result as ArrayBuffer);
-          const pdfjsLib = (window as any).pdfjsLib;
-          
-          if (!pdfjsLib) {
-            reject(new Error('PDF.js library not loaded'));
-            return;
-          }
-          
-          const pdf = await pdfjsLib.getDocument(typedArray).promise;
-          const page = await pdf.getPage(1);
-          
-          const scale = 2;
-          const viewport = page.getViewport({ scale });
-          
-          const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
-          if (!context) {
-            reject(new Error('Failed to get canvas context'));
-            return;
-          }
-          
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
-          
-          await page.render({
-            canvasContext: context,
-            viewport: viewport
-          }).promise;
-          
-          resolve(canvas.toDataURL());
-        } catch (error) {
-          reject(error);
-        }
-      };
-      
-      fileReader.onerror = () => reject(new Error('Failed to read file'));
-      fileReader.readAsArrayBuffer(file);
-    });
-  }, []);
-
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    const validationError = validateFile(selectedFile);
-    if (validationError) {
-      setError(validationError);
-      e.target.value = ''; 
-      return;
+    // Reset input
+    e.target.value = '';
+
+    // Set loading state for PDF previews
+    if (selectedFile.type === 'application/pdf') {
+      setIsGeneratingPreview(true);
     }
 
-    setFile(selectedFile);
-    setPreview(null);
     setError(null);
     setUploadSuccess(false);
-    
-    if (selectedFile.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.onerror = () => {
-        setError('Failed to read image file');
-      };
-      reader.readAsDataURL(selectedFile);
-    } else if (selectedFile.type === 'application/pdf') {
-      setIsGeneratingPreview(true);
-      try {
-        if (!pdfjsLoadedRef.current) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        const pdfPreview = await generatePDFPreview(selectedFile);
-        setPreview(pdfPreview);
-      } catch (error) {
-        const handled = handleError(error, 'Failed to generate PDF preview. Please try again.');
-        logger.error('Failed to generate PDF preview:', handled.raw);
-        setError(handled.message);
+
+    try {
+      const result = await handleFileSelection(selectedFile, {
+        compress: true,
+        waitForPDFJS: true,
+      });
+
+      if (result.error) {
+        setError(result.error);
+        setFile(null);
         setPreview(null);
-      } finally {
-        setIsGeneratingPreview(false);
+        return;
       }
+
+      setFile(result.file);
+      setPreview(result.preview);
+    } catch (error) {
+      const handled = handleError(error, 'Failed to process file');
+      logger.error('File handling error:', handled.raw);
+      setError(handled.message);
+      setFile(null);
+      setPreview(null);
+    } finally {
+      setIsGeneratingPreview(false);
     }
-  }, [validateFile, generatePDFPreview]);
+  }, []);
 
   const removeFile = useCallback(() => {
     setFile(null);
@@ -317,12 +234,6 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
     }
   }, [isPending, isConfirming, isUploading, onClose]);
 
-  /**
-   * Format file size for display
-   */
-  const formatFileSize = useCallback((bytes: number): string => {
-    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-  }, []);
 
   /**
    * Format date for display
