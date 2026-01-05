@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 const STORAGE_KEY_PREFIX = 'credential_tx_hash_';
 const STORAGE_CHAIN_PREFIX = 'credential_chain_';
 
@@ -11,7 +13,7 @@ export function storeCredentialTxHash(tokenId: bigint, txHash: `0x${string}`, ch
     localStorage.setItem(hashKey, txHash);
     localStorage.setItem(chainKey, chainId.toString());
   } catch (error) {
-    console.error('Failed to store transaction hash:', error);
+    logger.error('Failed to store transaction hash:', error);
   }
 }
 
@@ -24,7 +26,7 @@ export function getCredentialTxHash(tokenId: bigint): `0x${string}` | null {
     const hash = localStorage.getItem(key);
     return hash as `0x${string}` | null;
   } catch (error) {
-    console.error('Failed to retrieve transaction hash:', error);
+    logger.error('Failed to retrieve transaction hash:', error);
     return null;
   }
 }
@@ -38,7 +40,7 @@ export function getCredentialChainId(tokenId: bigint): number | null {
     const chainIdStr = localStorage.getItem(key);
     return chainIdStr ? parseInt(chainIdStr, 10) : null;
   } catch (error) {
-    console.error('Failed to retrieve chain ID:', error);
+    logger.error('Failed to retrieve chain ID:', error);
     return null;
   }
 }

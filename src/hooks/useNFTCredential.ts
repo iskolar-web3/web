@@ -1,8 +1,9 @@
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
 import { getContractAddress, NFT_CREDENTIAL_ABI, type CredentialData } from '@/lib/contracts';
 import { useMemo, useEffect } from 'react';
-import { storeCredentialTxHash } from '@/utils/txHashStorage';
+import { storeCredentialTxHash } from '@/utils/txHashStorage.utils';
 import { decodeEventLog } from 'viem';
+import { logger } from '@/lib/logger';
 
 /**
  * Hook to get contract address for current chain
@@ -54,7 +55,7 @@ export function useIssueCredential() {
           }
         }
       } catch (error) {
-        console.error('Failed to extract tokenId from transaction receipt:', error);
+        logger.error('Failed to extract tokenId from transaction receipt:', error);
       }
     }
   }, [isSuccess, hash, receipt, contractAddress, chainId]);
