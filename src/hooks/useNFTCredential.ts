@@ -1,6 +1,8 @@
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
 import { getContractAddress, NFT_CREDENTIAL_ABI, type CredentialData } from '@/lib/contracts';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
+import { storeCredentialTxHash } from '@/utils/txHashStorage';
+import { decodeEventLog } from 'viem';
 
 /**
  * Hook to get contract address for current chain
@@ -15,11 +17,47 @@ export function useContractAddress() {
  */
 export function useIssueCredential() {
   const contractAddress = useContractAddress();
+  const chainId = useChainId();
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const { data: receipt, isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
+
+  // Store transaction hash with tokenId and chainId when transaction succeeds
+  useEffect(() => {
+    if (isSuccess && hash && receipt && contractAddress) {
+      try {
+        const eventAbi = NFT_CREDENTIAL_ABI.find(
+          (item) => item.type === 'event' && item.name === 'CredentialIssued'
+        ) as any;
+
+        if (eventAbi && receipt.logs) {
+          for (const log of receipt.logs) {
+            if (log.address.toLowerCase() === contractAddress.toLowerCase()) {
+              try {
+                const decoded = decodeEventLog({
+                  abi: [eventAbi],
+                  data: log.data,
+                  topics: log.topics,
+                }) as { eventName: string; args: { tokenId?: bigint } };
+
+                if (decoded.eventName === 'CredentialIssued' && decoded.args.tokenId) {
+                  const tokenId = decoded.args.tokenId as bigint;
+                  storeCredentialTxHash(tokenId, hash, chainId);
+                  break;
+                }
+              } catch (e) {
+                continue;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to extract tokenId from transaction receipt:', error);
+      }
+    }
+  }, [isSuccess, hash, receipt, contractAddress, chainId]);
 
   const issueCredential = async (
     recipient: `0x${string}`,
@@ -203,7 +241,7 @@ export function useCredentialValid(tokenId: bigint | undefined) {
 export function useCredentialsByHolder(
   holderAddress: `0x${string}` | undefined,
   offset = 0,
-  limit = 10
+  limit = 15
 ) {
   const contractAddress = useContractAddress();
   

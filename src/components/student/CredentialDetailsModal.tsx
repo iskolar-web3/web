@@ -4,6 +4,8 @@ import { ExternalLink, FileText } from 'lucide-react';
 import { type CredentialData } from '@/lib/contracts';
 import { getIPFSUrl } from '@/utils/ipfs.utils';
 import { useTokenURI } from '@/hooks/useNFTCredential';
+import { getCredentialTxHash, getCredentialChainId, getExplorerTxUrl, getNetworkName } from '@/utils/txHashStorage';
+import { useMemo } from 'react';
 
 interface CredentialDetailsModalProps {
   isOpen: boolean;
@@ -27,6 +29,18 @@ export default function CredentialDetailsModal({
   const metadataUrl = tokenURI?.startsWith('ipfs://')
     ? getIPFSUrl(tokenURI)
     : tokenURI;
+
+  // Get stored transaction hash and chainId for this credential
+  const txHash = useMemo(() => getCredentialTxHash(tokenId), [tokenId]);
+  const storedChainId = useMemo(() => getCredentialChainId(tokenId), [tokenId]);
+  const networkName = useMemo(() => {
+    if (!storedChainId) return null;
+    return getNetworkName(storedChainId);
+  }, [storedChainId]);
+  const explorerUrl = useMemo(() => {
+    if (!txHash || !storedChainId) return null;
+    return getExplorerTxUrl(storedChainId, txHash);
+  }, [txHash, storedChainId]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -96,10 +110,12 @@ export default function CredentialDetailsModal({
                   <p className="text-sm text-primary mt-0.5">{credentialData.credentialType}</p>
               </div>
 
-              <div>
+              {credentialData.issuedDate &&
+                <div>
                   <label className="text-xs text-primary/80 uppercase tracking-wider">Issued Date</label>
-                  <p className="text-sm text-primary mt-0.5">{credentialData.issuedDate || 'N/A'}</p>
-              </div>
+                  <p className="text-sm text-primary mt-0.5">{credentialData.issuedDate}</p>
+                </div>
+              }
 
               <div>
                 <label className="text-xs text-primary/80 uppercase tracking-wider">Issuing Institution</label>
@@ -126,33 +142,38 @@ export default function CredentialDetailsModal({
                   </div>
                 </div>
 
-                {/* Transaction Hash
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0 mr-4">
-                    <p className="text-xs text-gray-500 font-medium">Transaction Hash</p>
-                    {isLoadingTx ? (
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
-                        <span className="text-xs text-gray-400">Fetching...</span>
-                      </div>
-                    ) : txHash ? (
-                      <p className="text-sm font-mono text-gray-700 mt-0.5 truncate" title={txHash}>
-                        {txHash}
-                      </p>
-                    ) : (
-                      <p className="text-xs text-gray-400 mt-0.5 italic">Not available</p>
-                    )}
+                {/* Network */}
+                {networkName && (
+                  <div className="flex items-center justify-between">
+                    <div className='flex items-center gap-2'>
+                      <p className="text-xs text-primary/80 uppercase">Network: </p>
+                      <p className="text-sm text-primary">{networkName}</p>
+                    </div>
                   </div>
-                  {txHash && (
-                    <button 
-                      onClick={() => copyToClipboard(txHash, setCopiedTxHash)}
-                      className="p-1.5 hover:bg-gray-200 rounded-md transition-colors text-gray-400 hover:text-gray-600 flex-shrink-0"
-                      title="Copy Transaction Hash"
-                    >
-                      {copiedTxHash ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                  )}
-                </div> */}
+                )}
+
+                {/* Transaction Hash */}
+                {txHash && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-primary/80 uppercase">Transaction:</p>
+                      {explorerUrl ? (
+                        <a
+                          href={explorerUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm text-primary underline hover:text-secondary transition-colors break-all"
+                        >
+                          {txHash.slice(0, 10)}...{txHash.slice(-8)}
+                        </a>
+                      ) : (
+                        <p className="text-sm text-primary break-all">
+                          {txHash.slice(0, 10)}...{txHash.slice(-8)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
