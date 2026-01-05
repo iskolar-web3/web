@@ -3,6 +3,7 @@ import { getCookie } from "../cookie";
 import type { AuthSession } from "./model";
 
 export const ACCESS_TOKEN_KEY = "auth_token";
+export const REFRESH_TOKEN_KEY = "refresh_token";
 
 export async function validateSession(): Promise<AuthSession | null> {
 	const token = getCookie(ACCESS_TOKEN_KEY);
