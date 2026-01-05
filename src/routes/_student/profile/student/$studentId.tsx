@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { User, Phone, Edit } from 'lucide-react';
+import { User, Phone, Edit, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useState } from 'react';
@@ -14,21 +14,11 @@ import EditHeader from '@/components/profile/EditHeader';
 import InfoField from '@/components/profile/InfoField';
 import SelectField from '@/components/profile/SelectField';
 import DateField from '@/components/profile/DateField';
+import CredentialUploadModal from '@/components/student/CredentialUploadModal';
+import CredentialsList from '@/components/student/CredentialsList';
 import type { StudentProfile } from '@/types/profile.types';
-// import { z } from 'zod';
 
 export const Route = createFileRoute('/_student/profile/student/$studentId')({
-  // params: {
-  //   parse: (params) => {
-  //     const schema = z.object({
-  //       studentId: z.string().uuid('Invalid ID format'),
-  //     });
-  //     return schema.parse(params);
-  //   },
-  //   stringify: (params) => ({
-  //     studentId: params.studentId,
-  //   }),
-  // },
   component: StudentProfilePage,
 });
 
@@ -41,6 +31,7 @@ function StudentProfilePage() {
   const [localProfile, setLocalProfile] = useState<StudentProfile | null>(
     profile && profile.role === 'student' ? (profile as StudentProfile) : null
   );
+  const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false);
   const { toast, showSuccess, showError } = useToast();
 
   const {
@@ -69,11 +60,22 @@ function StudentProfilePage() {
 
   const currentProfile = (isEditing && editedProfile) ? editedProfile as StudentProfile : localProfile;
 
+  const handleCredentialSuccess = () => {
+    showSuccess('Credential uploaded successfully!', 'success', 1500);
+  };
+
   return (
     <div className="min-h-screen">
       {toast && <Toast {...toast} />}
       
-      <div className="max-w-2xl mx-auto space-y-6">
+      {/* Credential Upload Modal */}
+      <CredentialUploadModal
+        isOpen={isCredentialModalOpen}
+        onClose={() => setIsCredentialModalOpen(false)}
+        onSuccess={handleCredentialSuccess}
+      />
+      
+      <div className="max-w-2xl mx-auto space-y-4">
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -142,6 +144,31 @@ function StudentProfilePage() {
               type="tel"
             />
           </div>
+        </motion.div>
+
+        {/* Credentials */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+          className="bg-white rounded-lg shadow-sm border border-[#E0ECFF] p-6"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg text-primary">
+                Credentials
+              </h2>
+            </div>
+            <button
+              onClick={() => setIsCredentialModalOpen(true)}
+              className="px-4 py-2 cursor-pointer bg-[#3B5AA8] hover:bg-[#2f4389] text-white text-xs font-medium rounded-sm transition-colors flex items-center gap-1"
+            >
+              <Award className="w-3.5 h-3.5" />
+              Add Credential
+            </button>
+          </div>
+
+          <CredentialsList />
         </motion.div>
       </div>
     </div>
