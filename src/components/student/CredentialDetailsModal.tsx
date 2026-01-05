@@ -4,7 +4,7 @@ import { ExternalLink, FileText } from 'lucide-react';
 import { type CredentialData } from '@/lib/contracts';
 import { getIPFSUrl } from '@/utils/ipfs.utils';
 import { useTokenURI } from '@/hooks/useNFTCredential';
-import { getCredentialTxHash, getCredentialChainId, getExplorerTxUrl, getNetworkName } from '@/utils/txHashStorage';
+import { getCredentialTxHash, getCredentialChainId, getExplorerTxUrl, getNetworkName } from '@/utils/txHashStorage.utils';
 import { useMemo } from 'react';
 
 interface CredentialDetailsModalProps {

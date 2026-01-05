@@ -13,6 +13,8 @@ import { useAccount } from 'wagmi';
 import { useIssueCredential } from '@/hooks/useNFTCredential';
 import { format } from 'date-fns';
 import { uploadToIPFS, uploadMetadataToIPFS, getIPFSUri } from '@/utils/ipfs.utils';
+import { logger } from '@/lib/logger';
+import { handleError } from '@/lib/errorHandler';
 
 interface CredentialUploadModalProps {
   isOpen: boolean;
@@ -77,7 +79,8 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
 
     if (isOpen) {
       loadPDFJS().catch((err) => {
-        console.error('PDF.js loading error:', err);
+        const handled = handleError(err, 'Failed to load PDF.js library');
+        logger.error('PDF.js loading error:', handled.raw);
       });
     }
   }, [isOpen]);
@@ -187,8 +190,9 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
         const pdfPreview = await generatePDFPreview(selectedFile);
         setPreview(pdfPreview);
       } catch (error) {
-        console.error('Failed to generate PDF preview:', error);
-        setError('Failed to generate PDF preview. Please try again.');
+        const handled = handleError(error, 'Failed to generate PDF preview. Please try again.');
+        logger.error('Failed to generate PDF preview:', handled.raw);
+        setError(handled.message);
         setPreview(null);
       } finally {
         setIsGeneratingPreview(false);
@@ -289,8 +293,9 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
         tokenURI,
       );
     } catch (err) {
-      console.error('Error issuing credential:', err);
-      setError(err instanceof Error ? err.message : 'Failed to upload credential. Please try again.');
+      const handled = handleError(err, 'Failed to upload credential. Please try again.');
+      logger.error('Error issuing credential:', handled.raw);
+      setError(handled.message);
       setIsUploading(false);
     }
   }, [formData, file, isConnected, address, issueCredential]);

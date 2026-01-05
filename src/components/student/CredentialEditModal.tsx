@@ -14,6 +14,8 @@ import { useUpdateCredential } from '@/hooks/useNFTCredential';
 import { format } from 'date-fns';
 import { uploadToIPFS, uploadMetadataToIPFS, getIPFSUri, getIPFSUrl } from '@/utils/ipfs.utils';
 import { type CredentialData } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
+import { handleError } from '@/lib/errorHandler';
 
 interface CredentialEditModalProps {
   isOpen: boolean;
@@ -81,7 +83,8 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
 
     if (isOpen) {
       loadPDFJS().catch((err) => {
-        console.error('PDF.js loading error:', err);
+        const handled = handleError(err, 'Failed to load PDF.js library');
+        logger.error('PDF.js loading error:', handled.raw);
       });
     }
   }, [isOpen]);
@@ -185,8 +188,9 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
         const pdfPreview = await generatePDFPreview(selectedFile);
         setPreview(pdfPreview);
       } catch (error) {
-        console.error('Failed to generate PDF preview:', error);
-        setError('Failed to generate PDF preview. Please try again.');
+        const handled = handleError(error, 'Failed to generate PDF preview. Please try again.');
+        logger.error('Failed to generate PDF preview:', handled.raw);
+        setError(handled.message);
         setPreview(null);
       } finally {
         setIsGeneratingPreview(false);
@@ -281,8 +285,9 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
         tokenURI,
       );
     } catch (err) {
-      console.error('Error updating credential:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update credential. Please try again.');
+      const handled = handleError(err, 'Failed to update credential. Please try again.');
+      logger.error('Error updating credential:', handled.raw);
+      setError(handled.message);
       setIsUploading(false);
     }
   }, [formData, file, isConnected, address, updateCredential, credentialData.documentURI, tokenId]);
