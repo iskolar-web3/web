@@ -1,6 +1,6 @@
 import { enumDetailSchema } from "@/lib/api";
+import { contactDetailSchema } from "@/lib/user/model";
 import z from "zod";
-import { contactDetailSchema } from "./user";
 
 export enum SchoolType {
 	Public = "public",

@@ -27,8 +27,8 @@ import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
 import { Gender, type Student } from '@/types/student'
 import { BACKEND_URL, type ApiResponse } from '@/lib/api'
-import { ContactType } from '@/types/user'
 import { useMutation } from '@tanstack/react-query'
+import { ContactType } from '@/lib/user/model'
 // import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute('/_onboarding/profile-setup')({

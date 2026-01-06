@@ -1,7 +1,7 @@
 import { enumDetailSchema } from "@/lib/api";
 import { schoolSchema } from "./school";
 import z from "zod";
-import { contactDetailSchema } from "./user";
+import { contactDetailSchema } from "@/lib/user/model";
 
 export enum Gender {
 	Male = "male",
