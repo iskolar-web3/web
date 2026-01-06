@@ -29,6 +29,9 @@ import { Gender, type Student } from '@/types/student'
 import { BACKEND_URL, type ApiResponse } from '@/lib/api'
 import { useMutation } from '@tanstack/react-query'
 import { ContactType } from '@/lib/user/model'
+import { useAuth } from '@/auth'
+import { getCookie } from '@/lib/cookie'
+import { ACCESS_TOKEN_KEY } from '@/lib/user/auth'
 // import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute('/_onboarding/profile-setup')({
@@ -116,10 +119,11 @@ type GovernmentSponsorFormData = z.infer<typeof governmentSponsorSchema>
 type SchoolFormData = z.infer<typeof schoolSchema>
 
 async function createStudent(value: StudentFormData): Promise<Student> {
+    const token = getCookie(ACCESS_TOKEN_KEY)
 	const response = await fetch(`${BACKEND_URL}/students`, {
 		method: "POST",
 		body: JSON.stringify(value),
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json",  Authorization: `Bearer ${token}`  },
 	});
 	const result: ApiResponse<Student> = await response.json();
 	if (!response.ok) {
@@ -143,16 +147,16 @@ function ProfileSetup() {
   const { toast, showSuccess, showError } = useToast();
 
   // const [isSchoolUnavailable, setIsSchoolUnavailable] = useState(false)
-  
+ 
+
+  const auth = useAuth()
+
   // Student form
   const studentForm = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     mode: "onBlur",
     defaultValues: {
-      // Hard code for now because I'm lazy
-      // TODO: Don't do this at home
-        // Implement a way to get the current user
-      userId: "5c819719-db5f-499d-bdda-1253736cf36c",
+      userId: auth.user?.id,
       firstName: '',
       middleName: '',
       lastName: '',
