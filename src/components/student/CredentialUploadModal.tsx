@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Upload, FileText, Award, X, CheckCircle, Loader2, Wallet } from 'lucide-react';
 import {
   Dialog,
@@ -50,6 +50,7 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
   
   const { address, isConnected } = useAccount();
   const { issueCredential, isPending, isConfirming, isSuccess, error: contractError } = useIssueCredential();
+  const hasHandledSuccess = useRef(false);
 
   // Load PDF.js when modal opens
   useEffect(() => {
@@ -58,6 +59,8 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
         const handled = handleError(err, 'Failed to load PDF.js library');
         logger.error('PDF.js loading error:', handled.raw);
       });
+      // Reset success handler flag when modal opens
+      hasHandledSuccess.current = false;
     }
   }, [isOpen]);
 
@@ -211,12 +214,13 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
 
   // Watch for transaction success
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && !hasHandledSuccess.current) {
+      hasHandledSuccess.current = true;
       setUploadSuccess(true);
       setIsUploading(false);
+      onSuccess?.();
       setTimeout(() => {
         resetForm();
-        onSuccess?.();
         onClose();
       }, 1500);
     }
