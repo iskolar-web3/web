@@ -7,12 +7,14 @@ import {
 	useEffect,
 } from "react";
 import { deleteCookie, getCookie } from "./lib/cookie";
-import type { AuthSession, User } from "./lib/user/model";
+import { UserRole, type AuthSession, type User } from "./lib/user/model";
 import { ACCESS_TOKEN_KEY, validateSession } from "./lib/user/auth";
+import { getMyStudentProfile } from "./lib/student/api";
 
-export type AuthContextValue = {
+export type AuthContextValue<T = any> = {
 	user: User | null;
 	setUser: React.Dispatch<React.SetStateAction<User | null>>;
+	profile: T;
 	sessionToken: string;
 	getSession: () => Promise<AuthSession | null>;
 	logout: () => Promise<void>;
@@ -27,6 +29,7 @@ type AuthProviderProps = {
 export function AuthProvider(props: AuthProviderProps): JSX.Element {
 	const [user, setUser] = useState<User | null>(null);
 	const [sessionToken, setSessionToken] = useState<string>("");
+	const [profile, setProfile] = useState<any | null>(null);
 
 	async function getSession(): Promise<AuthSession | null> {
 		const token = getCookie(ACCESS_TOKEN_KEY);
@@ -40,10 +43,18 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 			return null;
 		}
 
-        console.log("Session:", session)
-
 		setUser(session.user);
 		setSessionToken(token);
+
+		switch (session.user.role?.code) {
+			case UserRole.Student:
+				const student = getMyStudentProfile(token);
+				setProfile(student);
+				break;
+
+			default:
+				setProfile(null);
+		}
 
 		return session;
 	}
@@ -65,7 +76,9 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 	}, []);
 
 	return (
-		<AuthContext value={{ user, setUser, getSession, logout, sessionToken }}>
+		<AuthContext
+			value={{ user, setUser, profile, getSession, logout, sessionToken }}
+		>
 			{props.children}
 		</AuthContext>
 	);
