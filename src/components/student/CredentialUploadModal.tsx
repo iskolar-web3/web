@@ -15,6 +15,8 @@ import { format } from 'date-fns';
 import { uploadToIPFS, uploadMetadataToIPFS, getIPFSUri } from '@/utils/ipfs.utils';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/lib/errorHandler';
+import { useToast } from '@/hooks/useToast';
+import Toast from '@/components/Toast';
 import {
   loadPDFJS,
   handleFileSelection,
@@ -45,11 +47,11 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
   const [preview, setPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   
   const { address, isConnected } = useAccount();
   const { issueCredential, isPending, isConfirming, isSuccess, error: contractError } = useIssueCredential();
+  const { toast, showError } = useToast();
   const hasHandledSuccess = useRef(false);
 
   // Load PDF.js when modal opens
@@ -66,7 +68,6 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
 
   const handleInputChange = useCallback((field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setError(null);
   }, []);
 
   /**
@@ -84,7 +85,6 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
       setIsGeneratingPreview(true);
     }
 
-    setError(null);
 
     try {
       const result = await handleFileSelection(selectedFile, {
@@ -93,7 +93,7 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
       });
 
       if (result.error) {
-        setError(result.error);
+        showError('File Error', result.error, 4000);
         setFile(null);
         setPreview(null);
         return;
@@ -104,7 +104,7 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
     } catch (error) {
       const handled = handleError(error, 'Failed to process file');
       logger.error('File handling error:', handled.raw);
-      setError(handled.message);
+      showError('File Error', handled.message, 4000);
       setFile(null);
       setPreview(null);
     } finally {
@@ -115,34 +115,30 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
   const removeFile = useCallback(() => {
     setFile(null);
     setPreview(null);
-    setError(null);
   }, []);
 
   const resetForm = useCallback(() => {
     setFormData({ type: '', name: '', institution: '', issuedDate: '' });
     setFile(null);
     setPreview(null);
-    setError(null);
     setUploadSuccess(false);
   }, []);
 
   const handleSubmit = useCallback(async () => {
     if (!formData.type || !formData.name || !formData.institution || !file) {
-      setError('Please fill in all required fields and upload a file');
+      showError('Validation Error', 'Please fill in all required fields and upload a file', 3000);
       return;
     }
 
     if (!isConnected || !address) {
-      setError('Please connect your wallet to upload credentials');
+      showError('Wallet Not Connected', 'Please connect your wallet to upload credentials', 3000);
       return;
     }
 
     setIsUploading(true);
-    setError(null);
     
     try {
       // Upload document file to IPFS
-      setError('Uploading document to IPFS...');
       const documentUpload = await uploadToIPFS(file, file.name);
       
       if (!documentUpload.success || !documentUpload.ipfsHash) {
@@ -185,7 +181,6 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
       };
 
       // Upload metadata to IPFS
-      setError('Uploading metadata to IPFS...');
       const metadataUpload = await uploadMetadataToIPFS(metadata, `credential-${Date.now()}.json`);
       
       if (!metadataUpload.success || !metadataUpload.ipfsHash) {
@@ -207,10 +202,10 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
     } catch (err) {
       const handled = handleError(err, 'Failed to upload credential. Please try again.');
       logger.error('Error issuing credential:', handled.raw);
-      setError(handled.message);
+      showError('Upload Failed', handled.message, 4000);
       setIsUploading(false);
     }
-  }, [formData, file, isConnected, address, issueCredential]);
+  }, [formData, file, isConnected, address, issueCredential, showError]);
 
   // Watch for transaction success
   useEffect(() => {
@@ -229,10 +224,24 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
   // Watch for contract errors
   useEffect(() => {
     if (contractError) {
-      setError(contractError.message || 'Transaction failed');
+      const errorMessage = contractError.message || 'Transaction failed';
+      const isUserRejection = errorMessage.toLowerCase().includes('user rejected') || 
+                              errorMessage.toLowerCase().includes('user denied') ||
+                              errorMessage.toLowerCase().includes('rejected');
+      const isDuplicate = errorMessage.toLowerCase().includes('credential already exists') ||
+                          errorMessage.toLowerCase().includes('duplicate');
+      
+      if (isUserRejection) {
+        showError('Transaction Rejected', 'You rejected the transaction in your wallet', 3000);
+      } else if (isDuplicate) {
+        showError('Duplicate Credential', 'This credential already exists. Please use different details.', 4000);
+      } else {
+        showError('Transaction Failed', errorMessage, 4000);
+      }
+      
       setIsUploading(false);
     }
-  }, [contractError]);
+  }, [contractError, showError]);
 
   const handleClose = useCallback(() => {
     const isLoading = isPending || isConfirming || isUploading;
@@ -257,24 +266,20 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
   const isLoading = isPending || isConfirming || isUploading;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="!max-w-2xl max-h-[90vh] flex flex-col p-0" showCloseButton={!isLoading}>
-        <DialogHeader className="px-6 py-3 border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg text-gray-900">Add credential</h1>
-            
-          </div>
-        </DialogHeader>
+    <>
+      {toast && <Toast {...toast} />}
 
-        {/* Content - Scrollable */}
-        <div className="px-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-              <X className="w-5 h-5 text-red-700 flex-shrink-0" />
-              <p className="text-sm text-[#EF4444]">{error}</p>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="!max-w-2xl max-h-[90vh] flex flex-col p-0" showCloseButton={!isLoading}>
+          <DialogHeader className="px-6 py-3 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <h1 className="text-lg text-gray-900">Add credential</h1>
+              
             </div>
-          )}
+          </DialogHeader>
+
+          {/* Content - Scrollable */}
+          <div className="px-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
 
           {/* Wallet Connection Section */}
           <div>
@@ -596,5 +601,6 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

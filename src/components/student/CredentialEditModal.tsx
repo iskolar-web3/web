@@ -16,6 +16,8 @@ import { uploadToIPFS, uploadMetadataToIPFS, getIPFSUri, getIPFSUrl } from '@/ut
 import { type CredentialData } from '@/lib/contracts';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/lib/errorHandler';
+import { useToast } from '@/hooks/useToast';
+import Toast from '@/components/Toast';
 import {
   loadPDFJS,
   handleFileSelection,
@@ -52,11 +54,11 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
   );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   
   const { address, isConnected } = useAccount();
   const { updateCredential, isPending, isConfirming, isSuccess, error: contractError } = useUpdateCredential();
+  const { toast, showError } = useToast();
   const hasHandledSuccess = useRef(false);
 
   // Load PDF.js when modal opens
@@ -73,7 +75,6 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
 
   const handleInputChange = useCallback((field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setError(null);
     setUploadSuccess(false);
   }, []);
 
@@ -89,7 +90,6 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
       setIsGeneratingPreview(true);
     }
 
-    setError(null);
     setUploadSuccess(false);
 
     try {
@@ -99,7 +99,7 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
       });
 
       if (result.error) {
-        setError(result.error);
+        showError('File Error', result.error, 4000);
         setFile(null);
         setPreview(null);
         return;
@@ -110,7 +110,7 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
     } catch (error) {
       const handled = handleError(error, 'Failed to process file');
       logger.error('File handling error:', handled.raw);
-      setError(handled.message);
+      showError('File Error', handled.message, 4000);
       setFile(null);
       setPreview(null);
     } finally {
@@ -121,22 +121,20 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
   const removeFile = useCallback(() => {
     setFile(null);
     setPreview(null);
-    setError(null);
   }, []);
 
   const handleSubmit = useCallback(async () => {
     if (!formData.type || !formData.name || !formData.institution) {
-      setError('Please fill in all required fields');
+      showError('Validation Error', 'Please fill in all required fields', 3000);
       return;
     }
 
     if (!isConnected || !address) {
-      setError('Please connect your wallet to update credentials');
+      showError('Wallet Not Connected', 'Please connect your wallet to update credentials', 3000);
       return;
     }
 
     setIsUploading(true);
-    setError(null);
     
     try {
       let documentURI = credentialData.documentURI;
@@ -207,10 +205,10 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
     } catch (err) {
       const handled = handleError(err, 'Failed to update credential. Please try again.');
       logger.error('Error updating credential:', handled.raw);
-      setError(handled.message);
+      showError('Update Failed', handled.message, 4000);
       setIsUploading(false);
     }
-  }, [formData, file, isConnected, address, updateCredential, credentialData.documentURI, tokenId]);
+  }, [formData, file, isConnected, address, updateCredential, credentialData.documentURI, tokenId, showError]);
 
   useEffect(() => {
     if (isSuccess && !hasHandledSuccess.current) {
@@ -226,10 +224,24 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
 
   useEffect(() => {
     if (contractError) {
-      setError(contractError.message || 'Transaction failed');
+      const errorMessage = contractError.message || 'Transaction failed';
+      const isUserRejection = errorMessage.toLowerCase().includes('user rejected') || 
+                              errorMessage.toLowerCase().includes('user denied') ||
+                              errorMessage.toLowerCase().includes('rejected');
+      const isDuplicate = errorMessage.toLowerCase().includes('credential already exists') ||
+                          errorMessage.toLowerCase().includes('duplicate');
+      
+      if (isUserRejection) {
+        showError('Transaction Rejected', 'You rejected the transaction in your wallet', 3000);
+      } else if (isDuplicate) {
+        showError('Duplicate Credential', 'This credential already exists. Please use different details.', 4000);
+      } else {
+        showError('Transaction Failed', errorMessage, 4000);
+      }
+      
       setIsUploading(false);
     }
-  }, [contractError]);
+  }, [contractError, showError]);
 
   const handleClose = useCallback(() => {
     const isLoading = isPending || isConfirming || isUploading;
@@ -267,31 +279,25 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
       );
       setFile(null);
       setUploadSuccess(false);
-      setError(null);
     }
   }, [isOpen, credentialData]);
 
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="!max-w-2xl max-h-[90vh] flex flex-col p-0" showCloseButton={!isLoading}>
-        <DialogHeader className="px-6 py-3 border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg text-gray-900">Edit credential</h1>
-            
-          </div>
-        </DialogHeader>
-
-        {/* Content */}
-        <div className="px-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-              <X className="w-5 h-5 text-red-700 flex-shrink-0" />
-              <p className="text-sm text-[#EF4444]">{error}</p>
+    <>
+      {toast && <Toast {...toast} />}
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="!max-w-2xl max-h-[90vh] flex flex-col p-0" showCloseButton={!isLoading}>
+          <DialogHeader className="px-6 py-3 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <h1 className="text-lg text-gray-900">Edit credential</h1>
+              
             </div>
-          )}
+          </DialogHeader>
 
-          {/* Wallet Connection */}
+          {/* Content */}
+          <div className="px-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+            {/* Wallet Connection */}
           <div>
             <label className="block text-xs text-gray-500 mb-2">
               Wallet Connection*
@@ -616,5 +622,6 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
