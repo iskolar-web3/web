@@ -1,129 +1,175 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { usePageTitle } from "@/hooks/usePageTitle"
-import Toast from "@/components/Toast"
-import { useToast } from '@/hooks/useToast';
-import Preloader from "@/components/Preloader"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from 'zod'
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { usePageTitle } from "@/hooks/usePageTitle";
+import Toast from "@/components/Toast";
+import { useToast } from "@/hooks/useToast";
+import Preloader from "@/components/Preloader";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Contact, Loader2 } from "lucide-react"; 
-import { Calendar } from "@/components/ui/calendar"
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Contact, Loader2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { CalendarIcon } from "lucide-react"
-import { handleError } from '@/lib/errorHandler';
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { handleError } from "@/lib/errorHandler";
 import { logger } from "@/lib/logger";
-import { Gender, type Student } from '@/types/student'
-import { BACKEND_URL, type ApiResponse } from '@/lib/api'
-import { useMutation } from '@tanstack/react-query'
-import { ContactType } from '@/lib/user/model'
-import { useAuth } from '@/auth'
-import { getCookie } from '@/lib/cookie'
-import { ACCESS_TOKEN_KEY } from '@/lib/user/auth'
+import { Gender, type Student } from "@/types/student";
+import { BACKEND_URL, type ApiResponse } from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
+import { ContactType } from "@/lib/user/model";
+import { useAuth } from "@/auth";
+import { getCookie } from "@/lib/cookie";
+import { ACCESS_TOKEN_KEY } from "@/lib/user/auth";
 // import { profileService } from '@/services/profile.service';
 
-export const Route = createFileRoute('/_onboarding/profile-setup')({
-  component: ProfileSetup,
-  validateSearch: (search: Record<string, unknown>) => {
-    return {
-      role: (search.role as string) || undefined,
-    }
-  },
-})
+export const Route = createFileRoute("/_onboarding/profile-setup")({
+	component: ProfileSetup,
+	validateSearch: (search: Record<string, unknown>) => {
+		return {
+			role: (search.role as string) || undefined,
+		};
+	},
+});
 
-type Role = 'student' | 'individual_sponsor' | 'organization_sponsor' | 'government_sponsor' | 'school'
+type Role =
+	| "student"
+	| "individual_sponsor"
+	| "organization_sponsor"
+	| "government_sponsor"
+	| "school";
 
-const VALID_ROLES: Role[] = ['student', 'individual_sponsor', 'organization_sponsor', 'government_sponsor', 'school']
+const VALID_ROLES: Role[] = [
+	"student",
+	"individual_sponsor",
+	"organization_sponsor",
+	"government_sponsor",
+	"school",
+];
 
 const createContactRequestSchema = z.object({
-	value: z.string().nonempty({ error: 'Contact number is required' })
-        .regex(/^\d+$/, 'Contact number must contain only numbers')
-        .min(11, 'Contact number must be at least 11 digits'),
+	value: z
+		.string()
+		.nonempty({ error: "Contact number is required" })
+		.regex(/^\d+$/, "Contact number must contain only numbers")
+		.min(11, "Contact number must be at least 11 digits"),
 	contactType: z.enum(ContactType),
-})
+});
 
-// Student validation 
+// Student validation
 const studentSchema = z.object({
-  userId: z.uuidv4(),
-  firstName: z.string().min(1, 'First name is required'),
-  middleName: z.string().optional(),
-  lastName: z.string().min(1, 'Last name is required'),
-  gender: z.enum(Gender, { message: 'Please select a gender' }),
-  birthDate: z.date().refine((date) => date <= new Date(), {
-    message: 'Date of birth cannot be in the future',
-  }),
-  contact: createContactRequestSchema,
-})
+	userId: z.uuidv4(),
+	firstName: z.string().min(1, "First name is required"),
+	middleName: z.string().optional(),
+	lastName: z.string().min(1, "Last name is required"),
+	gender: z.enum(Gender, { message: "Please select a gender" }),
+	birthDate: z.date().refine((date) => date <= new Date(), {
+		message: "Date of birth cannot be in the future",
+	}),
+	contact: createContactRequestSchema,
+});
 
 // individual Sponsor validation
 const individualSponsorSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  middleName: z.string().optional(),
-  lastName: z.string().min(1, 'Last name is required'),
-  employmentType: z.enum(['employed', 'self_employed', 'freelancer', 'overseas_filipino_worker', 'student'], { message: 'Please select employment type' }),
-  birthDate: z.date().refine((date) => date <= new Date(), {
-    message: 'Date of birth cannot be in the future',
-  }),
-  contactNumber: z.string()
-    .min(1, 'Contact number is required')
-    .regex(/^\d+$/, 'Contact number must contain only numbers')
-    .min(11, 'Contact number must be at least 11 digits'),
-})
+	firstName: z.string().min(1, "First name is required"),
+	middleName: z.string().optional(),
+	lastName: z.string().min(1, "Last name is required"),
+	employmentType: z.enum(
+		[
+			"employed",
+			"self_employed",
+			"freelancer",
+			"overseas_filipino_worker",
+			"student",
+		],
+		{ message: "Please select employment type" },
+	),
+	birthDate: z.date().refine((date) => date <= new Date(), {
+		message: "Date of birth cannot be in the future",
+	}),
+	contactNumber: z
+		.string()
+		.min(1, "Contact number is required")
+		.regex(/^\d+$/, "Contact number must contain only numbers")
+		.min(11, "Contact number must be at least 11 digits"),
+});
 
 // Organization Sponsor validation
 const organizationSponsorSchema = z.object({
-  organizationName: z.string().min(1, 'Organization name is required'),
-  organizationType: z.enum(['private_company', 'non_governmental_organization', 'educational_institution'], { message: 'Please select organization type' }),
-  contactNumber: z.string()
-    .min(1, 'Contact number is required')
-    .regex(/^\d+$/, 'Contact number must contain only numbers')
-    .min(11, 'Contact number must be at least 11 digits'),
-})
+	organizationName: z.string().min(1, "Organization name is required"),
+	organizationType: z.enum(
+		[
+			"private_company",
+			"non_governmental_organization",
+			"educational_institution",
+		],
+		{ message: "Please select organization type" },
+	),
+	contactNumber: z
+		.string()
+		.min(1, "Contact number is required")
+		.regex(/^\d+$/, "Contact number must contain only numbers")
+		.min(11, "Contact number must be at least 11 digits"),
+});
 
 // Government Sponsor validation
 const governmentSponsorSchema = z.object({
-  agencyName: z.string().min(1, 'Agency name is required'),
-  agencyType: z.enum(['national_government_agency', 'local_government_unit', 'government_owned_and_controlled_corporation'], { message: 'Please select agency type' }),
-  contactNumber: z.string()
-    .min(1, 'Contact number is required')
-    .regex(/^\d+$/, 'Contact number must contain only numbers')
-    .min(11, 'Contact number must be at least 11 digits'),
-})
+	agencyName: z.string().min(1, "Agency name is required"),
+	agencyType: z.enum(
+		[
+			"national_government_agency",
+			"local_government_unit",
+			"government_owned_and_controlled_corporation",
+		],
+		{ message: "Please select agency type" },
+	),
+	contactNumber: z
+		.string()
+		.min(1, "Contact number is required")
+		.regex(/^\d+$/, "Contact number must contain only numbers")
+		.min(11, "Contact number must be at least 11 digits"),
+});
 
 // School validation
 const schoolSchema = z.object({
-  schoolName: z.string().min(1, 'School name is required'),
-  schoolType: z.enum(['public', 'private', 'international', 'vocational', 'religious'], { message: 'Please select school type' }),
-  contactNumber: z.string()
-    .min(1, 'Contact number is required')
-    .regex(/^\d+$/, 'Contact number must contain only numbers')
-    .min(11, 'Contact number must be at least 11 digits'),
-})
+	schoolName: z.string().min(1, "School name is required"),
+	schoolType: z.enum(
+		["public", "private", "international", "vocational", "religious"],
+		{ message: "Please select school type" },
+	),
+	contactNumber: z
+		.string()
+		.min(1, "Contact number is required")
+		.regex(/^\d+$/, "Contact number must contain only numbers")
+		.min(11, "Contact number must be at least 11 digits"),
+});
 
-type StudentFormData = z.infer<typeof studentSchema>
-type IndividualSponsorFormData = z.infer<typeof individualSponsorSchema>
-type OrganizationSponsorFormData = z.infer<typeof organizationSponsorSchema>
-type GovernmentSponsorFormData = z.infer<typeof governmentSponsorSchema>
-type SchoolFormData = z.infer<typeof schoolSchema>
+type StudentFormData = z.infer<typeof studentSchema>;
+type IndividualSponsorFormData = z.infer<typeof individualSponsorSchema>;
+type OrganizationSponsorFormData = z.infer<typeof organizationSponsorSchema>;
+type GovernmentSponsorFormData = z.infer<typeof governmentSponsorSchema>;
+type SchoolFormData = z.infer<typeof schoolSchema>;
 
 async function createStudent(value: StudentFormData): Promise<Student> {
-    const token = getCookie(ACCESS_TOKEN_KEY)
+	const token = getCookie(ACCESS_TOKEN_KEY);
 	const response = await fetch(`${BACKEND_URL}/students`, {
 		method: "POST",
 		body: JSON.stringify(value),
-		headers: { "Content-Type": "application/json",  Authorization: `Bearer ${token}`  },
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
 	});
 	const result: ApiResponse<Student> = await response.json();
 	if (!response.ok) {
@@ -134,1031 +180,1207 @@ async function createStudent(value: StudentFormData): Promise<Student> {
 }
 
 function ProfileSetup() {
-  usePageTitle("Profile Setup")
-  
-  const navigate = useNavigate()
-  const { role } = Route.useSearch()
-  
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
-  const [roleValidationError, setRoleValidationError] = useState(false)
-  
-  const [loading, setLoading] = useState(false);
-  const [showPreloader, setShowPreloader] = useState(false)
-  const { toast, showSuccess, showError } = useToast();
+	usePageTitle("Profile Setup");
 
-  // const [isSchoolUnavailable, setIsSchoolUnavailable] = useState(false)
- 
+	const navigate = useNavigate();
+	const { role } = Route.useSearch();
 
-  const auth = useAuth()
+	const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+	const [roleValidationError, setRoleValidationError] = useState(false);
 
-  // Student form
-  const studentForm = useForm<StudentFormData>({
-    resolver: zodResolver(studentSchema),
-    mode: "onBlur",
-    defaultValues: {
-      userId: auth.user?.id,
-      firstName: '',
-      middleName: '',
-      lastName: '',
-      gender: undefined,
-      birthDate: undefined,
-      contact: {
-          contactType: ContactType.Phone,
-          value: ""
-      },
-    }
-  })
+	const [loading, setLoading] = useState(false);
+	const [showPreloader, setShowPreloader] = useState(false);
+	const { toast, showSuccess, showError } = useToast();
 
-  // Individual Sponsor form
-  const individualSponsorForm = useForm<IndividualSponsorFormData>({
-    resolver: zodResolver(individualSponsorSchema),
-    mode: "onBlur",
-    defaultValues: {
-      firstName: '',
-      middleName: '',
-      lastName: '',
-      employmentType: undefined,
-      birthDate: undefined,
-      contactNumber: '',
-    }
-  })
+	// const [isSchoolUnavailable, setIsSchoolUnavailable] = useState(false)
 
-  // Organization Sponsor form
-  const organizationSponsorForm = useForm<OrganizationSponsorFormData>({
-    resolver: zodResolver(organizationSponsorSchema),
-    mode: "onBlur",
-    defaultValues: {
-      organizationName: '',
-      organizationType: undefined,
-      contactNumber: '',
-    }
-  })
+	const auth = useAuth();
 
-  // Government Sponsor form
-  const governmentSponsorForm = useForm<GovernmentSponsorFormData>({
-    resolver: zodResolver(governmentSponsorSchema),
-    mode: "onBlur",
-    defaultValues: {
-      agencyName: '',
-      agencyType: undefined,
-      contactNumber: '',
-    }
-  })
+	// Student form
+	const studentForm = useForm<StudentFormData>({
+		resolver: zodResolver(studentSchema),
+		mode: "onBlur",
+		defaultValues: {
+			userId: auth.user?.id,
+			firstName: "",
+			middleName: "",
+			lastName: "",
+			gender: undefined,
+			birthDate: undefined,
+			contact: {
+				contactType: ContactType.Phone,
+				value: "",
+			},
+		},
+	});
 
-  // School form
-  const schoolForm = useForm<SchoolFormData>({
-    resolver: zodResolver(schoolSchema),
-    mode: "onBlur",
-    defaultValues: {
-      schoolName: '',
-      schoolType: undefined,
-      contactNumber: '',
-    }
-  })
-  
-  useEffect(() => {
-    if (!role || !VALID_ROLES.includes(role as Role)) {
-      setRoleValidationError(true)
+	// Individual Sponsor form
+	const individualSponsorForm = useForm<IndividualSponsorFormData>({
+		resolver: zodResolver(individualSponsorSchema),
+		mode: "onBlur",
+		defaultValues: {
+			firstName: "",
+			middleName: "",
+			lastName: "",
+			employmentType: undefined,
+			birthDate: undefined,
+			contactNumber: "",
+		},
+	});
 
-      showError('Invalid Role', 'Please select a valid role to continue.', 2500);
-      
-      setTimeout(() => {
-        navigate({ to: '/role-selection' })
-      }, 2050)
-      return
-    }
-    
-    setSelectedRole(role as Role)
-    setRoleValidationError(false)
-  }, [role, navigate])
+	// Organization Sponsor form
+	const organizationSponsorForm = useForm<OrganizationSponsorFormData>({
+		resolver: zodResolver(organizationSponsorSchema),
+		mode: "onBlur",
+		defaultValues: {
+			organizationName: "",
+			organizationType: undefined,
+			contactNumber: "",
+		},
+	});
 
-  const mutation = useMutation({
-      mutationFn: createStudent,
-      onSuccess: async () => {
-        showSuccess(`Success`, 'Your profile has been set up successfully!', 1250);
-        setLoading(false);
-        await navigate({ to: "/home" });
-      }
-  })
+	// Government Sponsor form
+	const governmentSponsorForm = useForm<GovernmentSponsorFormData>({
+		resolver: zodResolver(governmentSponsorSchema),
+		mode: "onBlur",
+		defaultValues: {
+			agencyName: "",
+			agencyType: undefined,
+			contactNumber: "",
+		},
+	});
 
-  const onSubmit = async (value: StudentFormData | IndividualSponsorFormData | OrganizationSponsorFormData | GovernmentSponsorFormData | SchoolFormData) => {
-    try {
-      setLoading(true);
+	// School form
+	const schoolForm = useForm<SchoolFormData>({
+		resolver: zodResolver(schoolSchema),
+		mode: "onBlur",
+		defaultValues: {
+			schoolName: "",
+			schoolType: undefined,
+			contactNumber: "",
+		},
+	});
 
-      if (selectedRole === 'student') {
-        const studentData = value as StudentFormData;
-        mutation.mutate(studentData)
+	useEffect(() => {
+		if (!role || !VALID_ROLES.includes(role as Role)) {
+			setRoleValidationError(true);
 
-      } else if (selectedRole === 'individual_sponsor') {
-        // const individualSponsorData = data as IndividualSponsorFormData;
+			showError(
+				"Invalid Role",
+				"Please select a valid role to continue.",
+				2500,
+			);
 
-        // const formattedDate = individualSponsorData.birthDate.toISOString().split('T')[0];
+			setTimeout(() => {
+				navigate({ to: "/role-selection" });
+			}, 2050);
+			return;
+		}
 
-        // const result = await profileService.setupIndividualSponsorProfile({
-        //   role: selectedRole
-        //   first_name: individualSponsorData.firstName,
-        //   middle_name: individualSponsorData.middleName,
-        //   last_name: individualSponsorData.lastName,
-        //   employment_type: individualSponsorData.employmentType,
-        //   date_of_birth: formattedDate,
-        //   contact_number: individualSponsorData.contactNumber,
-        // });
+		setSelectedRole(role as Role);
+		setRoleValidationError(false);
+	}, [role, navigate]);
 
-        // if (result.success) {
-        //   setToastConfig({
-        //     type: 'success',
-        //     title: 'Profile Created',
-        //     message: 'Your profile has been set up successfully!',
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => {
-        //     setShowToast(false)
-        //     // Show preloader after successful profile setup
-        //     setShowPreloader(true);
-        //   }, 1250);
-        // } else {
-        //   setToastConfig({
-        //     type: 'error',
-        //     title: 'Error',
-        //     message: result.message,
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => setShowToast(false), 2000);
-        // }
-        
-        // For now, simulate successful profile setup to test preloader
-        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
-        setTimeout(() => {
-          setShowPreloader(true);
-        }, 1250);
-      } else if (selectedRole === 'organization_sponsor') {
-        // const organizationSponsorData = data as OrganizationSponsorFormData;
+	const mutation = useMutation({
+		mutationFn: createStudent,
+		onSuccess: async () => {
+			showSuccess(
+				`Success`,
+				"Your profile has been set up successfully!",
+				1250,
+			);
+			setLoading(false);
+			await navigate({ to: "/home" });
+		},
+	});
 
-        // const result = await profileService.setupOrganizationSponsorProfile({
-        //   role: selectedRole
-        //   organization_name: organizationSponsorData.organizationName,
-        //   organization_type: organizationSponsorData.organizationType,
-        //   official_email: organizationSponsorData.emailAddress,
-        //   contact_number: organizationSponsorData.contactNumber,
-        // });
+	const onSubmit = async (
+		value:
+			| StudentFormData
+			| IndividualSponsorFormData
+			| OrganizationSponsorFormData
+			| GovernmentSponsorFormData
+			| SchoolFormData,
+	) => {
+		try {
+			setLoading(true);
 
-        // if (result.success) {
-        //   setToastConfig({
-        //     type: 'success',
-        //     title: 'Profile Created',
-        //     message: 'Your profile has been set up successfully!',
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => {
-        //     setShowToast(false)
-        //     // Show preloader after successful profile setup
-        //     setShowPreloader(true);
-        //   }, 1250);
-        // } else {
-        //   setToastConfig({
-        //     type: 'error',
-        //     title: 'Error',
-        //     message: result.message,
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => setShowToast(false), 2000);
-        // }
-        
-        // For now, simulate successful profile setup to test preloader
-        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
-        setTimeout(() => {
-          setShowPreloader(true);
-        }, 1250);
-      } else if (selectedRole === 'government_sponsor') {
-        // const governmentSponsorData = data as GovernmentSponsorFormData;
+			if (selectedRole === "student") {
+				const studentData = value as StudentFormData;
+				mutation.mutate(studentData);
+			} else if (selectedRole === "individual_sponsor") {
+				// const individualSponsorData = data as IndividualSponsorFormData;
 
-        // const result = await profileService.setupGovernmentSponsorProfile({
-        //   role: selectedRole
-        //   agency_name: governmentSponsorData.agencyName,
-        //   agency_type: governmentSponsorData.agencyType,
-        //   official_email: governmentSponsorData.emailAddress,
-        //   contact_number: governmentSponsorData.contactNumber,
-        // });
+				// const formattedDate = individualSponsorData.birthDate.toISOString().split('T')[0];
 
-        // if (result.success) {
-        //   setToastConfig({
-        //     type: 'success',
-        //     title: 'Profile Created',
-        //     message: 'Your profile has been set up successfully!',
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => {
-        //     setShowToast(false)
-        //     // Show preloader after successful profile setup
-        //     setShowPreloader(true);
-        //   }, 1250);
-        // } else {
-        //   setToastConfig({
-        //     type: 'error',
-        //     title: 'Error',
-        //     message: result.message,
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => setShowToast(false), 2000);
-        // }
-        
-        // For now, simulate successful profile setup to test preloader
-        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
-        setTimeout(() => {
-          setShowPreloader(true);
-        }, 1250);
-      } else if (selectedRole === 'school') {
-          // const schoolData = data as SchoolFormData;
+				// const result = await profileService.setupIndividualSponsorProfile({
+				//   role: selectedRole
+				//   first_name: individualSponsorData.firstName,
+				//   middle_name: individualSponsorData.middleName,
+				//   last_name: individualSponsorData.lastName,
+				//   employment_type: individualSponsorData.employmentType,
+				//   date_of_birth: formattedDate,
+				//   contact_number: individualSponsorData.contactNumber,
+				// });
 
-          showError('Unavailable', 'The school role is not available yet.', 2450);
-          // setIsSchoolUnavailable(true);
-          
-          setTimeout(() => {
-            navigate({ to: '/role-selection' });
-          }, 2500);
-          
-          return; 
+				// if (result.success) {
+				//   setToastConfig({
+				//     type: 'success',
+				//     title: 'Profile Created',
+				//     message: 'Your profile has been set up successfully!',
+				//   })
+				//   setShowToast(true);
+				//   setTimeout(() => {
+				//     setShowToast(false)
+				//     // Show preloader after successful profile setup
+				//     setShowPreloader(true);
+				//   }, 1250);
+				// } else {
+				//   setToastConfig({
+				//     type: 'error',
+				//     title: 'Error',
+				//     message: result.message,
+				//   })
+				//   setShowToast(true);
+				//   setTimeout(() => setShowToast(false), 2000);
+				// }
 
-        // const result = await profileService.setupSchoolProfile({
-        //   role: selectedRole
-        //   school_name: schoolData.schoolName,
-        //   school_type: schoolData.schoolType,
-        //   official_email: schoolData.emailAddress,
-        //   contact_number: schoolData.contactNumber,
-        // });
+				// For now, simulate successful profile setup to test preloader
+				showSuccess(
+					"Profile Created",
+					"Your profile has been set up successfully",
+					2000,
+				);
+				setTimeout(() => {
+					setShowPreloader(true);
+				}, 1250);
+			} else if (selectedRole === "organization_sponsor") {
+				// const organizationSponsorData = data as OrganizationSponsorFormData;
 
-        // if (result.success) {
-        //   setToastConfig({
-        //     type: 'success',
-        //     title: 'Profile Created',
-        //     message: 'Your profile has been set up successfully!',
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => {
-        //     setShowToast(false)
-        //     // Show preloader after successful profile setup
-        //     setShowPreloader(true);
-        //   }, 1250);
-        // } else {
-        //   setToastConfig({
-        //     type: 'error',
-        //     title: 'Error',
-        //     message: result.message,
-        //   })
-        //   setShowToast(true);
-        //   setTimeout(() => setShowToast(false), 2000);
-        // }
-        
-        showSuccess('Profile Created', 'Your profile has been set up successfully', 2000);
-        setTimeout(() => {
-          setShowPreloader(true);
-        }, 1250);
-      } 
-    } catch(error) {
-      const handled = handleError(error, 'Failed to connect to server.');
-      logger.error('Connection Error', handled.raw);
-      showError(`Error ${handled.code}`, handled.message, 2500);
-    } finally {
-      setLoading(false);
-    }
-  }
+				// const result = await profileService.setupOrganizationSponsorProfile({
+				//   role: selectedRole
+				//   organization_name: organizationSponsorData.organizationName,
+				//   organization_type: organizationSponsorData.organizationType,
+				//   official_email: organizationSponsorData.emailAddress,
+				//   contact_number: organizationSponsorData.contactNumber,
+				// });
 
-  const handlePreloaderComplete = () => {
-    // After preloader completes, navigate to appropriate page based on role
-    // TODO: Uncomment when backend is ready
-    // if (selectedRole === 'student') {
-    //   navigate({ to: '/home', replace: true });
-    // } else if (selectedRole === 'individual_sponsor' || selectedRole === 'organization_sponsor' || selectedRole === 'government_sponsor') {
-    //   navigate({ to: '/my-scholarships', replace: true });
-    // } else if (selectedRole === 'school') {
-    //   navigate({ to: '/dashboard', replace: true });
-    // }
-    
-    // For now, navigate based on role
-    if (selectedRole === 'student') {
-      navigate({ to: '/home', replace: true });
-    } else if (selectedRole === 'individual_sponsor' || selectedRole === 'organization_sponsor' || selectedRole === 'government_sponsor') {
-      navigate({ to: '/scholarships', replace: true });
-    } 
-  }
+				// if (result.success) {
+				//   setToastConfig({
+				//     type: 'success',
+				//     title: 'Profile Created',
+				//     message: 'Your profile has been set up successfully!',
+				//   })
+				//   setShowToast(true);
+				//   setTimeout(() => {
+				//     setShowToast(false)
+				//     // Show preloader after successful profile setup
+				//     setShowPreloader(true);
+				//   }, 1250);
+				// } else {
+				//   setToastConfig({
+				//     type: 'error',
+				//     title: 'Error',
+				//     message: result.message,
+				//   })
+				//   setShowToast(true);
+				//   setTimeout(() => setShowToast(false), 2000);
+				// }
 
-  if (roleValidationError || !selectedRole) {
-    return (
-      <>
-        {toast && <Toast {...toast} />}
+				// For now, simulate successful profile setup to test preloader
+				showSuccess(
+					"Profile Created",
+					"Your profile has been set up successfully",
+					2000,
+				);
+				setTimeout(() => {
+					setShowPreloader(true);
+				}, 1250);
+			} else if (selectedRole === "government_sponsor") {
+				// const governmentSponsorData = data as GovernmentSponsorFormData;
 
-        <motion.div 
-          className="min-h-screen flex items-center justify-center py-8 sm:py-12"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="text-center">
-            <p className="text-secondary">Redirecting to role selection...</p>
-          </div>
-        </motion.div>
-      </>
-    )
-  }
+				// const result = await profileService.setupGovernmentSponsorProfile({
+				//   role: selectedRole
+				//   agency_name: governmentSponsorData.agencyName,
+				//   agency_type: governmentSponsorData.agencyType,
+				//   official_email: governmentSponsorData.emailAddress,
+				//   contact_number: governmentSponsorData.contactNumber,
+				// });
 
-  const getCurrentForm = () => {
-    switch (selectedRole) {
-      case 'student':
-        return studentForm
-      case 'individual_sponsor':
-        return individualSponsorForm
-      case 'organization_sponsor':
-        return organizationSponsorForm
-      case 'government_sponsor':
-        return governmentSponsorForm
-      case 'school':
-        return schoolForm
-      default:
-        return null
-    }
-  }
+				// if (result.success) {
+				//   setToastConfig({
+				//     type: 'success',
+				//     title: 'Profile Created',
+				//     message: 'Your profile has been set up successfully!',
+				//   })
+				//   setShowToast(true);
+				//   setTimeout(() => {
+				//     setShowToast(false)
+				//     // Show preloader after successful profile setup
+				//     setShowPreloader(true);
+				//   }, 1250);
+				// } else {
+				//   setToastConfig({
+				//     type: 'error',
+				//     title: 'Error',
+				//     message: result.message,
+				//   })
+				//   setShowToast(true);
+				//   setTimeout(() => setShowToast(false), 2000);
+				// }
 
-  const currentForm = getCurrentForm()
-  const isFormValid = currentForm ? currentForm.formState.isValid : false
+				// For now, simulate successful profile setup to test preloader
+				showSuccess(
+					"Profile Created",
+					"Your profile has been set up successfully",
+					2000,
+				);
+				setTimeout(() => {
+					setShowPreloader(true);
+				}, 1250);
+			} else if (selectedRole === "school") {
+				// const schoolData = data as SchoolFormData;
 
-  return (
-    <>
-      {showPreloader && (
-        <Preloader 
-          onComplete={handlePreloaderComplete}
-          minDisplayTime={2000}
-        />
-      )}
-      
-      {toast && <Toast {...toast} />}
+				showError("Unavailable", "The school role is not available yet.", 2450);
+				// setIsSchoolUnavailable(true);
 
-      {!showPreloader && (
-      <motion.div 
-        className="min-h-screen flex items-center justify-center py-8 sm:py-12"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="w-full max-w-md">
-          {/* Title and Subtitle */}
-          <motion.div 
-            className="text-center mb-8 sm:mb-10"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl text-secondary mb-1.5 sm:mb-2">
-              Welcome to iSkolar
-            </h1>
-            <p className="text-base sm:text-lg sm:text-xl text-secondary/80">
-              Complete your profile to get started
-            </p>
-          </motion.div>
+				setTimeout(() => {
+					navigate({ to: "/role-selection" });
+				}, 2500);
 
-          {/* Profile Setup Forms */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-          >
-            {/* Student Form */}
-            {selectedRole === 'student' && (
-              <form onSubmit={studentForm.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
-                <div className="flex space-x-2">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      {...studentForm.register('firstName')}
-                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                        studentForm.formState.errors.firstName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                      }`}
-                      placeholder="First name"
-                    />
-                    {studentForm.formState.errors.firstName && (
-                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                        {studentForm.formState.errors.firstName.message}
-                      </p>
-                    )}
-                  </div>
+				return;
 
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      {...studentForm.register('middleName')}
-                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                        studentForm.formState.errors.middleName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                      }`}
-                      placeholder="Middle name"
-                    />
-                    {studentForm.formState.errors.middleName && (
-                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                        {studentForm.formState.errors.middleName.message}
-                      </p>
-                    )}
-                  </div>
+				// const result = await profileService.setupSchoolProfile({
+				//   role: selectedRole
+				//   school_name: schoolData.schoolName,
+				//   school_type: schoolData.schoolType,
+				//   official_email: schoolData.emailAddress,
+				//   contact_number: schoolData.contactNumber,
+				// });
 
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      {...studentForm.register('lastName')}
-                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                        studentForm.formState.errors.lastName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                      }`}
-                      placeholder="Last name"
-                    />
-                    {studentForm.formState.errors.lastName && (
-                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                        {studentForm.formState.errors.lastName.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
+				// if (result.success) {
+				//   setToastConfig({
+				//     type: 'success',
+				//     title: 'Profile Created',
+				//     message: 'Your profile has been set up successfully!',
+				//   })
+				//   setShowToast(true);
+				//   setTimeout(() => {
+				//     setShowToast(false)
+				//     // Show preloader after successful profile setup
+				//     setShowPreloader(true);
+				//   }, 1250);
+				// } else {
+				//   setToastConfig({
+				//     type: 'error',
+				//     title: 'Error',
+				//     message: result.message,
+				//   })
+				//   setShowToast(true);
+				//   setTimeout(() => setShowToast(false), 2000);
+				// }
 
-                <div>
-                  <Select 
-                    value={studentForm.watch('gender')} 
-                    onValueChange={(value) => studentForm.setValue('gender', value as Gender, { shouldValidate: true })}
-                  >
-                    <SelectTrigger className={`w-full px-4 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                      studentForm.formState.errors.gender
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}>
-                      <SelectValue placeholder="Select your gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {studentForm.formState.errors.gender && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {studentForm.formState.errors.gender.message}
-                    </p>
-                  )}
-                </div>
+				showSuccess(
+					"Profile Created",
+					"Your profile has been set up successfully",
+					2000,
+				);
+				setTimeout(() => {
+					setShowPreloader(true);
+				}, 1250);
+			}
+		} catch (error) {
+			const handled = handleError(error, "Failed to connect to server.");
+			logger.error("Connection Error", handled.raw);
+			showError(`Error ${handled.code}`, handled.message, 2500);
+		} finally {
+			setLoading(false);
+		}
+	};
 
-                <div>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
-                          studentForm.watch('birthDate') ? 'text-primary' : 'text-gray-400'
-                        } ${
-                          studentForm.formState.errors.birthDate
-                            ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
-                            : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
-                        }`}
-                      >
-                        <span>
-                          {studentForm.watch('birthDate') 
-                            ? studentForm.watch('birthDate').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                            : 'Set birth date'}
-                        </span>
-                        <CalendarIcon className="h-4 w-4 opacity-50" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={studentForm.watch('birthDate')}
-                        onSelect={(date) => {
-                          if (date) {
-                            studentForm.setValue('birthDate', date, { shouldValidate: true })
-                          }
-                        }}
-                        captionLayout="dropdown" 
-                        disabled={(date) => date > new Date()}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {studentForm.formState.errors.birthDate && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {studentForm.formState.errors.birthDate.message}
-                    </p>
-                  )}
-                </div>
+	const handlePreloaderComplete = () => {
+		// After preloader completes, navigate to appropriate page based on role
+		// TODO: Uncomment when backend is ready
+		// if (selectedRole === 'student') {
+		//   navigate({ to: '/home', replace: true });
+		// } else if (selectedRole === 'individual_sponsor' || selectedRole === 'organization_sponsor' || selectedRole === 'government_sponsor') {
+		//   navigate({ to: '/my-scholarships', replace: true });
+		// } else if (selectedRole === 'school') {
+		//   navigate({ to: '/dashboard', replace: true });
+		// }
 
-                <div>
-                  <input
-                    type="tel"
-                    {...studentForm.register('contact.value')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      studentForm.formState.errors.contact?.value
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}
-                    placeholder="Enter contact number"
-                    inputMode="numeric"
-                    onChange={(e) => {
-                      const numericValue = e.target.value.replace(/\D/g, '')
-                      studentForm.setValue('contact.value', numericValue, { shouldValidate: true })
-                    }}
-                  />
-                  {studentForm.formState.errors.contact?.value && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {studentForm.formState.errors.contact?.value?.message}
-                    </p>
-                  )}
-                </div>
+		// For now, navigate based on role
+		if (selectedRole === "student") {
+			navigate({ to: "/home", replace: true });
+		} else if (
+			selectedRole === "individual_sponsor" ||
+			selectedRole === "organization_sponsor" ||
+			selectedRole === "government_sponsor"
+		) {
+			navigate({ to: "/scholarships", replace: true });
+		}
+	};
 
-                <motion.button
-                  type="submit"
-                  disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
-                    isFormValid && !loading
-                      ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
-                      : 'bg-[#9CA3AF] cursor-not-allowed'
-                  }`}
-                  whileHover={isFormValid ? { scale: 1.02 } : {}}
-                  whileTap={isFormValid ? { scale: 0.98 } : {}}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    </span>
-                  ) : (
-                    <span>Complete</span>
-                  )}
-                </motion.button>
-              </form>
-            )}
+	if (roleValidationError || !selectedRole) {
+		return (
+			<>
+				{toast && <Toast {...toast} />}
 
-            {/* Individual Sponsor Form */}
-            {selectedRole === 'individual_sponsor' && (
-              <form onSubmit={individualSponsorForm.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
-                <div className="flex space-x-2">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      disabled={loading}
-                      {...individualSponsorForm.register('firstName')}
-                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                        individualSponsorForm.formState.errors.firstName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                      }`}
-                      placeholder="First name"
-                    />
-                    {individualSponsorForm.formState.errors.firstName && (
-                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                        {individualSponsorForm.formState.errors.firstName.message}
-                      </p>
-                    )}
-                  </div>
+				<motion.div
+					className="min-h-screen flex items-center justify-center py-8 sm:py-12"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ duration: 0.3 }}
+				>
+					<div className="text-center">
+						<p className="text-secondary">Redirecting to role selection...</p>
+					</div>
+				</motion.div>
+			</>
+		);
+	}
 
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      disabled={loading}
-                      {...individualSponsorForm.register('middleName')}
-                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                        individualSponsorForm.formState.errors.middleName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                      }`}
-                      placeholder="Middle name"
-                    />
-                    {individualSponsorForm.formState.errors.middleName && (
-                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                        {individualSponsorForm.formState.errors.middleName.message}
-                      </p>
-                    )}
-                  </div>
+	const getCurrentForm = () => {
+		switch (selectedRole) {
+			case "student":
+				return studentForm;
+			case "individual_sponsor":
+				return individualSponsorForm;
+			case "organization_sponsor":
+				return organizationSponsorForm;
+			case "government_sponsor":
+				return governmentSponsorForm;
+			case "school":
+				return schoolForm;
+			default:
+				return null;
+		}
+	};
 
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      disabled={loading}
-                      {...individualSponsorForm.register('lastName')}
-                      className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                        individualSponsorForm.formState.errors.lastName
-                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                          : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                      }`}
-                      placeholder="Last name"
-                    />
-                    {individualSponsorForm.formState.errors.lastName && (
-                      <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                        {individualSponsorForm.formState.errors.lastName.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
+	const currentForm = getCurrentForm();
+	const isFormValid = currentForm ? currentForm.formState.isValid : false;
 
-                <div>
-                  <Select 
-                    value={individualSponsorForm.watch('employmentType')} 
-                    disabled={loading}
-                    onValueChange={(value) => individualSponsorForm.setValue('employmentType', value as any, { shouldValidate: true })}
-                  >
-                    <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                      individualSponsorForm.formState.errors.employmentType
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}>
-                      <SelectValue placeholder="Select your employment type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="employed">Employed</SelectItem>
-                      <SelectItem value="self_employed">Self-Employed</SelectItem>
-                      <SelectItem value="freelancer">Freelancer</SelectItem>
-                      <SelectItem value="overseas_filipino_worker">Overseas Filipino Worker</SelectItem>
-                      <SelectItem value="student">Student</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {individualSponsorForm.formState.errors.employmentType && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {individualSponsorForm.formState.errors.employmentType.message}
-                    </p>
-                  )}
-                </div>
+	return (
+		<>
+			{showPreloader && (
+				<Preloader onComplete={handlePreloaderComplete} minDisplayTime={2000} />
+			)}
 
-                <div>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
-                          individualSponsorForm.watch('birthDate') ? 'text-primary' : 'text-gray-400'
-                        } ${
-                          individualSponsorForm.formState.errors.birthDate
-                            ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
-                            : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
-                        }`}
-                      >
-                        <span>
-                          {individualSponsorForm.watch('birthDate') 
-                            ? individualSponsorForm.watch('birthDate').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                            : 'Set birth date'}
-                        </span>
-                        <CalendarIcon className="h-4 w-4 opacity-50" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={individualSponsorForm.watch('birthDate')}
-                        onSelect={(date) => {
-                          if (date) {
-                            individualSponsorForm.setValue('birthDate', date, { shouldValidate: true })
-                          }
-                        }}
-                        captionLayout="dropdown"
-                        disabled={(date) => date > new Date() || loading}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {individualSponsorForm.formState.errors.birthDate && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {individualSponsorForm.formState.errors.birthDate.message}
-                    </p>
-                  )}
-                </div>
+			{toast && <Toast {...toast} />}
 
-                <div>
-                  <input
-                    type="tel"
-                    disabled={loading}
-                    {...individualSponsorForm.register('contactNumber')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      individualSponsorForm.formState.errors.contactNumber
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}
-                    placeholder="Enter contact number"
-                    inputMode="numeric"
-                    onChange={(e) => {
-                      const numericValue = e.target.value.replace(/\D/g, '')
-                      individualSponsorForm.setValue('contactNumber', numericValue, { shouldValidate: true })
-                    }}
-                  />
-                  {individualSponsorForm.formState.errors.contactNumber && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {individualSponsorForm.formState.errors.contactNumber.message}
-                    </p>
-                  )}
-                </div>
+			{!showPreloader && (
+				<motion.div
+					className="min-h-screen flex items-center justify-center py-8 sm:py-12"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ duration: 0.3 }}
+				>
+					<div className="w-full max-w-md">
+						{/* Title and Subtitle */}
+						<motion.div
+							className="text-center mb-8 sm:mb-10"
+							initial={{ opacity: 0, y: -20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.3, delay: 0.1 }}
+						>
+							<h1 className="text-3xl sm:text-4xl md:text-5xl text-secondary mb-1.5 sm:mb-2">
+								Welcome to iSkolar
+							</h1>
+							<p className="text-base sm:text-lg sm:text-xl text-secondary/80">
+								Complete your profile to get started
+							</p>
+						</motion.div>
 
-                <motion.button
-                  type="submit"
-                  disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
-                    isFormValid && !loading
-                      ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
-                      : 'bg-[#9CA3AF] cursor-not-allowed'
-                  }`}
-                  whileHover={isFormValid ? { scale: 1.02 } : {}}
-                  whileTap={isFormValid ? { scale: 0.98 } : {}}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    </span>
-                  ) : (
-                    <span>Complete</span>
-                  )}
-                </motion.button>
-              </form>
-            )}
+						{/* Profile Setup Forms */}
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.3, delay: 0.2 }}
+						>
+							{/* Student Form */}
+							{selectedRole === "student" && (
+								<form
+									onSubmit={studentForm.handleSubmit(onSubmit)}
+									className="space-y-4 sm:space-y-5"
+								>
+									<div className="flex space-x-2">
+										<div className="flex-1">
+											<input
+												type="text"
+												{...studentForm.register("firstName")}
+												className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+													studentForm.formState.errors.firstName
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+												placeholder="First name"
+											/>
+											{studentForm.formState.errors.firstName && (
+												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+													{studentForm.formState.errors.firstName.message}
+												</p>
+											)}
+										</div>
 
-            {/* Organization Sponsor Form */}
-            {selectedRole === 'organization_sponsor' && (
-              <form onSubmit={organizationSponsorForm.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
-                <div>
-                  <input
-                    type="text"
-                    disabled={loading}
-                    {...organizationSponsorForm.register('organizationName')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      organizationSponsorForm.formState.errors.organizationName
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}
-                    placeholder="What's your organization name?"
-                  />
-                  {organizationSponsorForm.formState.errors.organizationName && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {organizationSponsorForm.formState.errors.organizationName.message}
-                    </p>
-                  )}
-                </div>
+										<div className="flex-1">
+											<input
+												type="text"
+												{...studentForm.register("middleName")}
+												className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+													studentForm.formState.errors.middleName
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+												placeholder="Middle name"
+											/>
+											{studentForm.formState.errors.middleName && (
+												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+													{studentForm.formState.errors.middleName.message}
+												</p>
+											)}
+										</div>
 
-                <div>
-                  <Select 
-                    value={organizationSponsorForm.watch('organizationType')} 
-                    disabled={loading}
-                    onValueChange={(value) => organizationSponsorForm.setValue('organizationType', value as any, { shouldValidate: true })}
-                  >
-                    <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                      organizationSponsorForm.formState.errors.organizationType
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}>
-                      <SelectValue placeholder="Select your organization type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="private_company">Private Company</SelectItem>
-                      <SelectItem value="non_governmental_organization">Non-Governmental Organization</SelectItem>
-                      <SelectItem value="educational_institution">Educational Institution</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {organizationSponsorForm.formState.errors.organizationType && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {organizationSponsorForm.formState.errors.organizationType.message}
-                    </p>
-                  )}
-                </div>
+										<div className="flex-1">
+											<input
+												type="text"
+												{...studentForm.register("lastName")}
+												className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+													studentForm.formState.errors.lastName
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+												placeholder="Last name"
+											/>
+											{studentForm.formState.errors.lastName && (
+												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+													{studentForm.formState.errors.lastName.message}
+												</p>
+											)}
+										</div>
+									</div>
 
-                <div>
-                  <input
-                    type="tel"
-                    disabled={loading}
-                    {...organizationSponsorForm.register('contactNumber')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      organizationSponsorForm.formState.errors.contactNumber
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}
-                    placeholder="Enter contact number"
-                    inputMode="numeric"
-                    onChange={(e) => {
-                      const numericValue = e.target.value.replace(/\D/g, '')
-                      organizationSponsorForm.setValue('contactNumber', numericValue, { shouldValidate: true })
-                    }}
-                  />
-                  {organizationSponsorForm.formState.errors.contactNumber && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {organizationSponsorForm.formState.errors.contactNumber.message}
-                    </p>
-                  )}
-                </div>
+									<div>
+										<Select
+											value={studentForm.watch("gender")}
+											onValueChange={(value) =>
+												studentForm.setValue("gender", value as Gender, {
+													shouldValidate: true,
+												})
+											}
+										>
+											<SelectTrigger
+												className={`w-full px-4 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
+													studentForm.formState.errors.gender
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+											>
+												<SelectValue placeholder="Select your gender" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="male">Male</SelectItem>
+												<SelectItem value="female">Female</SelectItem>
+											</SelectContent>
+										</Select>
+										{studentForm.formState.errors.gender && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{studentForm.formState.errors.gender.message}
+											</p>
+										)}
+									</div>
 
-                <motion.button
-                  type="submit"
-                  disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
-                    isFormValid && !loading
-                      ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
-                      : 'bg-[#9CA3AF] cursor-not-allowed'
-                  }`}
-                  whileHover={isFormValid ? { scale: 1.02 } : {}}
-                  whileTap={isFormValid ? { scale: 0.98 } : {}}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    </span>
-                  ) : (
-                    <span>Complete</span>
-                  )}
-                </motion.button>
-              </form>
-            )}
+									<div>
+										<Popover>
+											<PopoverTrigger asChild>
+												<button
+													type="button"
+													className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+														studentForm.watch("birthDate")
+															? "text-primary"
+															: "text-gray-400"
+													} ${
+														studentForm.formState.errors.birthDate
+															? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
+															: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20"
+													}`}
+												>
+													<span>
+														{studentForm.watch("birthDate")
+															? studentForm
+																	.watch("birthDate")
+																	.toLocaleDateString("en-US", {
+																		month: "long",
+																		day: "numeric",
+																		year: "numeric",
+																	})
+															: "Set birth date"}
+													</span>
+													<CalendarIcon className="h-4 w-4 opacity-50" />
+												</button>
+											</PopoverTrigger>
+											<PopoverContent className="w-auto p-0" align="start">
+												<Calendar
+													mode="single"
+													selected={studentForm.watch("birthDate")}
+													onSelect={(date) => {
+														if (date) {
+															studentForm.setValue("birthDate", date, {
+																shouldValidate: true,
+															});
+														}
+													}}
+													captionLayout="dropdown"
+													disabled={(date) => date > new Date()}
+													initialFocus
+												/>
+											</PopoverContent>
+										</Popover>
+										{studentForm.formState.errors.birthDate && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{studentForm.formState.errors.birthDate.message}
+											</p>
+										)}
+									</div>
 
-            {/* Government Sponsor Form */}
-            {selectedRole === 'government_sponsor' && (
-              <form onSubmit={governmentSponsorForm.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
-                <div>
-                  <input
-                    type="text"
-                    disabled={loading}
-                    {...governmentSponsorForm.register('agencyName')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      governmentSponsorForm.formState.errors.agencyName
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}
-                    placeholder="What's your agency name?"
-                  />
-                  {governmentSponsorForm.formState.errors.agencyName && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {governmentSponsorForm.formState.errors.agencyName.message}
-                    </p>
-                  )}
-                </div>
+									<div>
+										<input
+											type="tel"
+											{...studentForm.register("contact.value")}
+											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+												studentForm.formState.errors.contact?.value
+													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+											}`}
+											placeholder="Enter contact number"
+											inputMode="numeric"
+											onChange={(e) => {
+												const numericValue = e.target.value.replace(/\D/g, "");
+												studentForm.setValue("contact.value", numericValue, {
+													shouldValidate: true,
+												});
+											}}
+										/>
+										{studentForm.formState.errors.contact?.value && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{studentForm.formState.errors.contact?.value?.message}
+											</p>
+										)}
+									</div>
 
-                <div>
-                  <Select 
-                    value={governmentSponsorForm.watch('agencyType')} 
-                    disabled={loading}
-                    onValueChange={(value) => governmentSponsorForm.setValue('agencyType', value as any, { shouldValidate: true })}
-                  >
-                    <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                      governmentSponsorForm.formState.errors.agencyType
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}>
-                      <SelectValue placeholder="Select your agency type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="national_government_agency">National Government Agency</SelectItem>
-                      <SelectItem value="local_government_unit">Local Government Unit</SelectItem>
-                      <SelectItem value="government_owned_and_controlled_corporation">GOCC</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {governmentSponsorForm.formState.errors.agencyType && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {governmentSponsorForm.formState.errors.agencyType.message}
-                    </p>
-                  )}
-                </div>
+									<motion.button
+										type="submit"
+										disabled={!isFormValid || loading}
+										className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
+											isFormValid && !loading
+												? "bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer"
+												: "bg-[#9CA3AF] cursor-not-allowed"
+										}`}
+										whileHover={isFormValid ? { scale: 1.02 } : {}}
+										whileTap={isFormValid ? { scale: 0.98 } : {}}
+									>
+										{loading ? (
+											<span className="flex items-center justify-center">
+												<Loader2 className="w-4 h-4 animate-spin" />
+											</span>
+										) : (
+											<span>Complete</span>
+										)}
+									</motion.button>
+								</form>
+							)}
 
-                <div>
-                  <input
-                    type="tel"
-                    disabled={loading}
-                    {...governmentSponsorForm.register('contactNumber')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      governmentSponsorForm.formState.errors.contactNumber
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}
-                    placeholder="Enter contact number"
-                    inputMode="numeric"
-                    onChange={(e) => {
-                      const numericValue = e.target.value.replace(/\D/g, '')
-                      governmentSponsorForm.setValue('contactNumber', numericValue, { shouldValidate: true })
-                    }}
-                  />
-                  {governmentSponsorForm.formState.errors.contactNumber && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {governmentSponsorForm.formState.errors.contactNumber.message}
-                    </p>
-                  )}
-                </div>
+							{/* Individual Sponsor Form */}
+							{selectedRole === "individual_sponsor" && (
+								<form
+									onSubmit={individualSponsorForm.handleSubmit(onSubmit)}
+									className="space-y-4 sm:space-y-5"
+								>
+									<div className="flex space-x-2">
+										<div className="flex-1">
+											<input
+												type="text"
+												disabled={loading}
+												{...individualSponsorForm.register("firstName")}
+												className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+													individualSponsorForm.formState.errors.firstName
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+												placeholder="First name"
+											/>
+											{individualSponsorForm.formState.errors.firstName && (
+												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+													{
+														individualSponsorForm.formState.errors.firstName
+															.message
+													}
+												</p>
+											)}
+										</div>
 
-                <motion.button
-                  type="submit"
-                  disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
-                    isFormValid && !loading
-                      ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
-                      : 'bg-[#9CA3AF] cursor-not-allowed'
-                  }`}
-                  whileHover={isFormValid ? { scale: 1.02 } : {}}
-                  whileTap={isFormValid ? { scale: 0.98 } : {}}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    </span>
-                  ) : (
-                    <span>Complete</span>
-                  )}
-                </motion.button>
-              </form>
-            )}
+										<div className="flex-1">
+											<input
+												type="text"
+												disabled={loading}
+												{...individualSponsorForm.register("middleName")}
+												className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+													individualSponsorForm.formState.errors.middleName
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+												placeholder="Middle name"
+											/>
+											{individualSponsorForm.formState.errors.middleName && (
+												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+													{
+														individualSponsorForm.formState.errors.middleName
+															.message
+													}
+												</p>
+											)}
+										</div>
 
-            {/* School Form */}
-            {selectedRole === 'school' && (
-              <form onSubmit={schoolForm.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
-                <div>
-                  <input
-                    type="text"
-                    disabled={loading}
-                    {...schoolForm.register('schoolName')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      schoolForm.formState.errors.schoolName
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}
-                    placeholder="What's your school name?"
-                  />
-                  {schoolForm.formState.errors.schoolName && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {schoolForm.formState.errors.schoolName.message}
-                    </p>
-                  )}
-                </div>
+										<div className="flex-1">
+											<input
+												type="text"
+												disabled={loading}
+												{...individualSponsorForm.register("lastName")}
+												className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+													individualSponsorForm.formState.errors.lastName
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+												placeholder="Last name"
+											/>
+											{individualSponsorForm.formState.errors.lastName && (
+												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+													{
+														individualSponsorForm.formState.errors.lastName
+															.message
+													}
+												</p>
+											)}
+										</div>
+									</div>
 
-                <div>
-                  <Select 
-                    value={schoolForm.watch('schoolType')} 
-                    disabled={loading}
-                    onValueChange={(value) => schoolForm.setValue('schoolType', value as any, { shouldValidate: true })}
-                  >
-                    <SelectTrigger className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                      schoolForm.formState.errors.schoolType
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}>
-                      <SelectValue placeholder="Select your school type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="private">Private</SelectItem>
-                      <SelectItem value="international">International</SelectItem>
-                      <SelectItem value="vocational">Vocational</SelectItem>
-                      <SelectItem value="religious">Religious</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {schoolForm.formState.errors.schoolType && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {schoolForm.formState.errors.schoolType.message}
-                    </p>
-                  )}
-                </div>
+									<div>
+										<Select
+											value={individualSponsorForm.watch("employmentType")}
+											disabled={loading}
+											onValueChange={(value) =>
+												individualSponsorForm.setValue(
+													"employmentType",
+													value as any,
+													{ shouldValidate: true },
+												)
+											}
+										>
+											<SelectTrigger
+												className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
+													individualSponsorForm.formState.errors.employmentType
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+											>
+												<SelectValue placeholder="Select your employment type" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="employed">Employed</SelectItem>
+												<SelectItem value="self_employed">
+													Self-Employed
+												</SelectItem>
+												<SelectItem value="freelancer">Freelancer</SelectItem>
+												<SelectItem value="overseas_filipino_worker">
+													Overseas Filipino Worker
+												</SelectItem>
+												<SelectItem value="student">Student</SelectItem>
+											</SelectContent>
+										</Select>
+										{individualSponsorForm.formState.errors.employmentType && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{
+													individualSponsorForm.formState.errors.employmentType
+														.message
+												}
+											</p>
+										)}
+									</div>
 
-                <div>
-                  <input
-                    type="tel"
-                    disabled={loading}
-                    {...schoolForm.register('contactNumber')}
-                    className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-                      schoolForm.formState.errors.contactNumber
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
-                        : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
-                    }`}
-                    placeholder="Enter contact number"
-                    inputMode="numeric"
-                    onChange={(e) => {
-                      const numericValue = e.target.value.replace(/\D/g, '')
-                      schoolForm.setValue('contactNumber', numericValue, { shouldValidate: true })
-                    }}
-                  />
-                  {schoolForm.formState.errors.contactNumber && (
-                    <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                      {schoolForm.formState.errors.contactNumber.message}
-                    </p>
-                  )}
-                </div>
+									<div>
+										<Popover>
+											<PopoverTrigger asChild>
+												<button
+													type="button"
+													className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+														individualSponsorForm.watch("birthDate")
+															? "text-primary"
+															: "text-gray-400"
+													} ${
+														individualSponsorForm.formState.errors.birthDate
+															? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
+															: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20"
+													}`}
+												>
+													<span>
+														{individualSponsorForm.watch("birthDate")
+															? individualSponsorForm
+																	.watch("birthDate")
+																	.toLocaleDateString("en-US", {
+																		month: "long",
+																		day: "numeric",
+																		year: "numeric",
+																	})
+															: "Set birth date"}
+													</span>
+													<CalendarIcon className="h-4 w-4 opacity-50" />
+												</button>
+											</PopoverTrigger>
+											<PopoverContent className="w-auto p-0" align="start">
+												<Calendar
+													mode="single"
+													selected={individualSponsorForm.watch("birthDate")}
+													onSelect={(date) => {
+														if (date) {
+															individualSponsorForm.setValue(
+																"birthDate",
+																date,
+																{ shouldValidate: true },
+															);
+														}
+													}}
+													captionLayout="dropdown"
+													disabled={(date) => date > new Date() || loading}
+													initialFocus
+												/>
+											</PopoverContent>
+										</Popover>
+										{individualSponsorForm.formState.errors.birthDate && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{
+													individualSponsorForm.formState.errors.birthDate
+														.message
+												}
+											</p>
+										)}
+									</div>
 
-                <motion.button
-                  type="submit"
-                  disabled={!isFormValid || loading}
-                  className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
-                    isFormValid && !loading
-                      ? 'bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer'
-                      : 'bg-[#9CA3AF] cursor-not-allowed'
-                  }`}
-                  whileHover={isFormValid ? { scale: 1.02 } : {}}
-                  whileTap={isFormValid ? { scale: 0.98 } : {}}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    </span>
-                  ) : (
-                    <span>Complete</span>
-                  )}
-                </motion.button>
-              </form>
-            )}
+									<div>
+										<input
+											type="tel"
+											disabled={loading}
+											{...individualSponsorForm.register("contactNumber")}
+											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+												individualSponsorForm.formState.errors.contactNumber
+													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+											}`}
+											placeholder="Enter contact number"
+											inputMode="numeric"
+											onChange={(e) => {
+												const numericValue = e.target.value.replace(/\D/g, "");
+												individualSponsorForm.setValue(
+													"contactNumber",
+													numericValue,
+													{ shouldValidate: true },
+												);
+											}}
+										/>
+										{individualSponsorForm.formState.errors.contactNumber && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{
+													individualSponsorForm.formState.errors.contactNumber
+														.message
+												}
+											</p>
+										)}
+									</div>
 
-          </motion.div>
-        </div>
-      </motion.div>
-      )}
-    </>
-  )
+									<motion.button
+										type="submit"
+										disabled={!isFormValid || loading}
+										className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
+											isFormValid && !loading
+												? "bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer"
+												: "bg-[#9CA3AF] cursor-not-allowed"
+										}`}
+										whileHover={isFormValid ? { scale: 1.02 } : {}}
+										whileTap={isFormValid ? { scale: 0.98 } : {}}
+									>
+										{loading ? (
+											<span className="flex items-center justify-center">
+												<Loader2 className="w-4 h-4 animate-spin" />
+											</span>
+										) : (
+											<span>Complete</span>
+										)}
+									</motion.button>
+								</form>
+							)}
+
+							{/* Organization Sponsor Form */}
+							{selectedRole === "organization_sponsor" && (
+								<form
+									onSubmit={organizationSponsorForm.handleSubmit(onSubmit)}
+									className="space-y-4 sm:space-y-5"
+								>
+									<div>
+										<input
+											type="text"
+											disabled={loading}
+											{...organizationSponsorForm.register("organizationName")}
+											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+												organizationSponsorForm.formState.errors
+													.organizationName
+													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+											}`}
+											placeholder="What's your organization name?"
+										/>
+										{organizationSponsorForm.formState.errors
+											.organizationName && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{
+													organizationSponsorForm.formState.errors
+														.organizationName.message
+												}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<Select
+											value={organizationSponsorForm.watch("organizationType")}
+											disabled={loading}
+											onValueChange={(value) =>
+												organizationSponsorForm.setValue(
+													"organizationType",
+													value as any,
+													{ shouldValidate: true },
+												)
+											}
+										>
+											<SelectTrigger
+												className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
+													organizationSponsorForm.formState.errors
+														.organizationType
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+											>
+												<SelectValue placeholder="Select your organization type" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="private_company">
+													Private Company
+												</SelectItem>
+												<SelectItem value="non_governmental_organization">
+													Non-Governmental Organization
+												</SelectItem>
+												<SelectItem value="educational_institution">
+													Educational Institution
+												</SelectItem>
+											</SelectContent>
+										</Select>
+										{organizationSponsorForm.formState.errors
+											.organizationType && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{
+													organizationSponsorForm.formState.errors
+														.organizationType.message
+												}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<input
+											type="tel"
+											disabled={loading}
+											{...organizationSponsorForm.register("contactNumber")}
+											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+												organizationSponsorForm.formState.errors.contactNumber
+													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+											}`}
+											placeholder="Enter contact number"
+											inputMode="numeric"
+											onChange={(e) => {
+												const numericValue = e.target.value.replace(/\D/g, "");
+												organizationSponsorForm.setValue(
+													"contactNumber",
+													numericValue,
+													{ shouldValidate: true },
+												);
+											}}
+										/>
+										{organizationSponsorForm.formState.errors.contactNumber && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{
+													organizationSponsorForm.formState.errors.contactNumber
+														.message
+												}
+											</p>
+										)}
+									</div>
+
+									<motion.button
+										type="submit"
+										disabled={!isFormValid || loading}
+										className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
+											isFormValid && !loading
+												? "bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer"
+												: "bg-[#9CA3AF] cursor-not-allowed"
+										}`}
+										whileHover={isFormValid ? { scale: 1.02 } : {}}
+										whileTap={isFormValid ? { scale: 0.98 } : {}}
+									>
+										{loading ? (
+											<span className="flex items-center justify-center">
+												<Loader2 className="w-4 h-4 animate-spin" />
+											</span>
+										) : (
+											<span>Complete</span>
+										)}
+									</motion.button>
+								</form>
+							)}
+
+							{/* Government Sponsor Form */}
+							{selectedRole === "government_sponsor" && (
+								<form
+									onSubmit={governmentSponsorForm.handleSubmit(onSubmit)}
+									className="space-y-4 sm:space-y-5"
+								>
+									<div>
+										<input
+											type="text"
+											disabled={loading}
+											{...governmentSponsorForm.register("agencyName")}
+											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+												governmentSponsorForm.formState.errors.agencyName
+													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+											}`}
+											placeholder="What's your agency name?"
+										/>
+										{governmentSponsorForm.formState.errors.agencyName && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{
+													governmentSponsorForm.formState.errors.agencyName
+														.message
+												}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<Select
+											value={governmentSponsorForm.watch("agencyType")}
+											disabled={loading}
+											onValueChange={(value) =>
+												governmentSponsorForm.setValue(
+													"agencyType",
+													value as any,
+													{ shouldValidate: true },
+												)
+											}
+										>
+											<SelectTrigger
+												className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
+													governmentSponsorForm.formState.errors.agencyType
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+											>
+												<SelectValue placeholder="Select your agency type" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="national_government_agency">
+													National Government Agency
+												</SelectItem>
+												<SelectItem value="local_government_unit">
+													Local Government Unit
+												</SelectItem>
+												<SelectItem value="government_owned_and_controlled_corporation">
+													GOCC
+												</SelectItem>
+											</SelectContent>
+										</Select>
+										{governmentSponsorForm.formState.errors.agencyType && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{
+													governmentSponsorForm.formState.errors.agencyType
+														.message
+												}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<input
+											type="tel"
+											disabled={loading}
+											{...governmentSponsorForm.register("contactNumber")}
+											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+												governmentSponsorForm.formState.errors.contactNumber
+													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+											}`}
+											placeholder="Enter contact number"
+											inputMode="numeric"
+											onChange={(e) => {
+												const numericValue = e.target.value.replace(/\D/g, "");
+												governmentSponsorForm.setValue(
+													"contactNumber",
+													numericValue,
+													{ shouldValidate: true },
+												);
+											}}
+										/>
+										{governmentSponsorForm.formState.errors.contactNumber && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{
+													governmentSponsorForm.formState.errors.contactNumber
+														.message
+												}
+											</p>
+										)}
+									</div>
+
+									<motion.button
+										type="submit"
+										disabled={!isFormValid || loading}
+										className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
+											isFormValid && !loading
+												? "bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer"
+												: "bg-[#9CA3AF] cursor-not-allowed"
+										}`}
+										whileHover={isFormValid ? { scale: 1.02 } : {}}
+										whileTap={isFormValid ? { scale: 0.98 } : {}}
+									>
+										{loading ? (
+											<span className="flex items-center justify-center">
+												<Loader2 className="w-4 h-4 animate-spin" />
+											</span>
+										) : (
+											<span>Complete</span>
+										)}
+									</motion.button>
+								</form>
+							)}
+
+							{/* School Form */}
+							{selectedRole === "school" && (
+								<form
+									onSubmit={schoolForm.handleSubmit(onSubmit)}
+									className="space-y-4 sm:space-y-5"
+								>
+									<div>
+										<input
+											type="text"
+											disabled={loading}
+											{...schoolForm.register("schoolName")}
+											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+												schoolForm.formState.errors.schoolName
+													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+											}`}
+											placeholder="What's your school name?"
+										/>
+										{schoolForm.formState.errors.schoolName && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{schoolForm.formState.errors.schoolName.message}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<Select
+											value={schoolForm.watch("schoolType")}
+											disabled={loading}
+											onValueChange={(value) =>
+												schoolForm.setValue("schoolType", value as any, {
+													shouldValidate: true,
+												})
+											}
+										>
+											<SelectTrigger
+												className={`w-full text-sm px-4 border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
+													schoolForm.formState.errors.schoolType
+														? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+														: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+												}`}
+											>
+												<SelectValue placeholder="Select your school type" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="public">Public</SelectItem>
+												<SelectItem value="private">Private</SelectItem>
+												<SelectItem value="international">
+													International
+												</SelectItem>
+												<SelectItem value="vocational">Vocational</SelectItem>
+												<SelectItem value="religious">Religious</SelectItem>
+											</SelectContent>
+										</Select>
+										{schoolForm.formState.errors.schoolType && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{schoolForm.formState.errors.schoolType.message}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<input
+											type="tel"
+											disabled={loading}
+											{...schoolForm.register("contactNumber")}
+											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
+												schoolForm.formState.errors.contactNumber
+													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
+													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
+											}`}
+											placeholder="Enter contact number"
+											inputMode="numeric"
+											onChange={(e) => {
+												const numericValue = e.target.value.replace(/\D/g, "");
+												schoolForm.setValue("contactNumber", numericValue, {
+													shouldValidate: true,
+												});
+											}}
+										/>
+										{schoolForm.formState.errors.contactNumber && (
+											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												{schoolForm.formState.errors.contactNumber.message}
+											</p>
+										)}
+									</div>
+
+									<motion.button
+										type="submit"
+										disabled={!isFormValid || loading}
+										className={`w-full py-3 sm:py-3.5 px-6 rounded-lg transition-all duration-300 text-tertiary text-xs sm:text-sm mt-3 ${
+											isFormValid && !loading
+												? "bg-[#EFA508] hover:bg-[#D89407] shadow-md hover:shadow-lg cursor-pointer"
+												: "bg-[#9CA3AF] cursor-not-allowed"
+										}`}
+										whileHover={isFormValid ? { scale: 1.02 } : {}}
+										whileTap={isFormValid ? { scale: 0.98 } : {}}
+									>
+										{loading ? (
+											<span className="flex items-center justify-center">
+												<Loader2 className="w-4 h-4 animate-spin" />
+											</span>
+										) : (
+											<span>Complete</span>
+										)}
+									</motion.button>
+								</form>
+							)}
+						</motion.div>
+					</div>
+				</motion.div>
+			)}
+		</>
+	);
 }
