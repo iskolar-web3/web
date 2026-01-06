@@ -61,7 +61,7 @@ function StudentProfilePage() {
   const currentProfile = (isEditing && editedProfile) ? editedProfile as StudentProfile : localProfile;
 
   const handleCredentialSuccess = () => {
-    showSuccess('Credential uploaded successfully!', 'success', 1500);
+    showSuccess('Success', 'Your credential has been saved.', 2500);
   };
 
   return (

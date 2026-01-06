@@ -3,12 +3,15 @@ import { useAccount } from 'wagmi';
 import { useCredentialsByHolder, useCredential } from '@/hooks/useNFTCredential';
 import { Award, FileText, Pencil, Eye } from 'lucide-react';
 import { getIPFSUrl } from '@/utils/ipfs.utils';
+import { useToast } from '@/hooks/useToast';
+import Toast from '@/components/Toast';
 import CredentialEditModal from './CredentialEditModal';
 import CredentialDetailsModal from './CredentialDetailsModal';
 
 export default function CredentialsList() {
   const { address } = useAccount();
   const { tokenIds, isLoading, error, refetch } = useCredentialsByHolder(address);
+  const { toast, showSuccess } = useToast();
 
   // Sort tokenIds to display latest first 
   const sortedTokenIds = useMemo(() => {
@@ -67,18 +70,21 @@ export default function CredentialsList() {
   }
 
   return (
-    <div className="space-y-4">
-      {sortedTokenIds.map((tokenId) => (
-        <CredentialCard key={tokenId.toString()} tokenId={tokenId} onUpdate={refetch} />
-      ))}
-    </div>
+    <>
+      {toast && <Toast {...toast} />}
+      <div className="space-y-4">
+        {sortedTokenIds.map((tokenId) => (
+          <CredentialCard key={tokenId.toString()} tokenId={tokenId} onUpdate={refetch} onEditSuccess={showSuccess} />
+        ))}
+      </div>
+    </>
   );
 }
 
 /**
  * Individual credential card component
  */
-function CredentialCard({ tokenId, onUpdate }: { tokenId: bigint, onUpdate: () => void }) {
+function CredentialCard({ tokenId, onUpdate, onEditSuccess }: { tokenId: bigint, onUpdate: () => void, onEditSuccess: (title: string, message: string, duration?: number) => void }) {
   const { address } = useAccount();
   const { credential, isLoading, refetch } = useCredential(tokenId);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -86,7 +92,8 @@ function CredentialCard({ tokenId, onUpdate }: { tokenId: bigint, onUpdate: () =
 
   const handleSuccess = () => {
     refetch(); 
-    onUpdate(); 
+    onUpdate();
+    onEditSuccess('Updated', 'Your changes have been saved.', 2500);
   };
 
   if (isLoading || !credential) {
