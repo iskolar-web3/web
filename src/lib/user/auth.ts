@@ -1,15 +1,11 @@
-import type { ApiResponse } from "../api";
-import { getCookie } from "../cookie";
+import { BACKEND_URL, type ApiResponse } from "../api";
 import type { AuthSession } from "./model";
 
 export const ACCESS_TOKEN_KEY = "auth_token";
 export const REFRESH_TOKEN_KEY = "refresh_token";
 
-export async function validateSession(): Promise<AuthSession | null> {
-	const token = getCookie(ACCESS_TOKEN_KEY);
-	if (!token) return null;
-
-	const response = await fetch("/sessions", {
+export async function validateSession(token: string): Promise<AuthSession | null> {
+	const response = await fetch(`${BACKEND_URL}/sessions`, {
 		method: "GET",
 		headers: { Authorization: `Bearer ${token}` },
 		credentials: "include",
