@@ -65,6 +65,7 @@ function RegisterPage(): JSX.Element {
 
   const navigate = useNavigate();
 
+  // Remove this and use mutation.isPending instead
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
