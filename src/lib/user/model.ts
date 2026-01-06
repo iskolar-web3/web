@@ -1,4 +1,5 @@
 import { enumDetailSchema } from "@/lib/api";
+import type { Student } from "@/types/student";
 import z from "zod";
 
 export enum UserRole {
@@ -42,3 +43,5 @@ export const contactDetailSchema = z.object({
 	value: z.string().nonempty(),
 });
 export type ContactDetail = z.infer<typeof contactDetailSchema>;
+
+export type UserProfile = Student;
