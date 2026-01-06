@@ -14,7 +14,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { BACKEND_URL, type ApiResponse } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { setCookie } from "@/lib/cookie";
-import type { AuthSession } from "@/lib/user/model";
+import { UserRole, type AuthSession } from "@/lib/user/model";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/lib/user/auth";
 // import { handleError } from '@/lib/errorHandler';
 // import { logger } from "@/lib/logger";
@@ -59,7 +59,6 @@ function LoginPage(): JSX.Element {
   
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPreloader, setShowPreloader] = useState(false);
   const { toast, showSuccess, showError } = useToast();
@@ -98,16 +97,36 @@ function LoginPage(): JSX.Element {
   const mutation = useMutation({
       mutationFn: login,
       onSuccess: async (res) => {
+          console.log(res)
         showSuccess(`Success`, 'Login successful', 1250);
-        setLoading(false);
         setCookie(ACCESS_TOKEN_KEY, res.token);
         setCookie(REFRESH_TOKEN_KEY, res.refreshToken);
-        await navigate({ to: "/welcome" });
+
+        if(!res.user.role) {
+            await navigate({ to: "/welcome" });
+            return
+        }
+
+        switch (res.user.role.code) {
+            case UserRole.Student:
+                await navigate({ to: "/home" });
+                break;
+
+            case UserRole.Sponsor:
+                await navigate({ to: "/scholarships" });
+                break;
+        
+            default:
+                break;
+        }
+      },
+      onError: (err) => {
+          showError("Error", err.message)
+          console.error(err)
       }
   })
   
   const onSubmit = async (value: LoginFormData) => {
-    setLoading(true);
     mutation.mutate(value)
   };
 
@@ -181,7 +200,7 @@ function LoginPage(): JSX.Element {
                 type="email"
                 placeholder="Enter Email"
                 {...form.register("email")}
-                disabled={loading}
+                disabled={mutation.isPending}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                   form.formState.errors.email
                     ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
@@ -205,7 +224,7 @@ function LoginPage(): JSX.Element {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter Password"
                   {...form.register("password")}
-                  disabled={loading}
+                  disabled={mutation.isPending}
                   className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
                     form.formState.errors.password
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
@@ -261,11 +280,11 @@ function LoginPage(): JSX.Element {
             <button
               type="submit"
               className={`w-full py-3 sm:py-3 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md transition-all bg-[#3A52A6] ${
-                loading && "opacity-60 cursor-not-allowed"
+                mutation.isPending && "opacity-60 cursor-not-allowed"
               }`}
-              disabled={loading}
+              disabled={mutation.isPending}
             >
-              {loading ? (
+              {mutation.isPending ? (
                 <span className="flex items-center justify-center">
                   <Loader2 className="w-4 h-4 animate-spin" />
                 </span>
