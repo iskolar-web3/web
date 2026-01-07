@@ -32,6 +32,11 @@ import { ContactType } from "@/lib/user/model";
 import { useAuth } from "@/auth";
 import { getCookie } from "@/lib/cookie";
 import { ACCESS_TOKEN_KEY } from "@/lib/user/auth";
+import {
+	EmploymentType,
+	SponsorType,
+	type IndividualSponsor,
+} from "@/lib/sponsor/model";
 // import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute("/_onboarding/profile-setup")({
@@ -82,27 +87,18 @@ const studentSchema = z.object({
 
 // individual Sponsor validation
 const individualSponsorSchema = z.object({
+	userId: z.uuidv4(),
 	firstName: z.string().min(1, "First name is required"),
 	middleName: z.string().optional(),
 	lastName: z.string().min(1, "Last name is required"),
-	employmentType: z.enum(
-		[
-			"employed",
-			"self_employed",
-			"freelancer",
-			"overseas_filipino_worker",
-			"student",
-		],
-		{ message: "Please select employment type" },
-	),
+	sponsorType: z.enum(SponsorType),
+	employmentType: z.enum(EmploymentType, {
+		message: "Please select employment type",
+	}),
 	birthDate: z.date().refine((date) => date <= new Date(), {
 		message: "Date of birth cannot be in the future",
 	}),
-	contactNumber: z
-		.string()
-		.min(1, "Contact number is required")
-		.regex(/^\d+$/, "Contact number must contain only numbers")
-		.min(11, "Contact number must be at least 11 digits"),
+	contact: createContactRequestSchema,
 });
 
 // Organization Sponsor validation
@@ -179,6 +175,26 @@ async function createStudent(value: StudentFormData): Promise<Student> {
 	return result.data;
 }
 
+async function createIndividualSponsor(
+	value: IndividualSponsorFormData,
+): Promise<IndividualSponsor> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	const response = await fetch(`${BACKEND_URL}/sponsors/individuals`, {
+		method: "POST",
+		body: JSON.stringify(value),
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+	});
+	const result: ApiResponse<IndividualSponsor> = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message || "Failed to create profile.");
+	}
+
+	return result.data;
+}
+
 function ProfileSetup() {
 	usePageTitle("Profile Setup");
 
@@ -219,12 +235,17 @@ function ProfileSetup() {
 		resolver: zodResolver(individualSponsorSchema),
 		mode: "onBlur",
 		defaultValues: {
+			userId: auth.user?.id,
 			firstName: "",
 			middleName: "",
 			lastName: "",
 			employmentType: undefined,
 			birthDate: undefined,
-			contactNumber: "",
+			contact: {
+				contactType: ContactType.Phone,
+				value: "",
+			},
+			sponsorType: SponsorType.Individual,
 		},
 	});
 
@@ -281,7 +302,7 @@ function ProfileSetup() {
 		setRoleValidationError(false);
 	}, [role, navigate]);
 
-	const mutation = useMutation({
+	const studentMutation = useMutation({
 		mutationFn: createStudent,
 		onSuccess: async () => {
 			showSuccess(
@@ -291,6 +312,19 @@ function ProfileSetup() {
 			);
 			setLoading(false);
 			await navigate({ to: "/home" });
+		},
+	});
+
+	const individualSponsorMutation = useMutation({
+		mutationFn: createIndividualSponsor,
+		onSuccess: async () => {
+			showSuccess(
+				`Success`,
+				"Your profile has been set up successfully!",
+				1250,
+			);
+			setLoading(false);
+			await navigate({ to: "/scholarships" });
 		},
 	});
 
@@ -307,53 +341,10 @@ function ProfileSetup() {
 
 			if (selectedRole === "student") {
 				const studentData = value as StudentFormData;
-				mutation.mutate(studentData);
+				studentMutation.mutate(studentData);
 			} else if (selectedRole === "individual_sponsor") {
-				// const individualSponsorData = data as IndividualSponsorFormData;
-
-				// const formattedDate = individualSponsorData.birthDate.toISOString().split('T')[0];
-
-				// const result = await profileService.setupIndividualSponsorProfile({
-				//   role: selectedRole
-				//   first_name: individualSponsorData.firstName,
-				//   middle_name: individualSponsorData.middleName,
-				//   last_name: individualSponsorData.lastName,
-				//   employment_type: individualSponsorData.employmentType,
-				//   date_of_birth: formattedDate,
-				//   contact_number: individualSponsorData.contactNumber,
-				// });
-
-				// if (result.success) {
-				//   setToastConfig({
-				//     type: 'success',
-				//     title: 'Profile Created',
-				//     message: 'Your profile has been set up successfully!',
-				//   })
-				//   setShowToast(true);
-				//   setTimeout(() => {
-				//     setShowToast(false)
-				//     // Show preloader after successful profile setup
-				//     setShowPreloader(true);
-				//   }, 1250);
-				// } else {
-				//   setToastConfig({
-				//     type: 'error',
-				//     title: 'Error',
-				//     message: result.message,
-				//   })
-				//   setShowToast(true);
-				//   setTimeout(() => setShowToast(false), 2000);
-				// }
-
-				// For now, simulate successful profile setup to test preloader
-				showSuccess(
-					"Profile Created",
-					"Your profile has been set up successfully",
-					2000,
-				);
-				setTimeout(() => {
-					setShowPreloader(true);
-				}, 1250);
+				const individualSponsorData = value as IndividualSponsorFormData;
+                individualSponsorMutation.mutate(individualSponsorData)
 			} else if (selectedRole === "organization_sponsor") {
 				// const organizationSponsorData = data as OrganizationSponsorFormData;
 
@@ -885,15 +876,15 @@ function ProfileSetup() {
 												<SelectValue placeholder="Select your employment type" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="employed">Employed</SelectItem>
-												<SelectItem value="self_employed">
+												<SelectItem value={EmploymentType.Employed}>Employed</SelectItem>
+												<SelectItem value={EmploymentType.SelfEmployed}>
 													Self-Employed
 												</SelectItem>
-												<SelectItem value="freelancer">Freelancer</SelectItem>
-												<SelectItem value="overseas_filipino_worker">
+												<SelectItem value={EmploymentType.Freelancer}>Freelancer</SelectItem>
+												<SelectItem value={EmploymentType.OFW}>
 													Overseas Filipino Worker
 												</SelectItem>
-												<SelectItem value="student">Student</SelectItem>
+												{/* <SelectItem value="student">Student</SelectItem> */}
 											</SelectContent>
 										</Select>
 										{individualSponsorForm.formState.errors.employmentType && (
@@ -968,9 +959,9 @@ function ProfileSetup() {
 										<input
 											type="tel"
 											disabled={loading}
-											{...individualSponsorForm.register("contactNumber")}
+											{...individualSponsorForm.register("contact.value")}
 											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-												individualSponsorForm.formState.errors.contactNumber
+												individualSponsorForm.formState.errors.contact?.value
 													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
 													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
 											}`}
@@ -979,16 +970,16 @@ function ProfileSetup() {
 											onChange={(e) => {
 												const numericValue = e.target.value.replace(/\D/g, "");
 												individualSponsorForm.setValue(
-													"contactNumber",
+													"contact.value",
 													numericValue,
 													{ shouldValidate: true },
 												);
 											}}
 										/>
-										{individualSponsorForm.formState.errors.contactNumber && (
+										{individualSponsorForm.formState.errors.contact?.value && (
 											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
 												{
-													individualSponsorForm.formState.errors.contactNumber
+													individualSponsorForm.formState.errors.contact?.value
 														.message
 												}
 											</p>
