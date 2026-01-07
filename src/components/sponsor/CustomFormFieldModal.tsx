@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { normalizeText, normalizeArray } from '@/utils/normalize.utils';
-import type { CustomFieldType } from '@/hooks/useScholarshipForm';
+import type { CreateFormFieldOptionRequest, CreateFormFieldRequest, CustomFieldType } from '@/hooks/useScholarshipForm';
 import {
   Type as TypeIcon,
   AlignLeft,
@@ -26,6 +26,9 @@ import {
   Paperclip,
   CalendarIcon,
 } from 'lucide-react';
+import { FormFieldType } from '@/lib/scholarship/model';
+import { Form } from 'react-hook-form';
+import { getFieldTypeLabel, renderFieldTypeIcon } from './CustomFormFieldsList';
 
 /**
  * Available custom form field types
@@ -52,19 +55,9 @@ interface CustomFormFieldModalProps {
   /** Callback function to close the modal */
   onClose: () => void;
   /** Callback function when field is saved */
-  onSave: (field: {
-    type: CustomFieldType;
-    label: string;
-    required: boolean;
-    options?: string[];
-  }) => void;
+  onSave: (field: CreateFormFieldRequest) => void;
   /** Existing field data when editing */
-  editingField?: {
-    type: CustomFieldType;
-    label: string;
-    required: boolean;
-    options?: string[];
-  } | null;
+  editingField?: CreateFormFieldRequest | null;
 }
 
 /**
@@ -72,43 +65,43 @@ interface CustomFormFieldModalProps {
  * @param fieldType - The custom field type
  * @returns Icon component for the field type
  */
-const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
-  const iconProps = { size: 18, className: "text-secondary" };
-  const icons = {
-    text: <TypeIcon {...iconProps} />,
-    textarea: <AlignLeft {...iconProps} />,
-    dropdown: <ListChecks {...iconProps} />,
-    multiple_choice: <ListChecks {...iconProps} />,
-    checkbox: <CheckSquare {...iconProps} />,
-    number: <Hash {...iconProps} />,
-    date: <CalendarIcon {...iconProps} />,
-    email: <Mail {...iconProps} />,
-    phone: <Phone {...iconProps} />,
-    file: <Paperclip {...iconProps} />,
-  };
-  return icons[fieldType] || icons.text;
-};
+// const renderFieldTypeIcon = (fieldType: FormFieldType) => {
+//   const iconProps = { size: 18, className: "text-secondary" };
+//   const icons = {
+//     text: <TypeIcon {...iconProps} />,
+//     textarea: <AlignLeft {...iconProps} />,
+//     dropdown: <ListChecks {...iconProps} />,
+//     multiple_choice: <ListChecks {...iconProps} />,
+//     checkbox: <CheckSquare {...iconProps} />,
+//     number: <Hash {...iconProps} />,
+//     date: <CalendarIcon {...iconProps} />,
+//     email: <Mail {...iconProps} />,
+//     phone: <Phone {...iconProps} />,
+//     file: <Paperclip {...iconProps} />,
+//   };
+//   return icons[fieldType] || icons.text;
+// };
 
 /**
  * Gets the human-readable label for a field type
  * @param fieldType - The custom field type
  * @returns Display label for the field type
  */
-const getFieldTypeLabel = (fieldType: CustomFieldType) => {
-  const labels = {
-    text: 'Short answer',
-    textarea: 'Long answer',
-    multiple_choice: 'Multiple choice',
-    dropdown: 'Dropdown',
-    checkbox: 'Checkbox',
-    number: 'Number',
-    date: 'Date',
-    email: 'Email',
-    phone: 'Phone number',
-    file: 'File upload',
-  };
-  return labels[fieldType] || fieldType;
-};
+// const getFieldTypeLabel = (fieldType: CustomFieldType) => {
+//   const labels = {
+//     text: 'Short answer',
+//     textarea: 'Long answer',
+//     multiple_choice: 'Multiple choice',
+//     dropdown: 'Dropdown',
+//     checkbox: 'Checkbox',
+//     number: 'Number',
+//     date: 'Date',
+//     email: 'Email',
+//     phone: 'Phone number',
+//     file: 'File upload',
+//   };
+//   return labels[fieldType] || fieldType;
+// };
 
 /**
  * Custom form field modal component for sponsors
@@ -122,20 +115,20 @@ export default function CustomFormFieldModal({
   onSave,
   editingField,
 }: CustomFormFieldModalProps) {
-  const [newFieldType, setNewFieldType] = useState<CustomFieldType>(editingField?.type || 'text');
+  const [newFieldType, setNewFieldType] = useState<FormFieldType>(editingField?.fieldType || FormFieldType.ShortAnswer);
   const [newFieldLabel, setNewFieldLabel] = useState(editingField?.label || '');
-  const [newFieldRequired, setNewFieldRequired] = useState(editingField?.required || false);
-  const [dropdownOptions, setDropdownOptions] = useState<string[]>(editingField?.options || []);
+  const [newFieldRequired, setNewFieldRequired] = useState(editingField?.isRequired || false);
+  const [dropdownOptions, setDropdownOptions] = useState<CreateFormFieldOptionRequest[]>(editingField?.options || []);
   const [dropdownOptionInput, setDropdownOptionInput] = useState('');
 
   useEffect(() => {
     if (editingField) {
-      setNewFieldType(editingField.type);
+      setNewFieldType(editingField.fieldType);
       setNewFieldLabel(editingField.label);
-      setNewFieldRequired(editingField.required);
+      setNewFieldRequired(editingField.isRequired);
       setDropdownOptions(editingField.options || []);
     } else {
-      setNewFieldType('text');
+      setNewFieldType(FormFieldType.ShortAnswer);
       setNewFieldLabel('');
       setNewFieldRequired(false);
       setDropdownOptions([]);
@@ -151,13 +144,11 @@ export default function CustomFormFieldModal({
     const normalized = normalizeText(newFieldLabel);
     if (!normalized) return;
 
-    const newField = {
-      type: newFieldType,
+    const newField: CreateFormFieldRequest = {
+      fieldType: newFieldType,
       label: normalized,
-      required: newFieldRequired,
-      ...((newFieldType === 'dropdown' || newFieldType === 'checkbox' || newFieldType === 'multiple_choice') && {
-        options: normalizeArray(dropdownOptions),
-      }),
+      isRequired: newFieldRequired,
+      options: dropdownOptions,
     };
 
     onSave(newField);
@@ -169,8 +160,8 @@ export default function CustomFormFieldModal({
    */
   const handleAddOption = () => {
     const trimmed = dropdownOptionInput.trim();
-    if (trimmed && !dropdownOptions.includes(trimmed)) {
-      setDropdownOptions([...dropdownOptions, trimmed]);
+    if (trimmed && !dropdownOptions.includes({value: trimmed})) {
+      setDropdownOptions([...dropdownOptions, {value: trimmed}]);
       setDropdownOptionInput('');
     }
   };
@@ -190,13 +181,13 @@ export default function CustomFormFieldModal({
             <div className="relative">
               <Select 
                 value={newFieldType} 
-                onValueChange={(value) => setNewFieldType(value as CustomFieldType)}
+                onValueChange={(value) => setNewFieldType(value as FormFieldType)}
               >
                 <SelectTrigger className="w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {customFieldTypes.map((type) => (
+                  {Object.values(FormFieldType).map((type) => (
                     <SelectItem key={type} value={type}>
                       <div className="flex items-center gap-2">
                         {renderFieldTypeIcon(type)}
@@ -248,8 +239,8 @@ export default function CustomFormFieldModal({
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       const normalized = normalizeText(dropdownOptionInput);
-                      if (normalized && !dropdownOptions.includes(normalized)) {
-                        setDropdownOptions([...dropdownOptions, normalized]);
+                      if (normalized && !dropdownOptions.includes({value: normalized})) {
+                        setDropdownOptions([...dropdownOptions, {value: normalized}]);
                         setDropdownOptionInput('');
                       }
                     }
@@ -269,7 +260,7 @@ export default function CustomFormFieldModal({
                 <div className="flex flex-wrap gap-2">
                   {dropdownOptions.map((option, index) => (
                     <span key={index} className="inline-flex items-center gap-2 px-3 py-2 border border-border bg-[#F9FAFB] text-primary text-xs rounded-md">
-                      {option}
+                      {option.value}
                       <button
                         onClick={() => setDropdownOptions(dropdownOptions.filter((_, i) => i !== index))}
                         className="hover:text-[#2A4296] cursor-pointer"

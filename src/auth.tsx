@@ -10,6 +10,7 @@ import { deleteCookie, getCookie } from "./lib/cookie";
 import { UserRole, type AuthSession, type User } from "./lib/user/model";
 import { ACCESS_TOKEN_KEY, validateSession } from "./lib/user/auth";
 import { getMyStudentProfile } from "./lib/student/api";
+import { getMySponsorProfile } from "./lib/sponsor/api";
 
 export type AuthContextValue<T = any> = {
 	user: User | null;
@@ -48,8 +49,13 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 
 		switch (session.user.role?.code) {
 			case UserRole.Student:
-				const student = getMyStudentProfile(token);
+				const student = await getMyStudentProfile(token);
 				setProfile(student);
+				break;
+
+			case UserRole.Sponsor:
+				const sponsor = await getMySponsorProfile(token);
+				setProfile(sponsor);
 				break;
 
 			default:
@@ -84,11 +90,11 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 	);
 }
 
-export function useAuth(): AuthContextValue {
+export function useAuth<T = any>(): AuthContextValue<T> {
 	const context = useContext(AuthContext);
 	if (!context) {
 		throw new Error("useAuth must be used within an AuthProvider");
 	}
 
-	return context;
+	return context as AuthContextValue<T>;
 }
