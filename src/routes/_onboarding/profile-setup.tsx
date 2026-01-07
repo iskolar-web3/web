@@ -33,11 +33,13 @@ import { useAuth } from "@/auth";
 import { getCookie } from "@/lib/cookie";
 import { ACCESS_TOKEN_KEY } from "@/lib/user/auth";
 import {
+	AgencyType,
 	EmploymentType,
 	OrganizationType,
 	SponsorType,
+	type GovernmentSponsor,
 	type IndividualSponsor,
-    type OrganizationSponsor,
+	type OrganizationSponsor,
 } from "@/lib/sponsor/model";
 // import { profileService } from '@/services/profile.service';
 
@@ -116,20 +118,11 @@ const organizationSponsorSchema = z.object({
 
 // Government Sponsor validation
 const governmentSponsorSchema = z.object({
-	agencyName: z.string().min(1, "Agency name is required"),
-	agencyType: z.enum(
-		[
-			"national_government_agency",
-			"local_government_unit",
-			"government_owned_and_controlled_corporation",
-		],
-		{ message: "Please select agency type" },
-	),
-	contactNumber: z
-		.string()
-		.min(1, "Contact number is required")
-		.regex(/^\d+$/, "Contact number must contain only numbers")
-		.min(11, "Contact number must be at least 11 digits"),
+	userId: z.uuidv4(),
+	sponsorType: z.enum(SponsorType),
+	name: z.string().min(1, "Agency name is required"),
+	agencyType: z.enum(AgencyType, { message: "Please select agency type" }),
+	contact: createContactRequestSchema,
 });
 
 // School validation
@@ -203,6 +196,26 @@ async function createOrganizationSponsor(
 		},
 	});
 	const result: ApiResponse<OrganizationSponsor> = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message || "Failed to create profile.");
+	}
+
+	return result.data;
+}
+
+async function createGovernmentSponsor(
+	value: GovernmentSponsorFormData,
+): Promise<GovernmentSponsor> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	const response = await fetch(`${BACKEND_URL}/sponsors/governments`, {
+		method: "POST",
+		body: JSON.stringify(value),
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+	});
+	const result: ApiResponse<GovernmentSponsor> = await response.json();
 	if (!response.ok) {
 		throw new Error(result.message || "Failed to create profile.");
 	}
@@ -285,9 +298,14 @@ function ProfileSetup() {
 		resolver: zodResolver(governmentSponsorSchema),
 		mode: "onBlur",
 		defaultValues: {
-			agencyName: "",
+			userId: auth.user?.id,
+			sponsorType: SponsorType.Government,
+			name: "",
 			agencyType: undefined,
-			contactNumber: "",
+			contact: {
+				contactType: ContactType.Phone,
+				value: "",
+			},
 		},
 	});
 
@@ -361,6 +379,19 @@ function ProfileSetup() {
 		},
 	});
 
+	const governmentSponsorMutation = useMutation({
+		mutationFn: createGovernmentSponsor,
+		onSuccess: async () => {
+			showSuccess(
+				`Success`,
+				"Your profile has been set up successfully!",
+				1250,
+			);
+			setLoading(false);
+			await navigate({ to: "/scholarships" });
+		},
+	});
+
 	const onSubmit = async (
 		value:
 			| StudentFormData
@@ -382,47 +413,8 @@ function ProfileSetup() {
 				const organizationSponsorData = value as OrganizationSponsorFormData;
 				organizationSponsorMutation.mutate(organizationSponsorData);
 			} else if (selectedRole === "government_sponsor") {
-				// const governmentSponsorData = data as GovernmentSponsorFormData;
-
-				// const result = await profileService.setupGovernmentSponsorProfile({
-				//   role: selectedRole
-				//   agency_name: governmentSponsorData.agencyName,
-				//   agency_type: governmentSponsorData.agencyType,
-				//   official_email: governmentSponsorData.emailAddress,
-				//   contact_number: governmentSponsorData.contactNumber,
-				// });
-
-				// if (result.success) {
-				//   setToastConfig({
-				//     type: 'success',
-				//     title: 'Profile Created',
-				//     message: 'Your profile has been set up successfully!',
-				//   })
-				//   setShowToast(true);
-				//   setTimeout(() => {
-				//     setShowToast(false)
-				//     // Show preloader after successful profile setup
-				//     setShowPreloader(true);
-				//   }, 1250);
-				// } else {
-				//   setToastConfig({
-				//     type: 'error',
-				//     title: 'Error',
-				//     message: result.message,
-				//   })
-				//   setShowToast(true);
-				//   setTimeout(() => setShowToast(false), 2000);
-				// }
-
-				// For now, simulate successful profile setup to test preloader
-				showSuccess(
-					"Profile Created",
-					"Your profile has been set up successfully",
-					2000,
-				);
-				setTimeout(() => {
-					setShowPreloader(true);
-				}, 1250);
+				const governmentSponsorData = value as GovernmentSponsorFormData;
+				governmentSponsorMutation.mutate(governmentSponsorData);
 			} else if (selectedRole === "school") {
 				// const schoolData = data as SchoolFormData;
 
@@ -1140,20 +1132,17 @@ function ProfileSetup() {
 										<input
 											type="text"
 											disabled={loading}
-											{...governmentSponsorForm.register("agencyName")}
+											{...governmentSponsorForm.register("name")}
 											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-												governmentSponsorForm.formState.errors.agencyName
+												governmentSponsorForm.formState.errors.name
 													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
 													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
 											}`}
 											placeholder="What's your agency name?"
 										/>
-										{governmentSponsorForm.formState.errors.agencyName && (
+										{governmentSponsorForm.formState.errors.name && (
 											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-												{
-													governmentSponsorForm.formState.errors.agencyName
-														.message
-												}
+												{governmentSponsorForm.formState.errors.name.message}
 											</p>
 										)}
 									</div>
@@ -1205,9 +1194,9 @@ function ProfileSetup() {
 										<input
 											type="tel"
 											disabled={loading}
-											{...governmentSponsorForm.register("contactNumber")}
+											{...governmentSponsorForm.register("contact.value")}
 											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-												governmentSponsorForm.formState.errors.contactNumber
+												governmentSponsorForm.formState.errors.contact?.value
 													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
 													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
 											}`}
@@ -1216,16 +1205,16 @@ function ProfileSetup() {
 											onChange={(e) => {
 												const numericValue = e.target.value.replace(/\D/g, "");
 												governmentSponsorForm.setValue(
-													"contactNumber",
+													"contact.value",
 													numericValue,
 													{ shouldValidate: true },
 												);
 											}}
 										/>
-										{governmentSponsorForm.formState.errors.contactNumber && (
+										{governmentSponsorForm.formState.errors.contact?.value && (
 											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
 												{
-													governmentSponsorForm.formState.errors.contactNumber
+													governmentSponsorForm.formState.errors.contact.value
 														.message
 												}
 											</p>
