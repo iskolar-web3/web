@@ -105,6 +105,10 @@ function RegisterPage(): JSX.Element {
         showSuccess(`Success`, 'Login successful', 1250);
         setLoading(false);
         await navigate({ to: "/login" });
+      },
+      onError: (err) => {
+          showError("Error", err.message)
+          console.error(err)
       }
   })
   
