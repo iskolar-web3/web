@@ -37,6 +37,7 @@ import {
 	OrganizationType,
 	SponsorType,
 	type IndividualSponsor,
+    type OrganizationSponsor,
 } from "@/lib/sponsor/model";
 // import { profileService } from '@/services/profile.service';
 
@@ -189,6 +190,26 @@ async function createIndividualSponsor(
 	return result.data;
 }
 
+async function createOrganizationSponsor(
+	value: OrganizationSponsorFormData,
+): Promise<OrganizationSponsor> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	const response = await fetch(`${BACKEND_URL}/sponsors/organizations`, {
+		method: "POST",
+		body: JSON.stringify(value),
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+	});
+	const result: ApiResponse<OrganizationSponsor> = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message || "Failed to create profile.");
+	}
+
+	return result.data;
+}
+
 function ProfileSetup() {
 	usePageTitle("Profile Setup");
 
@@ -327,6 +348,19 @@ function ProfileSetup() {
 		},
 	});
 
+	const organizationSponsorMutation = useMutation({
+		mutationFn: createOrganizationSponsor,
+		onSuccess: async () => {
+			showSuccess(
+				`Success`,
+				"Your profile has been set up successfully!",
+				1250,
+			);
+			setLoading(false);
+			await navigate({ to: "/scholarships" });
+		},
+	});
+
 	const onSubmit = async (
 		value:
 			| StudentFormData
@@ -345,47 +379,8 @@ function ProfileSetup() {
 				const individualSponsorData = value as IndividualSponsorFormData;
 				individualSponsorMutation.mutate(individualSponsorData);
 			} else if (selectedRole === "organization_sponsor") {
-				// const organizationSponsorData = data as OrganizationSponsorFormData;
-
-				// const result = await profileService.setupOrganizationSponsorProfile({
-				//   role: selectedRole
-				//   organization_name: organizationSponsorData.organizationName,
-				//   organization_type: organizationSponsorData.organizationType,
-				//   official_email: organizationSponsorData.emailAddress,
-				//   contact_number: organizationSponsorData.contactNumber,
-				// });
-
-				// if (result.success) {
-				//   setToastConfig({
-				//     type: 'success',
-				//     title: 'Profile Created',
-				//     message: 'Your profile has been set up successfully!',
-				//   })
-				//   setShowToast(true);
-				//   setTimeout(() => {
-				//     setShowToast(false)
-				//     // Show preloader after successful profile setup
-				//     setShowPreloader(true);
-				//   }, 1250);
-				// } else {
-				//   setToastConfig({
-				//     type: 'error',
-				//     title: 'Error',
-				//     message: result.message,
-				//   })
-				//   setShowToast(true);
-				//   setTimeout(() => setShowToast(false), 2000);
-				// }
-
-				// For now, simulate successful profile setup to test preloader
-				showSuccess(
-					"Profile Created",
-					"Your profile has been set up successfully",
-					2000,
-				);
-				setTimeout(() => {
-					setShowPreloader(true);
-				}, 1250);
+				const organizationSponsorData = value as OrganizationSponsorFormData;
+				organizationSponsorMutation.mutate(organizationSponsorData);
 			} else if (selectedRole === "government_sponsor") {
 				// const governmentSponsorData = data as GovernmentSponsorFormData;
 
