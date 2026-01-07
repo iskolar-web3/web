@@ -34,6 +34,7 @@ import { getCookie } from "@/lib/cookie";
 import { ACCESS_TOKEN_KEY } from "@/lib/user/auth";
 import {
 	EmploymentType,
+	OrganizationType,
 	SponsorType,
 	type IndividualSponsor,
 } from "@/lib/sponsor/model";
@@ -103,20 +104,13 @@ const individualSponsorSchema = z.object({
 
 // Organization Sponsor validation
 const organizationSponsorSchema = z.object({
-	organizationName: z.string().min(1, "Organization name is required"),
-	organizationType: z.enum(
-		[
-			"private_company",
-			"non_governmental_organization",
-			"educational_institution",
-		],
-		{ message: "Please select organization type" },
-	),
-	contactNumber: z
-		.string()
-		.min(1, "Contact number is required")
-		.regex(/^\d+$/, "Contact number must contain only numbers")
-		.min(11, "Contact number must be at least 11 digits"),
+	userId: z.uuidv4(),
+	sponsorType: z.enum(SponsorType),
+	name: z.string().min(1, "Organization name is required"),
+	organizationType: z.enum(OrganizationType, {
+		message: "Please select organization type",
+	}),
+	contact: createContactRequestSchema,
 });
 
 // Government Sponsor validation
@@ -254,9 +248,14 @@ function ProfileSetup() {
 		resolver: zodResolver(organizationSponsorSchema),
 		mode: "onBlur",
 		defaultValues: {
-			organizationName: "",
+			userId: auth.user?.id,
+			sponsorType: SponsorType.Organization,
+			name: "",
 			organizationType: undefined,
-			contactNumber: "",
+			contact: {
+				contactType: ContactType.Phone,
+				value: "",
+			},
 		},
 	});
 
@@ -344,7 +343,7 @@ function ProfileSetup() {
 				studentMutation.mutate(studentData);
 			} else if (selectedRole === "individual_sponsor") {
 				const individualSponsorData = value as IndividualSponsorFormData;
-                individualSponsorMutation.mutate(individualSponsorData)
+				individualSponsorMutation.mutate(individualSponsorData);
 			} else if (selectedRole === "organization_sponsor") {
 				// const organizationSponsorData = data as OrganizationSponsorFormData;
 
@@ -876,11 +875,15 @@ function ProfileSetup() {
 												<SelectValue placeholder="Select your employment type" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value={EmploymentType.Employed}>Employed</SelectItem>
+												<SelectItem value={EmploymentType.Employed}>
+													Employed
+												</SelectItem>
 												<SelectItem value={EmploymentType.SelfEmployed}>
 													Self-Employed
 												</SelectItem>
-												<SelectItem value={EmploymentType.Freelancer}>Freelancer</SelectItem>
+												<SelectItem value={EmploymentType.Freelancer}>
+													Freelancer
+												</SelectItem>
 												<SelectItem value={EmploymentType.OFW}>
 													Overseas Filipino Worker
 												</SelectItem>
@@ -1018,22 +1021,17 @@ function ProfileSetup() {
 										<input
 											type="text"
 											disabled={loading}
-											{...organizationSponsorForm.register("organizationName")}
+											{...organizationSponsorForm.register("name")}
 											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-												organizationSponsorForm.formState.errors
-													.organizationName
+												organizationSponsorForm.formState.errors.name
 													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
 													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
 											}`}
 											placeholder="What's your organization name?"
 										/>
-										{organizationSponsorForm.formState.errors
-											.organizationName && (
+										{organizationSponsorForm.formState.errors.name && (
 											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-												{
-													organizationSponsorForm.formState.errors
-														.organizationName.message
-												}
+												{organizationSponsorForm.formState.errors.name.message}
 											</p>
 										)}
 									</div>
@@ -1087,9 +1085,9 @@ function ProfileSetup() {
 										<input
 											type="tel"
 											disabled={loading}
-											{...organizationSponsorForm.register("contactNumber")}
+											{...organizationSponsorForm.register("contact.value")}
 											className={`w-full px-4 py-3 sm:py-3.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-gray-400 ${
-												organizationSponsorForm.formState.errors.contactNumber
+												organizationSponsorForm.formState.errors.contact?.value
 													? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary"
 													: "border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary"
 											}`}
@@ -1098,16 +1096,17 @@ function ProfileSetup() {
 											onChange={(e) => {
 												const numericValue = e.target.value.replace(/\D/g, "");
 												organizationSponsorForm.setValue(
-													"contactNumber",
+													"contact.value",
 													numericValue,
 													{ shouldValidate: true },
 												);
 											}}
 										/>
-										{organizationSponsorForm.formState.errors.contactNumber && (
+										{organizationSponsorForm.formState.errors.contact
+											?.value && (
 											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
 												{
-													organizationSponsorForm.formState.errors.contactNumber
+													organizationSponsorForm.formState.errors.contact.value
 														.message
 												}
 											</p>
