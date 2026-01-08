@@ -61,12 +61,13 @@ export const scholarshipSchema = <T extends z.ZodType>(sponsor: T) =>
 		totalAmount: z.coerce.number().positive(),
 		totalSlots: z.number().positive(),
 		applicationDeadline: z.coerce.date(),
-		image_url: z.string().nullable(),
+		imageUrl: z.string().nullable(),
 		purpose: enumDetailSchema(ScholarshipPurpose),
 		criterias: z.string().array(),
 		requirements: z.string().array(),
 		sponsor: sponsor,
 		formFields: formFieldSchema.array().default([]),
+		applicationCount: z.number().nonnegative(),
 	});
 
 export type Scholarship<T extends AnySponsor = AnySponsor> = Omit<

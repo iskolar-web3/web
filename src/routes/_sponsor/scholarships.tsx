@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useSponsorScholarships } from '@/hooks/queries/useSponsorScholarships';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Filter, AlertCircle, Loader2, X, GraduationCap, Plus } from 'lucide-react';
@@ -8,7 +8,6 @@ import FilterSelect from '@/components/sponsor/Filters';
 import ScholarshipCard from '@/components/sponsor/ScholarshipCard';
 import ScholarshipCardSkeleton from '@/components/ScholarshipCardSkeleton';
 import ScholarshipDetailsModal from '@/components/sponsor/ScholarshipDetailsDrawer';
-import type { Scholarship } from '@/types/scholarship.types';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
@@ -16,6 +15,10 @@ import { handleError } from '@/lib/errorHandler';
 import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
 import { logger } from "@/lib/logger";
 import { mockApiDelay } from '@/mocks/scholarships.mock';
+import { getMyScholarshipsQuery } from '@/lib/scholarship/api';
+import { useAuth } from '@/auth';
+import type { AnySponsor } from '@/lib/sponsor/model';
+import type { Scholarship } from '@/lib/scholarship/model';
 
 const USE_MOCK_DATA = true;
 
@@ -38,7 +41,10 @@ function Scholarships() {
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
 
-  const { data: scholarships = [], isLoading: loading, error, isError } = useSponsorScholarships();
+  // const { data: scholarships = [], isLoading: loading, error, isError } = useSponsorScholarships();
+
+  const auth = useAuth<AnySponsor>()
+  const scholarships = useSuspenseQuery(getMyScholarshipsQuery(auth.sessionToken, auth.profile.id))
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [scholarshipToDelete, setScholarshipToDelete] = useState<Scholarship | null>(null);
@@ -49,14 +55,14 @@ function Scholarships() {
   const handleViewApplicants = (scholarship: Scholarship) => {
     navigate({ 
       to: "/scholarship/$id/applicants",
-      params: { id: scholarship.scholarship_id }
+      params: { id: scholarship.id }
     });
   };
 
   const handleEdit = (scholarship: Scholarship) => {
     navigate({ 
       to: "/scholarship/$id/edit",
-      params: { id: scholarship.scholarship_id }
+      params: { id: scholarship.id }
     });
   };
 
@@ -75,7 +81,7 @@ function Scholarships() {
         queryClient.invalidateQueries({ queryKey: ['my-scholarships'] });
 
       } else {
-        const response = await scholarshipManagementService.deleteScholarship(scholarship.scholarship_id);
+        const response = await scholarshipManagementService.deleteScholarship(scholarship.id);
         
         if(response.success) {
           showSuccess('Success', response.message, 2000);
@@ -105,37 +111,37 @@ function Scholarships() {
   };
 
   useEffect(() => {
-    if (isError && error) {
-      showError('Error', error.message, 2500);
+    if (scholarships.isError) {
+      showError('Error', scholarships.error.message, 2500);
     }
-  }, [isError, error, showError]);
+  }, [scholarships.isError, scholarships.error, showError]);
 
 
   const filteredScholarships = useMemo(() => {
-    return scholarships.filter((scholarship) => {
+    return scholarships.data.filter((scholarship) => {
       const matchesType =
         scholarshipType === 'All' ||
-        scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
+        scholarship.scholarshipType.code === scholarshipType.toLowerCase();
 
       const matchesPurpose =
-        purpose === 'All' || scholarship.purpose.toLowerCase() === purpose.toLowerCase();
+        purpose === 'All' || scholarship.purpose.code.toLowerCase() === purpose.toLowerCase();
 
       const amountPerScholar =
-        scholarship.total_amount && scholarship.total_slot
-          ? scholarship.total_amount / scholarship.total_slot
+        scholarship.totalAmount && scholarship.totalSlots
+          ? scholarship.totalAmount / scholarship.totalSlots
           : 0;
 
       const matchesApplications =
-        (!applicationsRange.min || (scholarship.applications_count !== undefined && scholarship.applications_count >= Number(applicationsRange.min))) &&
-        (!applicationsRange.max || (scholarship.applications_count !== undefined && scholarship.applications_count <= Number(applicationsRange.max)));
+        (!applicationsRange.min || (scholarship.applicationCount !== undefined && scholarship.applicationCount >= Number(applicationsRange.min))) &&
+        (!applicationsRange.max || (scholarship.applicationCount !== undefined && scholarship.applicationCount <= Number(applicationsRange.max)));
 
       const matchesAmount =
         (!amountRange.min || amountPerScholar >= Number(amountRange.min)) &&
         (!amountRange.max || amountPerScholar <= Number(amountRange.max));
 
       const matchesSlots =
-        (!slotRange.min || scholarship.total_slot >= Number(slotRange.min)) &&
-        (!slotRange.max || scholarship.total_slot <= Number(slotRange.max));
+        (!slotRange.min || scholarship.totalSlots >= Number(slotRange.min)) &&
+        (!slotRange.max || scholarship.totalSlots <= Number(slotRange.max));
 
       return matchesType && matchesPurpose && matchesApplications && matchesAmount && matchesSlots;
     });
@@ -461,7 +467,7 @@ function Scholarships() {
             className="space-y-5"
           >
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
-              {loading ? (
+              {scholarships.isLoading ? (
                 Array.from({ length: 6 }).map((_, index) => (
                   <ScholarshipCardSkeleton key={`skeleton-${index}`} index={index} />
                 ))
@@ -483,7 +489,7 @@ function Scholarships() {
               ) : (
                 filteredScholarships.map((scholarship, index) => (
                   <ScholarshipCard
-                    key={`${scholarship.scholarship_id}-${index}`}
+                    key={scholarship.id}
                     scholarship={scholarship}
                     index={index}
                     onClick={() => setSelectedScholarship(scholarship)}
@@ -524,7 +530,7 @@ function Scholarships() {
               </div>
               <h3 className="text-lg text-primary mb-2">Delete Scholarship</h3>
               <p className="text-sm text-[#6B7280] mb-6">
-                Are you sure you want to delete "<strong>{scholarshipToDelete.title}</strong>"? This action cannot be undone.
+                Are you sure you want to delete "<strong>{scholarshipToDelete.name}</strong>"? This action cannot be undone.
               </p>
             </div>
             <div className="flex gap-3">

@@ -1,5 +1,12 @@
 import { BACKEND_URL, type ApiResponse } from "../api";
-import { anySponsorSchema, type AnySponsor } from "./model";
+import {
+	anySponsorSchema,
+	SponsorType,
+	type AnySponsor,
+	type GovernmentSponsor,
+	type IndividualSponsor,
+	type OrganizationSponsor,
+} from "./model";
 
 export async function getMySponsorProfile(
 	token: string,
@@ -15,4 +22,19 @@ export async function getMySponsorProfile(
 
 	const result: ApiResponse<AnySponsor | null> = await response.json();
 	return anySponsorSchema.parse(result.data);
+}
+
+export function getSponsorName(sponsor: AnySponsor): string {
+	switch (sponsor.sponsorType.code) {
+		case SponsorType.Individual:
+			const s = sponsor as IndividualSponsor;
+			return `${s.firstName} ${s.lastName}`;
+
+		case SponsorType.Organization:
+		case SponsorType.Government:
+			return (sponsor as OrganizationSponsor | GovernmentSponsor).name;
+
+		default:
+			return "iSkolar";
+	}
 }

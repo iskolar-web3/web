@@ -10,6 +10,7 @@ import { logger } from "@/lib/logger";
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { mockStudentUser } from '@/mocks/userProfile.mock';
+import { useAuth } from '@/auth';
 
 const USE_MOCK_DATA = true;
 
@@ -53,6 +54,8 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const auth = useAuth()
 
   /**
    * Fetch user profile on component mount
@@ -132,8 +135,8 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
    */
   const handleLogout = async () => {
     try {
-      await authService.removeToken();
-      navigate({ to: '/login' });
+        await auth.logout()
+      await navigate({ to: '/login' });
     } catch (err) {
       const handled = handleError(err, 'Failed to logout');
       logger.error('Logout error:', handled.raw);

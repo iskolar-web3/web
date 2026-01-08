@@ -25,6 +25,8 @@ export const individualSponsorSchema = z.object({
 	employmentType: enumDetailSchema(EmploymentType),
 	birthDate: z.coerce.date(),
 	contact: contactDetailSchema,
+	sponsorType: enumDetailSchema(SponsorType),
+	avatarUrl: z.string().nullable(),
 });
 export type IndividualSponsor = z.output<typeof individualSponsorSchema>;
 
@@ -40,6 +42,8 @@ export const organizationSponsorSchema = z.object({
 	name: z.string().nonempty(),
 	organizationType: enumDetailSchema(OrganizationType),
 	contact: contactDetailSchema,
+	sponsorType: enumDetailSchema(SponsorType),
+	avatarUrl: z.string().nullable(),
 });
 export type OrganizationSponsor = z.output<typeof organizationSponsorSchema>;
 
@@ -55,6 +59,8 @@ export const governmentSponsorSchema = z.object({
 	name: z.string().nonempty(),
 	agencyType: enumDetailSchema(AgencyType),
 	contact: contactDetailSchema,
+	sponsorType: enumDetailSchema(SponsorType),
+	avatarUrl: z.string().nullable(),
 });
 export type GovernmentSponsor = z.output<typeof governmentSponsorSchema>;
 
