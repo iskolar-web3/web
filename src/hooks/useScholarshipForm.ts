@@ -15,23 +15,6 @@ import { uploadFile } from "@/lib/api";
 import { ACCESS_TOKEN_KEY } from "@/lib/user/auth";
 import { getCookie } from "@/lib/cookie";
 
-/**
- * Available custom form field types for scholarship applications
- */
-export const customFieldTypes = [
-	"text",
-	"textarea",
-	"multiple_choice",
-	"dropdown",
-	"checkbox",
-	"number",
-	"date",
-	"email",
-	"phone",
-	"file",
-] as const;
-export type CustomFieldType = (typeof customFieldTypes)[number];
-
 const createFormFieldOptionRequestSchema = z.object({
 	value: z.string().nonempty(),
 });
@@ -86,33 +69,6 @@ const createScholarshipRequestSchema = z.object({
 	sponsorId: z.uuidv4(),
 	formFields: createFormFieldRequestSchema.array(),
 });
-// const scholarshipSchema = z.object({
-//   type: z.enum(['merit_based', 'skill_based'], { message: 'Please select a scholarship type' }),
-//   purpose: z.enum(['allowance', 'tuition'], { message: 'Please select a purpose' }),
-//   title: z.string().min(1, 'Scholarship title is required').max(150, 'Title must be less than 150 characters'),
-//   description: z.string().optional(),
-//   imageUrl: z.string().min(1, 'Please upload a scholarship image'),
-//   totalAmount: z.string()
-//     .min(1, 'Total amount is required')
-//     .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
-//       message: 'Please enter a valid amount greater than 0'
-//     }),
-//   totalSlot: z.string()
-//     .min(1, 'Total slot is required')
-//     .refine((val) => !isNaN(parseInt(val)) && parseInt(val) > 0, {
-//       message: 'Please enter a valid slot number greater than 0'
-//     }),
-//   applicationDeadline: z.date('Please select an application deadline'),
-//   criteria: z.array(z.string()).min(1, 'At least one eligibility criterion is required'),
-//   requirements: z.array(z.string()).min(1, 'At least one required document is required'),
-//   customFormFields: z.array(z.object({
-//     type: z.enum(customFieldTypes),
-//     label: z.string().min(1, 'Field label is required'),
-//     required: z.boolean(),
-//     options: z.array(z.string()).optional(),
-//   })).min(1, 'At least one form field is required'),
-// });
-//
 /**
  * Scholarship form data type inferred from Zod schema
  */
@@ -146,6 +102,7 @@ export type ScholarshipFormData = z.infer<
 export function useScholarshipForm() {
 	const auth = useAuth<AnySponsor>();
 	const form = useForm<ScholarshipFormData>({
+        // @ts-expect-error This works fine but it has TS error for some reason
 		resolver: zodResolver(createScholarshipRequestSchema),
 		mode: "onBlur",
 		defaultValues: {

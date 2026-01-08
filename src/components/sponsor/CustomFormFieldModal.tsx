@@ -13,38 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { normalizeText, normalizeArray } from '@/utils/normalize.utils';
-import type { CreateFormFieldOptionRequest, CreateFormFieldRequest, CustomFieldType } from '@/hooks/useScholarshipForm';
-import {
-  Type as TypeIcon,
-  AlignLeft,
-  ListChecks,
-  CheckSquare,
-  Hash,
-  Mail,
-  Phone,
-  Paperclip,
-  CalendarIcon,
-} from 'lucide-react';
+import { normalizeText } from '@/utils/normalize.utils';
+import type { CreateFormFieldOptionRequest, CreateFormFieldRequest } from '@/hooks/useScholarshipForm';
 import { FormFieldType } from '@/lib/scholarship/model';
-import { Form } from 'react-hook-form';
 import { getFieldTypeLabel, renderFieldTypeIcon } from './CustomFormFieldsList';
-
-/**
- * Available custom form field types
- */
-const customFieldTypes = [
-  'text',
-  'textarea',
-  'multiple_choice',
-  'dropdown',
-  'checkbox',
-  'number',
-  'date',
-  'email',
-  'phone',
-  'file',
-] as const;
 
 /**
  * Props for the CustomFormFieldModal component
@@ -59,49 +31,6 @@ interface CustomFormFieldModalProps {
   /** Existing field data when editing */
   editingField?: CreateFormFieldRequest | null;
 }
-
-/**
- * Renders the appropriate icon for a given field type
- * @param fieldType - The custom field type
- * @returns Icon component for the field type
- */
-// const renderFieldTypeIcon = (fieldType: FormFieldType) => {
-//   const iconProps = { size: 18, className: "text-secondary" };
-//   const icons = {
-//     text: <TypeIcon {...iconProps} />,
-//     textarea: <AlignLeft {...iconProps} />,
-//     dropdown: <ListChecks {...iconProps} />,
-//     multiple_choice: <ListChecks {...iconProps} />,
-//     checkbox: <CheckSquare {...iconProps} />,
-//     number: <Hash {...iconProps} />,
-//     date: <CalendarIcon {...iconProps} />,
-//     email: <Mail {...iconProps} />,
-//     phone: <Phone {...iconProps} />,
-//     file: <Paperclip {...iconProps} />,
-//   };
-//   return icons[fieldType] || icons.text;
-// };
-
-/**
- * Gets the human-readable label for a field type
- * @param fieldType - The custom field type
- * @returns Display label for the field type
- */
-// const getFieldTypeLabel = (fieldType: CustomFieldType) => {
-//   const labels = {
-//     text: 'Short answer',
-//     textarea: 'Long answer',
-//     multiple_choice: 'Multiple choice',
-//     dropdown: 'Dropdown',
-//     checkbox: 'Checkbox',
-//     number: 'Number',
-//     date: 'Date',
-//     email: 'Email',
-//     phone: 'Phone number',
-//     file: 'File upload',
-//   };
-//   return labels[fieldType] || fieldType;
-// };
 
 /**
  * Custom form field modal component for sponsors

@@ -1,3 +1,5 @@
+// TODO: Delete these later
+// Replace with types on /lib/scholarship/model.ts
 export interface Scholarship {
   scholarship_id: string;
   sponsor_id: string;

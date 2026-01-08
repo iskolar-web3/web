@@ -23,16 +23,13 @@ import ScholarshipFullPreviewModal from '@/components/sponsor/ScholarshipFullPre
 import CustomFormFieldModal from '@/components/sponsor/CustomFormFieldModal';
 import CustomFormFieldsList from '@/components/sponsor/CustomFormFieldsList';
 import DescriptionModal from '@/components/sponsor/DescriptionModal';
-import { useScholarshipForm, type ScholarshipFormData, type CustomFieldType, type CreateFormFieldRequest } from '@/hooks/useScholarshipForm';
+import { useScholarshipForm, type ScholarshipFormData, type CreateFormFieldRequest } from '@/hooks/useScholarshipForm';
 import { useScholarshipPreview } from '@/hooks/useScholarshipPreview';
 import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { handleError } from '@/lib/errorHandler';
-import { logger } from '@/lib/logger';
-import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
 import { useAuth } from '@/auth';
 import type { AnySponsor } from '@/lib/sponsor/model';
-import { FormFieldType, ScholarshipPurpose, ScholarshipStatus, ScholarshipType, type Scholarship } from '@/lib/scholarship/model';
+import { ScholarshipPurpose, ScholarshipStatus, ScholarshipType, type Scholarship } from '@/lib/scholarship/model';
 import { BACKEND_URL, type ApiResponse } from '@/lib/api';
 import { ACCESS_TOKEN_KEY } from '@/lib/user/auth';
 import { getCookie } from '@/lib/cookie';

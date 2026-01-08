@@ -1,5 +1,5 @@
 import { Edit2, Trash2 } from 'lucide-react';
-import type { CreateFormFieldRequest, CustomFieldType } from '@/hooks/useScholarshipForm';
+import type { CreateFormFieldRequest } from '@/hooks/useScholarshipForm';
 import {
   Type as TypeIcon,
   AlignLeft,
