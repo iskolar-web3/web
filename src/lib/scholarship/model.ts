@@ -2,6 +2,7 @@ import z from "zod";
 import { enumDetailSchema } from "../api";
 import type { AnySponsor } from "../sponsor/model";
 import { validateFormField } from "./helper";
+import { studentSchema } from "../student/model";
 
 export enum ScholarshipType {
 	MeritBased = "merit-based",
@@ -170,3 +171,30 @@ export const getScholarshipQueryParamSchema = z
 export type GetScholarshipQueryParam = z.infer<
 	typeof getScholarshipQueryParamSchema
 >;
+
+export enum ScholarshipApplicationStatus {
+	Pending = "pending",
+	Shortlisted = "shortlisted",
+	Approved = "approved",
+	Denied = "denied",
+	Granted = "granted",
+}
+
+const formFieldAnswerSchema = z.object({
+	formFieldId: z.uuidv4(),
+	value: z.any(),
+});
+
+const baseApplicationSchema = z.object({
+	id: z.uuidv4(),
+	createdAt: z.coerce.date(),
+	updatedAt: z.coerce.date(),
+	status: enumDetailSchema(ScholarshipApplicationStatus),
+	remarks: z.string().nullable(),
+	formFieldAnswers: formFieldAnswerSchema.array(),
+});
+
+export const applicantSchema = baseApplicationSchema.extend({
+	student: studentSchema,
+});
+export type Applicant = z.output<typeof applicantSchema>;

@@ -42,10 +42,11 @@ import {
   mockBulkUpdateApplicationStatus
 } from '@/mocks/scholarshipApplicants.mock';
 import { useScholarshipApplicants } from '@/hooks/queries/useScholarshipApplicants';
+import { ScholarshipApplicationStatus, type Applicant } from '@/lib/scholarship/model';
 
 const USE_MOCK_DATA = true;
 
-interface Applicant extends ScholarshipApplication {
+interface ApplicantOld extends ScholarshipApplication {
   rank?: number;
   score?: number;
   evaluationDetails?: {
@@ -56,6 +57,7 @@ interface Applicant extends ScholarshipApplication {
     explanation: string[];
   };
 }
+type FilterStatus = ScholarshipApplicationStatus | "all";
 
 export const Route = createFileRoute('/_sponsor/scholarship/$id/applicants')({
   // params: {
@@ -100,7 +102,7 @@ function ApplicantsListPage() {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'shortlisted' | 'approved' | 'denied'>('all');
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [showDropdown, setShowDropdown] = useState(false);
 
   // Bulk operations state
@@ -116,7 +118,7 @@ function ApplicantsListPage() {
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<{
-    type: 'shortlisted' | 'approved' | 'denied';
+    type: ScholarshipApplicationStatus;
     applicationId: string;
   } | null>(null);
   const [denialRemarks, setDenialRemarks] = useState('');
@@ -145,7 +147,7 @@ function ApplicantsListPage() {
   };
 
   const selectAll = () => {
-    const allIds = new Set(filteredApplicants.map((app) => app.scholarship_application_id));
+    const allIds = new Set(filteredApplicants.map((app) => app.id));
     setSelectedApplicantIds(allIds);
   };
 
@@ -178,7 +180,7 @@ function ApplicantsListPage() {
 
         if (response.success) {
           // Update Cache
-          queryClient.setQueryData(['scholarship-applicants', id], (oldData: Applicant[] | undefined) => {
+          queryClient.setQueryData(['scholarship-applicants', id], (oldData: ApplicantOld[] | undefined) => {
             if (!oldData) return [];
             return oldData.map((app) =>
               selectedApplicantIds.has(app.scholarship_application_id)
@@ -230,7 +232,7 @@ function ApplicantsListPage() {
 
   const handleUpdateStatus = async (
     applicationId: string,
-    newStatus: 'shortlisted' | 'approved' | 'denied',
+    newStatus: ScholarshipApplicationStatus,
     remarks?: string
   ) => {
     if (isUpdatingStatus) return;
@@ -238,64 +240,64 @@ function ApplicantsListPage() {
     try {
       setIsUpdatingStatus(true);
       
-      if (USE_MOCK_DATA) {
-        // Use mock update
-        const response = await mockUpdateApplicationStatus(
-          applicationId,
-          newStatus,
-          remarks
-        );
-
-        if (response.success) {
-          queryClient.setQueryData(['scholarship-applicants', id], (oldData: Applicant[] | undefined) => {
-            if (!oldData) return [];
-            return oldData.map((app) =>
-              app.scholarship_application_id === applicationId
-                ? {
-                    ...app,
-                    status: newStatus,
-                    remarks: remarks || undefined,
-                    updated_at: new Date().toISOString(),
-                  }
-                : app
-            );
-          });
-
-          
-          if (selectedApplicant && selectedApplicant.scholarship_application_id === applicationId) {
-            setSelectedApplicant({
-              ...selectedApplicant,
-              status: newStatus,
-              remarks: remarks || undefined,
-              updated_at: new Date().toISOString(),
-            });
-          }
-          
-          showSuccess('Success', response.message, 2000);
-          handleCloseModal();
-          setConfirmationModal(false);
-          setDenialRemarks('');
-        } else {
-          showError(`Error`, response.message, 2500);
-        }
-      } else {
-        const response = await scholarshipApplicationService.updateApplicationStatus(
-          applicationId,
-          newStatus,
-          remarks
-        );
-
-        if (response.success) {
-          showSuccess('Success', `Applicant ${newStatus}`, 2000);
-          setModalVisible(false);
-          setConfirmationModal(false);
-          setDenialRemarks('');
-          queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
-
-        } else {
-          showError('Error', response.message, 2500);
-        }
-      }
+      // if (USE_MOCK_DATA) {
+      //   // Use mock update
+      //   const response = await mockUpdateApplicationStatus(
+      //     applicationId,
+      //     newStatus,
+      //     remarks
+      //   );
+      //
+      //   if (response.success) {
+      //     queryClient.setQueryData(['scholarship-applicants', id], (oldData: ApplicantOld[] | undefined) => {
+      //       if (!oldData) return [];
+      //       return oldData.map((app) =>
+      //         app.scholarship_application_id === applicationId
+      //           ? {
+      //               ...app,
+      //               status: newStatus,
+      //               remarks: remarks || undefined,
+      //               updated_at: new Date().toISOString(),
+      //             }
+      //           : app
+      //       );
+      //     });
+      //
+      //
+      //     if (selectedApplicant && selectedApplicant.scholarship_application_id === applicationId) {
+      //       setSelectedApplicant({
+      //         ...selectedApplicant,
+      //         status: newStatus,
+      //         remarks: remarks || undefined,
+      //         updated_at: new Date().toISOString(),
+      //       });
+      //     }
+      //
+      //     showSuccess('Success', response.message, 2000);
+      //     handleCloseModal();
+      //     setConfirmationModal(false);
+      //     setDenialRemarks('');
+      //   } else {
+      //     showError(`Error`, response.message, 2500);
+      //   }
+      // } else {
+      //   const response = await scholarshipApplicationService.updateApplicationStatus(
+      //     applicationId,
+      //     newStatus,
+      //     remarks
+      //   );
+      //
+      //   if (response.success) {
+      //     showSuccess('Success', `Applicant ${newStatus}`, 2000);
+      //     setModalVisible(false);
+      //     setConfirmationModal(false);
+      //     setDenialRemarks('');
+      //     queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
+      //
+      //   } else {
+      //     showError('Error', response.message, 2500);
+      //   }
+      // }
     } catch (error) {
       const handled = handleError(error, 'Failed to update application status');
       logger.error('Update application status error:', handled.raw);
@@ -305,30 +307,30 @@ function ApplicantsListPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: ScholarshipApplicationStatus) => {
     switch (status) {
-      case 'approved':
+      case ScholarshipApplicationStatus.Approved:
         return '#31D0AA';
-      case 'denied':
+      case ScholarshipApplicationStatus.Denied:
         return '#EF4444';
-      case 'shortlisted':
+      case ScholarshipApplicationStatus.Shortlisted:
         return '#8B5CF6';
-      case 'pending':
+      case ScholarshipApplicationStatus.Pending:
         return '#F59E0B';
       default:
         return '#6B7280';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: ScholarshipApplicationStatus) => {
     switch (status) {
-      case 'approved':
+      case ScholarshipApplicationStatus.Approved:
         return CheckCircle2;
-      case 'denied':
+      case ScholarshipApplicationStatus.Denied:
         return XCircle;
-      case 'shortlisted':
+      case ScholarshipApplicationStatus.Shortlisted:
         return Star;
-      case 'pending':
+      case ScholarshipApplicationStatus.Pending:
         return Clock;
       default:
         return AlertCircle;
@@ -355,7 +357,7 @@ function ApplicantsListPage() {
   };
 
   const filteredApplicants = useMemo(
-    () => applicants.filter((app) => (filterStatus === 'all' ? true : app.status === filterStatus)),
+    () => applicants.filter((app) => (filterStatus === null ? true : app.status.code === filterStatus)),
     [applicants, filterStatus]
   );
 
@@ -364,10 +366,10 @@ function ApplicantsListPage() {
       applicants.reduce(
         (counts, app) => {
           counts.all += 1;
-          if (app.status === 'pending') counts.pending += 1;
-          if (app.status === 'shortlisted') counts.shortlisted += 1;
-          if (app.status === 'approved') counts.approved += 1;
-          if (app.status === 'denied') counts.denied += 1;
+          if (app.status.code === ScholarshipApplicationStatus.Pending) counts.pending += 1;
+          if (app.status.code === ScholarshipApplicationStatus.Shortlisted) counts.shortlisted += 1;
+          if (app.status.code === ScholarshipApplicationStatus.Approved) counts.approved += 1;
+          if (app.status.code === ScholarshipApplicationStatus.Denied) counts.denied += 1;
           return counts;
         },
         {
@@ -442,7 +444,7 @@ function ApplicantsListPage() {
           {/* Scholarship Info Header */}
           <div className="bg-card rounded-lg shadow-sm p-4 md:p-5 mb-3">
             <div className="flex-1">
-              <h1 className="text-2xl text-primary mb-1">{scholarship?.title}</h1>
+              <h1 className="text-2xl text-primary mb-1">{scholarship?.name}</h1>
               <p className="text-[11px] md:text-xs text-[#6B7280]">
                 {applicants.length} {applicants.length === 1 ? 'Applicant' : 'Applicants'}
               </p>
@@ -510,11 +512,11 @@ function ApplicantsListPage() {
 
               {showDropdown && (
                 <div className="absolute top-full right-0 mt-2 bg-white border bg-card rounded-md shadow-lg z-10 min-w-[140px]">
-                  {(['all', 'pending', 'shortlisted', 'approved', 'denied'] as const).map((status) => (
+                  {Object.values(["all", ...Object.values(ScholarshipApplicationStatus)]).map((status) => (
                     <button
                       key={status}
                       onClick={() => {
-                        setFilterStatus(status);
+                        setFilterStatus(status as FilterStatus);
                         setShowDropdown(false);
                       }}
                       className={`w-full flex items-center justify-between px-4 py-2 text-[11px] md:text-xs hover:bg-[#F3F4F6] transition-colors ${
@@ -546,8 +548,8 @@ function ApplicantsListPage() {
               <span className="text-xs text-primary">{selectedApplicantIds.size} selected</span>
               <div className="flex items-center gap-2">
                 {filteredApplicants
-                  .filter((app) => selectedApplicantIds.has(app.scholarship_application_id))
-                  .every((app) => app.status !== 'denied' && app.status !== 'approved') && (
+                  .filter((app) => selectedApplicantIds.has(app.id))
+                  .every((app) => app.status.code !== ScholarshipApplicationStatus.Denied && app.status.code !== ScholarshipApplicationStatus.Approved) && (
                   <button
                     onClick={() => handleBulkAction('denied')}
                     className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#EF4444] text-tertiary rounded-md hover:bg-[#DC2626] transition-colors text-xs"
@@ -558,8 +560,8 @@ function ApplicantsListPage() {
                 )}
 
                 {filteredApplicants
-                  .filter((app) => selectedApplicantIds.has(app.scholarship_application_id))
-                  .every((app) => app.status === 'pending') && (
+                  .filter((app) => selectedApplicantIds.has(app.id))
+                  .every((app) => app.status.code === ScholarshipApplicationStatus.Pending) && (
                   <button
                     onClick={() => handleBulkAction('shortlisted')}
                     className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#8B5CF6] text-tertiary rounded-md hover:bg-[#7C3AED] transition-colors text-xs"
@@ -570,8 +572,8 @@ function ApplicantsListPage() {
                 )}
 
                 {filteredApplicants
-                  .filter((app) => selectedApplicantIds.has(app.scholarship_application_id))
-                  .every((app) => app.status === 'shortlisted') && (
+                  .filter((app) => selectedApplicantIds.has(app.id))
+                  .every((app) => app.status.code === ScholarshipApplicationStatus.Shortlisted) && (
                   <button
                     onClick={() => handleBulkAction('approved')}
                     className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#31D0AA] text-tertiary rounded-md hover:bg-[#10B981] transition-colors text-xs"
@@ -594,18 +596,19 @@ function ApplicantsListPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredApplicants.map((applicant) => {
                 if (!applicant.student) return null;
-                const isSelected = selectedApplicantIds.has(applicant.scholarship_application_id);
-                const StatusIcon = getStatusIcon(applicant.status);
+                const isSelected = selectedApplicantIds.has(applicant.id);
+                const StatusIcon = getStatusIcon(applicant.status.code);
+                const applicantName = `${applicant.student.firstName} ${applicant.student.lastName}`
 
                 return (
                   <motion.div
-                    key={applicant.scholarship_application_id}
+                    key={applicant.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                     onClick={() => {
                       if (bulkMode) {
-                        toggleApplicantSelection(applicant.scholarship_application_id);
+                        toggleApplicantSelection(applicant.id);
                       } else {
                         openApplicantModal(applicant);
                       }
@@ -617,7 +620,7 @@ function ApplicantsListPage() {
                     {/* Status Icon */}
                     <StatusIcon 
                       className="w-5 h-5 absolute top-4 right-4" 
-                      style={{ color: getStatusColor(applicant.status) }} 
+                      style={{ color: getStatusColor(applicant.status.code) }} 
                     />
 
                     <div className="flex items-center gap-4">
@@ -634,10 +637,10 @@ function ApplicantsListPage() {
 
                       {/* Avatar */}
                       <div className="flex-shrink-0">
-                        {applicant.student.user.profile_url ? (
+                        {applicant.student.avatarUrl ? (
                           <img
-                            src={applicant.student.user.profile_url}
-                            alt={applicant.student.full_name}
+                            src={applicant.student.avatarUrl}
+                            alt={applicantName}
                             className="w-14 h-14 rounded-full object-cover"
                           />
                         ) : (
@@ -650,12 +653,12 @@ function ApplicantsListPage() {
                       {/* Applicant Info */}
                       <div className="flex-1">
                         <h3 className="text-base text-primary truncate">
-                          {applicant.student.full_name}
+                          {applicantName}
                         </h3>
-                        <p className="text-sm text-[#6B7280] mb-2">{applicant.student.user.email}</p>
+                        <p className="text-sm text-[#6B7280] mb-2">{applicant.student.email}</p>
 
                         <div className="flex items-center gap-2 text-xs text-[#6B7280]">
-                          <span>{formatDateTime(applicant.applied_at)}</span>
+                          <span>{formatDateTime(applicant.createdAt)}</span>
                         </div>
                       </div>
                     </div>
@@ -709,24 +712,24 @@ function ApplicantsListPage() {
                 <div className="mb-6">
                   {/* Status Badge */}
                   <div className="flex items-center gap-2 mb-4">
-                    {createElement(getStatusIcon(selectedApplicant.status), {
+                    {createElement(getStatusIcon(selectedApplicant.status.code), {
                       className: 'w-5 h-5',
-                      style: { color: getStatusColor(selectedApplicant.status) },
+                      style: { color: getStatusColor(selectedApplicant.status.code) },
                     })}
                     <span
                       className="text-sm font-medium capitalize"
-                      style={{ color: getStatusColor(selectedApplicant.status) }}
+                      style={{ color: getStatusColor(selectedApplicant.status.code) }}
                     >
-                      {selectedApplicant.status}
+                      {selectedApplicant.status.name}
                     </span>
                   </div>
 
                   {/* Profile Image */}
                   <div className="flex justify-center mb-4">
-                    {selectedApplicant.student.user.profile_url ? (
+                    {selectedApplicant.student.avatarUrl ? (
                       <img
-                        src={selectedApplicant.student.user.profile_url}
-                        alt={selectedApplicant.student.full_name}
+                        src={selectedApplicant.student.avatarUrl}
+                        alt={`${selectedApplicant.student.firstName} ${selectedApplicant.student.lastName}`}
                         className="w-24 h-24 rounded-full object-cover border-2 border-[#E5E7EB] shadow-md"
                       />
                     ) : (
@@ -738,47 +741,50 @@ function ApplicantsListPage() {
 
                   {/* Name */}
                   <h1 className="text-xl text-primary text-center mb-4">
-                    {selectedApplicant.student.full_name}
+                    {`${selectedApplicant.student.firstName} ${selectedApplicant.student.lastName}`}
                   </h1>
                   
                   {/* Contact Info */}
                   <div className="space-y-2 text-[#6B7280]">
                     <div className="flex items-center gap-2">
                       <Mail size={17} className="flex-shrink-0" />
-                      <span className="text-xs md:text-sm truncate">{selectedApplicant.student.user.email}</span>
+                      <span className="text-xs md:text-sm truncate">{selectedApplicant.student.email}</span>
                     </div>
                     
                     {selectedApplicant.student.gender && (
                       <div className="flex items-center gap-2">
                         <User size={17} className="flex-shrink-0" />
                         <div className="col-span-1 flex items-start gap-2">
-                          <span className="text-xs md:text-sm capitalize">{selectedApplicant.student.gender}</span>
+                          <span className="text-xs md:text-sm capitalize">{selectedApplicant.student.gender.name}</span>
                         </div>
                       </div>
                     )}
 
                     <div className="flex items-center gap-2">
                       <Phone size={17} className="flex-shrink-0" />
-                      <span className="text-xs md:text-sm">{selectedApplicant.student.contact_number}</span>
+                      <span className="text-xs md:text-sm">{selectedApplicant.student.contact.value}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <Calendar size={17} className="flex-shrink-0" />
-                      <span className="text-xs md:text-sm">{formatDateTime(selectedApplicant.applied_at)}</span>
+                      <span className="text-xs md:text-sm">{formatDateTime(selectedApplicant.createdAt)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Application Response */}
-                {selectedApplicant.custom_form_response && selectedApplicant.custom_form_response.length > 0 && (
+                {selectedApplicant.formFieldAnswers && selectedApplicant.formFieldAnswers.length > 0 && (
                   <div className="mb-6">
                     <h3 className="text-sm text-primary mb-3">Application Response</h3>
                     <div className="space-y-2.5">
-                      {Array.isArray(selectedApplicant.custom_form_response) &&
-                        selectedApplicant.custom_form_response.map((item, index) => (
+                      {Array.isArray(selectedApplicant.formFieldAnswers) &&
+                        selectedApplicant.formFieldAnswers.map((item, index) => {
+                          const field = scholarship?.formFields.find(f => f.id === item.formFieldId)
+
+                          return (
                           <div key={index} className="p-3 bg-[#F9FAFB] border border-[#E0ECFF] rounded-lg">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[13px] text-primary font-medium">{item.label}</span>
+                              <span className="text-[13px] text-primary font-medium">{field?.label}</span>
                             </div>
                             {Array.isArray(item.value) && item.value.length > 0 && typeof item.value[0] === 'string' && item.value[0].startsWith('http') ? (
                               <div className="space-y-2 mt-2">
@@ -789,7 +795,7 @@ function ApplicantsListPage() {
                                   >
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                       <FileText className="w-5 h-5 text-secondary flex-shrink-0" />
-                                      <p className="text-[11px] text-primary truncate">{item.label}</p>
+                                      <p className="text-[11px] text-primary truncate">{item.formFieldId}</p>
                                     </div>
                                     <button
                                       onClick={(e) => {
@@ -811,7 +817,7 @@ function ApplicantsListPage() {
                               </p>
                             )}
                           </div>
-                        ))}
+                        )})}
                     </div>
                   </div>
                 )}
@@ -827,11 +833,11 @@ function ApplicantsListPage() {
                 )}
 
                 {/* Action Buttons */}
-                {selectedApplicant.status !== 'approved' && selectedApplicant.status !== 'denied' && (
+                {selectedApplicant.status.code !== ScholarshipApplicationStatus.Approved && selectedApplicant.status.code !== ScholarshipApplicationStatus.Denied && (
                   <div className="flex gap-3 mt-2">
                     <button
                       onClick={() => {
-                        setPendingAction({ type: 'denied', applicationId: selectedApplicant.scholarship_application_id });
+                        setPendingAction({ type: ScholarshipApplicationStatus.Denied, applicationId: selectedApplicant.id });
                         setConfirmationModal(true);
                       }}
                       className="flex-1 py-3 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-100 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md bg-[#EF4444] cursor-pointer text-tertiary hover:bg-[#DC2626]"
@@ -839,12 +845,12 @@ function ApplicantsListPage() {
                       <XCircle size={15} />
                       Deny
                     </button>
-                    {selectedApplicant.status === 'pending' && (
+                    {selectedApplicant.status.code === ScholarshipApplicationStatus.Pending && (
                       <button
                         onClick={() => {
                           setPendingAction({
-                            type: 'shortlisted',
-                            applicationId: selectedApplicant.scholarship_application_id,
+                            type: ScholarshipApplicationStatus.Shortlisted,
+                            applicationId: selectedApplicant.id,
                           });
                           setConfirmationModal(true);
                         }}
@@ -854,12 +860,12 @@ function ApplicantsListPage() {
                         Shortlist
                       </button>
                     )}
-                    {selectedApplicant.status === 'shortlisted' && (
+                    {selectedApplicant.status.code === ScholarshipApplicationStatus.Shortlisted && (
                       <button
                         onClick={() => {
                           setPendingAction({
-                            type: 'approved',
-                            applicationId: selectedApplicant.scholarship_application_id,
+                            type: ScholarshipApplicationStatus.Approved,
+                            applicationId: selectedApplicant.id,
                           });
                           setConfirmationModal(true);
                         }}

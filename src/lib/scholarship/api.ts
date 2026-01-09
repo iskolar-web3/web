@@ -2,7 +2,9 @@ import { queryOptions } from "@tanstack/react-query";
 import { BACKEND_URL, type ApiResponse } from "../api";
 import { anySponsorSchema } from "../sponsor/model";
 import {
+	applicantSchema,
 	scholarshipSchema,
+	type Applicant,
 	type EditScholarshipFormData,
 	type GetScholarshipQueryParam,
 	type Scholarship,
@@ -32,7 +34,10 @@ async function getMyScholarships(
 	return scholarshipSchema(anySponsorSchema).array().parse(result.data);
 }
 
-export const getMyScholarshipsQuery = (token: string, params: GetScholarshipQueryParam) =>
+export const getMyScholarshipsQuery = (
+	token: string,
+	params: GetScholarshipQueryParam,
+) =>
 	queryOptions({
 		queryKey: ["scholarships", params],
 		queryFn: () => getMyScholarships(token, params),
@@ -86,3 +91,26 @@ export async function updateScholarship(
 
 	return result;
 }
+
+async function getApplicants(id: string): Promise<Applicant[]> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	if (!token) {
+		throw new Error("Access token not found.");
+	}
+	const url = new URL(`${BACKEND_URL}/scholarships/${id}/applications`);
+
+	const response = await fetch(url.toString(), {
+		method: "GET",
+		headers: { Authorization: `Bearer ${token}` },
+		credentials: "include",
+	});
+	const result: ApiResponse<Applicant[]> = await response.json();
+
+	return applicantSchema.array().parse(result.data);
+}
+
+export const getApplicantsQuery = (id: string) =>
+	queryOptions({
+		queryKey: ["scholarships", "applicants", id],
+		queryFn: () => getApplicants(id),
+	});
