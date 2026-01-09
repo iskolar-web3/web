@@ -109,8 +109,6 @@ export default function HeaderNav({ role }: HeaderNavProps) {
     navigate({ to: logoRedirectPath });
   };
 
-	const searchParams = useSearch({ from: "/_sponsor/scholarships" });
-
   /**
    * Handles search form submission
    * @param e - Form event
