@@ -1,6 +1,6 @@
 import z from "zod";
 import { enumDetailSchema } from "../api";
-import type { AnySponsor } from "../sponsor/model";
+import { anySponsorSchema, type AnySponsor } from "../sponsor/model";
 import { validateFormField } from "./helper";
 import { studentSchema } from "../student/model";
 
@@ -198,3 +198,19 @@ export const applicantSchema = baseApplicationSchema.extend({
 	student: studentSchema,
 });
 export type Applicant = z.output<typeof applicantSchema>;
+
+export const getApplicationsQueryParam = z
+	.object({
+		studentId: z.uuidv4(),
+		status: z.string(),
+	})
+	.partial();
+export type GetApplicationsQueryParam = z.infer<
+	typeof getApplicationsQueryParam
+>;
+
+export const applicationSchema = z.object({
+	scholarship: scholarshipSchema(anySponsorSchema),
+	application: baseApplicationSchema,
+});
+export type Application = z.output<typeof applicationSchema>;

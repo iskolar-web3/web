@@ -1,4 +1,4 @@
-import type { Application } from '@/types/application.types';
+import type { ApplicationOld } from '@/types/application.types';
 import type { Scholarship } from '@/types/scholarship.types';
 
 /**
@@ -38,7 +38,7 @@ const createMockScholarship = (overrides: Partial<Scholarship> = {}): Scholarshi
   ...overrides,
 });
 
-export const mockApplications: Application[] = [
+export const mockApplications: ApplicationOld[] = [
   {
     scholarship_application_id: 'app-1',
     status: 'pending',

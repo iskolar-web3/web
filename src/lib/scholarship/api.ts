@@ -3,9 +3,12 @@ import { BACKEND_URL, type ApiResponse } from "../api";
 import { anySponsorSchema } from "../sponsor/model";
 import {
 	applicantSchema,
+	applicationSchema,
 	scholarshipSchema,
 	type Applicant,
+	type Application,
 	type EditScholarshipFormData,
+	type GetApplicationsQueryParam,
 	type GetScholarshipQueryParam,
 	type Scholarship,
 } from "./model";
@@ -113,4 +116,36 @@ export const getApplicantsQuery = (id: string) =>
 	queryOptions({
 		queryKey: ["scholarships", "applicants", id],
 		queryFn: () => getApplicants(id),
+	});
+
+async function getMyApplications(
+	param: GetApplicationsQueryParam,
+): Promise<Application[]> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	if (!token) {
+		throw new Error("Access token not found.");
+	}
+	const url = new URL(`${BACKEND_URL}/scholarships/applications`);
+	if (param.studentId) {
+		url.searchParams.append("studentId", param.studentId);
+	}
+
+	if (param.status) {
+		url.searchParams.append("status", param.status);
+	}
+
+	const response = await fetch(url.toString(), {
+		method: "GET",
+		headers: { Authorization: `Bearer ${token}` },
+		credentials: "include",
+	});
+	const result: ApiResponse<Application[]> = await response.json();
+
+	return applicationSchema.array().parse(result.data);
+}
+
+export const getMyApplicationsQuery = (param: GetApplicationsQueryParam) =>
+	queryOptions({
+		queryKey: ["scholarships", "applications", param],
+		queryFn: () => getMyApplications(param),
 	});
