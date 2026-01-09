@@ -81,7 +81,9 @@ export type Scholarship<T extends AnySponsor = AnySponsor> = Omit<
 export const createFormFieldOptionRequestSchema = z.object({
 	value: z.string().nonempty(),
 });
-export type CreateFormFieldOptionRequest = z.infer<typeof createFormFieldOptionRequestSchema>
+export type CreateFormFieldOptionRequest = z.infer<
+	typeof createFormFieldOptionRequestSchema
+>;
 
 export const baseFormFieldSchema = z.object({
 	label: z.string().nonempty(),
@@ -90,8 +92,8 @@ export const baseFormFieldSchema = z.object({
 	options: createFormFieldOptionRequestSchema.array().default([]),
 });
 
-export const createFormFieldRequestSchema = baseFormFieldSchema.refine(
-	(data) => validateFormField(data.fieldType, data.options.length),
+export const createFormFieldRequestSchema = baseFormFieldSchema.refine((data) =>
+	validateFormField(data.fieldType, data.options.length),
 );
 export type CreateFormFieldRequest = z.infer<
 	typeof createFormFieldRequestSchema
@@ -125,7 +127,6 @@ export type ScholarshipFormData = z.infer<
 	typeof createScholarshipRequestSchema
 >;
 
-
 const updateFormFieldOptionRequestSchema = createFormFieldOptionRequestSchema
 	.extend({
 		id: z.uuidv4(),
@@ -157,4 +158,15 @@ export const updateScholarshipRequestSchema = createScholarshipRequestSchema
 
 export type EditScholarshipFormData = z.infer<
 	typeof updateScholarshipRequestSchema
+>;
+
+export const getScholarshipQueryParamSchema = z
+	.object({
+		sponsorId: z.uuidv4(),
+		search: z.string(),
+	})
+	.partial();
+
+export type GetScholarshipQueryParam = z.infer<
+	typeof getScholarshipQueryParamSchema
 >;

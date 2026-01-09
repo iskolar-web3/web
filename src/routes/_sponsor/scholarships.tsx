@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import {
-	useQueryClient,
-	useSuspenseQuery,
-} from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+	createFileRoute,
+	useNavigate,
+	useSearch,
+} from "@tanstack/react-router";
 import {
 	Filter,
 	AlertCircle,
@@ -27,12 +28,16 @@ import { mockApiDelay } from "@/mocks/scholarships.mock";
 import { getMyScholarshipsQuery } from "@/lib/scholarship/api";
 import { useAuth } from "@/auth";
 import type { AnySponsor } from "@/lib/sponsor/model";
-import type { Scholarship } from "@/lib/scholarship/model";
+import {
+	getScholarshipQueryParamSchema,
+	type Scholarship,
+} from "@/lib/scholarship/model";
 
 const USE_MOCK_DATA = true;
 
 export const Route = createFileRoute("/_sponsor/scholarships")({
 	component: Scholarships,
+	validateSearch: getScholarshipQueryParamSchema,
 });
 
 function Scholarships() {
@@ -56,9 +61,11 @@ function Scholarships() {
 
 	// const { data: scholarships = [], isLoading: loading, error, isError } = useSponsorScholarships();
 
+	const search = useSearch({ from: "/_sponsor/scholarships" });
+
 	const auth = useAuth<AnySponsor>();
 	const scholarships = useSuspenseQuery(
-		getMyScholarshipsQuery(auth.sessionToken, auth.profile.id),
+		getMyScholarshipsQuery(auth.sessionToken, search),
 	);
 
 	const [showDeleteModal, setShowDeleteModal] = useState(false);

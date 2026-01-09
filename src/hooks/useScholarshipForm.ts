@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { normalizeText } from "@/utils/normalize.utils";
 import {
+    createScholarshipRequestSchema,
 	ScholarshipStatus,
 	type ScholarshipFormData,
 } from "@/lib/scholarship/model";

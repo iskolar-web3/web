@@ -4,6 +4,7 @@ import { anySponsorSchema } from "../sponsor/model";
 import {
 	scholarshipSchema,
 	type EditScholarshipFormData,
+	type GetScholarshipQueryParam,
 	type Scholarship,
 } from "./model";
 import { getCookie } from "../cookie";
@@ -11,10 +12,15 @@ import { ACCESS_TOKEN_KEY } from "../user/auth";
 
 async function getMyScholarships(
 	token: string,
-	sponsorId: string,
+	params?: GetScholarshipQueryParam,
 ): Promise<Scholarship[]> {
 	const url = new URL(`${BACKEND_URL}/scholarships`);
-	url.searchParams.append("sponsorId", sponsorId);
+	if (params?.sponsorId) {
+		url.searchParams.append("sponsorId", params.sponsorId);
+	}
+	if (params?.search) {
+		url.searchParams.append("search", params.search);
+	}
 
 	const response = await fetch(url.toString(), {
 		method: "GET",
@@ -26,10 +32,10 @@ async function getMyScholarships(
 	return scholarshipSchema(anySponsorSchema).array().parse(result.data);
 }
 
-export const getMyScholarshipsQuery = (token: string, sponsorId: string) =>
+export const getMyScholarshipsQuery = (token: string, params: GetScholarshipQueryParam) =>
 	queryOptions({
-		queryKey: ["scholarships", sponsorId],
-		queryFn: () => getMyScholarships(token, sponsorId),
+		queryKey: ["scholarships", params],
+		queryFn: () => getMyScholarships(token, params),
 	});
 
 async function getScholarshipById(
