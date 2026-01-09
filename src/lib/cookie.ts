@@ -37,6 +37,6 @@ export function setCookie(
 	document.cookie = cookieString;
 }
 
-export function deleteCookie(key: string, path?: string) {
+export function deleteCookie(key: string, path: string = "/") {
 	setCookie(key, "", { path: path, expires: new Date(0) });
 }

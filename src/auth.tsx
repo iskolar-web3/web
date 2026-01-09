@@ -72,6 +72,7 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 	async function logout(): Promise<void> {
 		const token = getCookie(ACCESS_TOKEN_KEY);
 		if (!token || !user) {
+			console.log("No token or user");
 			return;
 		}
 
@@ -80,6 +81,7 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 		setUser(null);
 		deleteCookie(ACCESS_TOKEN_KEY);
 		deleteCookie(REFRESH_TOKEN_KEY);
+		console.log("Logged out");
 	}
 
 	useEffect(() => {
