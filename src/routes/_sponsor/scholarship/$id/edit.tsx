@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Upload,
@@ -35,13 +34,15 @@ import DescriptionModal from '@/components/sponsor/DescriptionModal';
 import CustomFormFieldModal from '@/components/sponsor/CustomFormFieldModal';
 import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import type { Scholarship } from '@/types/scholarship.types';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from "@/lib/logger";
-import { mockScholarshipEdit, mockApiDelay } from '@/mocks/scholarshipEdit.mock';
-import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
-
-const USE_MOCK_DATA = true;
+import { mockApiDelay } from '@/mocks/scholarshipEdit.mock';
+import { type CreateFormFieldRequest } from '@/hooks/useScholarshipForm';
+import { FormFieldType, ScholarshipPurpose, ScholarshipStatus, ScholarshipType, updateScholarshipRequestSchema, type EditScholarshipFormData, type Scholarship } from '@/lib/scholarship/model';
+import { getFieldTypeLabel, renderFieldTypeIcon } from '@/components/sponsor/CustomFormFieldsList';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { getScholarshipByIdQuery, updateScholarship } from '@/lib/scholarship/api';
+import { useAuth } from '@/auth';
 
 export const Route = createFileRoute('/_sponsor/scholarship/$id/edit')({
   // params: {
@@ -58,82 +59,77 @@ export const Route = createFileRoute('/_sponsor/scholarship/$id/edit')({
   component: EditScholarshipPage,
 });
 
-const customFieldTypes = [
-  'text',
-  'textarea',
-  'multiple_choice',
-  'dropdown',
-  'checkbox',
-  'number',
-  'date',
-  'email',
-  'phone',
-  'file',
-] as const;
-type CustomFieldType = (typeof customFieldTypes)[number];
-
-const editScholarshipSchema = z.object({
-  type: z.enum(['merit_based', 'skill_based'], { message: 'Please select a scholarship type' }),
-  purpose: z.enum(['allowance', 'tuition'], { message: 'Please select a purpose' }),
-  status: z.enum(['active', 'closed'], { message: 'Please select a status' }),
-  title: z.string().min(1, 'Scholarship title is required').max(150, 'Title must be less than 150 characters'),
-  description: z.string().optional(),
-  imageUrl: z.string().min(1, 'Please upload a scholarship image'),
-  totalAmount: z.string()
-    .min(1, 'Total amount is required')
-    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
-      message: 'Please enter a valid amount greater than 0',
-    }),
-  totalSlot: z.string()
-    .min(1, 'Total slot is required')
-    .refine((val) => !isNaN(parseInt(val)) && parseInt(val) > 0, {
-      message: 'Please enter a valid slot number greater than 0',
-    }),
-  applicationDeadline: z.date('Please select an application deadline'),
-  criteria: z.array(z.string()).min(1, 'At least one eligibility criterion is required'),
-  requiredDocuments: z.array(z.string()).min(1, 'At least one required document is required'),
-  customFormFields: z.array(z.object({
-    type: z.enum(customFieldTypes),
-    label: z.string().min(1, 'Field label is required'),
-    required: z.boolean(),
-    options: z.array(z.string()).optional(),
-  })).min(1, 'At least one form field is required'),
-});
-
-type EditScholarshipFormData = z.infer<typeof editScholarshipSchema>;
+// const editScholarshipSchema = z.object({
+//   type: z.enum(['merit_based', 'skill_based'], { message: 'Please select a scholarship type' }),
+//   purpose: z.enum(['allowance', 'tuition'], { message: 'Please select a purpose' }),
+//   status: z.enum(['active', 'closed'], { message: 'Please select a status' }),
+//   title: z.string().min(1, 'Scholarship title is required').max(150, 'Title must be less than 150 characters'),
+//   description: z.string().optional(),
+//   imageUrl: z.string().min(1, 'Please upload a scholarship image'),
+//   totalAmount: z.string()
+//     .min(1, 'Total amount is required')
+//     .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+//       message: 'Please enter a valid amount greater than 0',
+//     }),
+//   totalSlot: z.string()
+//     .min(1, 'Total slot is required')
+//     .refine((val) => !isNaN(parseInt(val)) && parseInt(val) > 0, {
+//       message: 'Please enter a valid slot number greater than 0',
+//     }),
+//   applicationDeadline: z.date('Please select an application deadline'),
+//   criteria: z.array(z.string()).min(1, 'At least one eligibility criterion is required'),
+//   requiredDocuments: z.array(z.string()).min(1, 'At least one required document is required'),
+//   formFields: z.array(z.object({
+//     type: z.enum(customFieldTypes),
+//     label: z.string().min(1, 'Field label is required'),
+//     required: z.boolean(),
+//     options: z.array(z.string()).optional(),
+//   })).min(1, 'At least one form field is required'),
+// });
+//
 
 function EditScholarshipPage() {
   usePageTitle('Edit');
 
-  const { id } = Route.useParams();
+  const params = Route.useParams();
 
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-    reset,
-  } = useForm<EditScholarshipFormData>({
-    resolver: zodResolver(editScholarshipSchema),
+  const auth = useAuth()
+  const scholarshipQuery = useSuspenseQuery(getScholarshipByIdQuery(auth.sessionToken, params.id))
+  const scholarship = scholarshipQuery.data;
+
+  const form = useForm<EditScholarshipFormData>({
+    // @ts-expect-error This works fine but it has TS error for some reason
+    resolver: zodResolver(updateScholarshipRequestSchema),
     mode: 'onBlur',
     defaultValues: {
-      type: undefined,
-      purpose: undefined,
-      status: 'active',
-      title: '',
-      description: '',
-      imageUrl: '',
-      totalAmount: '',
-      totalSlot: '',
-      applicationDeadline: undefined,
-      criteria: [],
-      requiredDocuments: [],
-      customFormFields: [],
+        id: params.id,
+        criterias: scholarship.criterias,
+        formFields: scholarship.formFields.map(field => {
+            return {
+                fieldType: field.fieldType.code,
+                id: field.id,
+                isRequired: field.isRequired,
+                label: field.label,
+               options: field.options.map(opt => ({
+                   id: opt.id,
+                   value: opt.value,
+               })) 
+            }
+        }),
+        imageUrl: scholarship.imageUrl || "",
+        description: scholarship.description || "",
+        name: scholarship.name,
+        requirements: scholarship.requirements,
+        status: scholarship.status.code,
+        totalAmount: scholarship.totalAmount,
+        totalSlots: scholarship.totalSlots,
+        scholarshipType: scholarship.scholarshipType.code,
+        applicationDeadline: scholarship.applicationDeadline,
+        purpose: scholarship.purpose.code,
     },
   });
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(scholarship.imageUrl);
   const [criteriaInput, setCriteriaInput] = useState('');
   const [documentsInput, setDocumentsInput] = useState('');
   const [showDescriptionModal, setShowDescriptionModal] = useState(false);
@@ -143,46 +139,33 @@ function EditScholarshipPage() {
   const [saving, setSaving] = useState(false);
   const { toast, showSuccess, showError } = useToast();
 
-  const criteria = watch('criteria');
-  const requiredDocuments = watch('requiredDocuments');
-  const customFormFields = watch('customFormFields') || [];
-  const description = watch('description');
-  const type = watch('type');
-  const purpose = watch('purpose');
-  const status = watch('status');
+  const criterias = form.watch('criterias') || [];
+  const requiredDocuments = form.watch('requirements') || [];
+  const formFields = form.watch('formFields') || [];
+  const description = form.watch('description');
+  const type = form.watch('scholarshipType');
+  const purpose = form.watch('purpose');
+  const status = form.watch('status');
 
   const hydrateForm = useCallback((scholarship: Scholarship) => {
-    reset({
-      type: (scholarship.type as 'merit_based' | 'skill_based') ?? 'merit_based',
-      purpose: (scholarship.purpose as 'allowance' | 'tuition') ?? 'allowance',
-      status: (scholarship.status === 'closed' ? 'closed' : 'active') as 'active' | 'closed',
-      title: scholarship.title || '',
-      description: scholarship.description || '',
-      imageUrl: scholarship.image_url || '/logo.jpg',
-      totalAmount: scholarship.total_amount ? String(scholarship.total_amount) : '',
-      totalSlot: scholarship.total_slot ? String(scholarship.total_slot) : '',
-      applicationDeadline: scholarship.application_deadline ? new Date(scholarship.application_deadline) : undefined,
-      criteria: scholarship.criteria || [],
-      requiredDocuments: scholarship.required_documents || [],
-      customFormFields: scholarship.custom_form_fields || [],
-    });
-    setImagePreview(scholarship.image_url || null);
-  }, [reset]);
+    form.reset();
+    setImagePreview(scholarship.imageUrl);
+  }, [form.reset]);
 
   const loadScholarshipDetails = useCallback(async () => {
     try {
       setLoading(true);
       
-      if (USE_MOCK_DATA) {
-        // Mock data path
-        await mockApiDelay(2000);
-        hydrateForm(mockScholarshipEdit);
-      } else {
-        const response = await scholarshipManagementService.getScholarshipById(id);
-        if (response.success && response.scholarship) {
-          hydrateForm(response.scholarship);
-        }
-      }
+      // if (USE_MOCK_DATA) {
+      //   // Mock data path
+      //   await mockApiDelay(2000);
+      //   hydrateForm(mockScholarshipEdit);
+      // } else {
+      //   const response = await scholarshipManagementService.getScholarshipById(id);
+      //   if (response.success && response.scholarship) {
+      //     hydrateForm(response.scholarship);
+      //   }
+      // }
     } catch (error) {
       const handled = handleError(error, 'Unable to load scholarship details.');
       logger.error('Failed to load scholarship:', handled.raw);
@@ -190,44 +173,12 @@ function EditScholarshipPage() {
     } finally {
       setLoading(false);
     }
-  }, [id, hydrateForm, showSuccess, showError]);
+  }, [params.id, hydrateForm, showSuccess, showError]);
 
   useEffect(() => {
     loadScholarshipDetails();
   }, [loadScholarshipDetails]);
 
-  const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
-    const iconProps = { size: 18, className: 'text-secondary' };
-    const icons = {
-      text: <TypeIcon {...iconProps} />,
-      textarea: <AlignLeft {...iconProps} />,
-      dropdown: <ListChecks {...iconProps} />,
-      multiple_choice: <ListChecks {...iconProps} />,
-      checkbox: <CheckSquare {...iconProps} />,
-      number: <Hash {...iconProps} />,
-      date: <CalendarIcon {...iconProps} />,
-      email: <Mail {...iconProps} />,
-      phone: <Phone {...iconProps} />,
-      file: <Paperclip {...iconProps} />,
-    };
-    return icons[fieldType] || icons.text;
-  };
-
-  const getFieldTypeLabel = (fieldType: CustomFieldType) => {
-    const labels = {
-      text: 'Short answer',
-      textarea: 'Long answer',
-      multiple_choice: 'Multiple choice',
-      dropdown: 'Dropdown',
-      checkbox: 'Checkbox',
-      number: 'Number',
-      date: 'Date',
-      email: 'Email',
-      phone: 'Phone number',
-      file: 'File upload',
-    };
-    return labels[fieldType] || fieldType;
-  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -236,7 +187,7 @@ function EditScholarshipPage() {
       reader.onloadend = () => {
         const result = reader.result as string;
         setImagePreview(result);
-        setValue('imageUrl', result, { shouldValidate: true });
+        form.setValue('imageUrl', result, { shouldValidate: true });
       };
       reader.readAsDataURL(file);
     }
@@ -245,25 +196,25 @@ function EditScholarshipPage() {
   const addCriterion = () => {
     const trimmed = criteriaInput.trim();
     if (trimmed) {
-      setValue('criteria', [...criteria, trimmed], { shouldValidate: true });
+      form.setValue('criterias', [...criterias || [], trimmed], { shouldValidate: true });
       setCriteriaInput('');
     }
   };
 
   const removeCriterion = (index: number) => {
-    setValue('criteria', criteria.filter((_, i) => i !== index), { shouldValidate: true });
+    form.setValue('criterias', criterias?.filter((_, i) => i !== index), { shouldValidate: true });
   };
 
   const addDocument = () => {
     const trimmed = documentsInput.trim();
     if (trimmed) {
-      setValue('requiredDocuments', [...requiredDocuments, trimmed], { shouldValidate: true });
+      form.setValue('requirements', [...requiredDocuments || [], trimmed], { shouldValidate: true });
       setDocumentsInput('');
     }
   };
 
   const removeDocument = (index: number) => {
-    setValue('requiredDocuments', requiredDocuments.filter((_, i) => i !== index), { shouldValidate: true });
+    form.setValue('requirements', requiredDocuments?.filter((_, i) => i !== index), { shouldValidate: true });
   };
 
   const openCustomFormModal = (index?: number) => {
@@ -271,65 +222,44 @@ function EditScholarshipPage() {
     setShowCustomFieldModal(true);
   };
 
-  const handleSaveCustomField = (field: {
-    type: CustomFieldType;
-    label: string;
-    required: boolean;
-    options?: string[];
-  }) => {
+  const handleSaveCustomField = (field: CreateFormFieldRequest) => {
+      console.log(form.formState.errors)
     if (editingFieldIndex !== null) {
-      const updatedFields = customFormFields.map((f, i) =>
+      const updatedFields = formFields.map((f, i) => 
         i === editingFieldIndex ? field : f
       );
-      setValue('customFormFields', updatedFields, { shouldValidate: true });
+      form.setValue('formFields', updatedFields);
     } else {
-      setValue('customFormFields', [...customFormFields, field], { shouldValidate: true });
+      form.setValue('formFields', [...formFields, field]);
     }
     setEditingFieldIndex(null);
   };
 
   const removeCustomFormField = (index: number) => {
-    setValue('customFormFields', customFormFields.filter((_, i) => i !== index), { shouldValidate: true });
+    form.setValue('formFields', formFields.filter((_, i) => i !== index), { shouldValidate: true });
   };
+
+	const mutation = useMutation({
+		mutationFn: updateScholarship,
+		onSuccess: async (res) => {
+            console.log(res.data)
+			showSuccess(
+				`Success`,
+				res.message,
+				1250,
+			);
+			setLoading(false);
+          setSaving(false);
+		},
+      onError: (err) => {
+          showError("Error", err.message)
+          console.error(err)
+      }
+	});
 
   const onSubmit = async (data: EditScholarshipFormData) => {
     setSaving(true);
-    try {
-      if (USE_MOCK_DATA) {
-        // Mock submission
-        await mockApiDelay(1500);
-        showSuccess('Mock Update', `"${data.title}" saved.`, 2000);
-      } else {
-        const updatePayload = {
-          type: data.type,
-          purpose: data.purpose,
-          status: data.status,
-          title: data.title.trim(),
-          description: data.description?.trim(),
-          total_amount: parseFloat(data.totalAmount),
-          total_slot: parseInt(data.totalSlot, 10),
-          application_deadline: data.applicationDeadline.toISOString(),
-          criteria: data.criteria,
-          required_documents: data.requiredDocuments,
-          custom_form_fields: data.customFormFields,
-        };
-        
-        const result = await scholarshipManagementService.updateScholarship(id, updatePayload);
-        
-        if (result.success) {
-          showSuccess('Updated', result.message, 2000);
-          return;
-        }
-        
-        showError('Error', result.message, 2500);
-      }
-    } catch (error) {
-      const handled = handleError(error, 'Failed to update scholarship. Please try again.');
-      logger.error('Failed to update scholarship:', handled.raw);
-      showError(`Error ${handled.code}`, handled.message, 2500);
-    } finally {
-      setSaving(false);
-    }
+      mutation.mutate(data)
   };
 
   if (loading) {
@@ -425,13 +355,13 @@ function EditScholarshipPage() {
             <Select
               value={status}
               onValueChange={(value) =>
-                setValue('status', value as 'active' | 'closed', { shouldValidate: true })
+                form.setValue('status', value as ScholarshipStatus, { shouldValidate: true })
               }
             >
               <SelectTrigger
                 disabled={saving}
                 className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                  errors.status
+                  form.formState.errors.status
                     ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
                     : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                 }`}
@@ -443,7 +373,7 @@ function EditScholarshipPage() {
                 <SelectItem value="closed">Closed</SelectItem>
               </SelectContent>
             </Select>
-            {errors.status && <p className="text-xs text-[#EF4444] mt-1">{errors.status.message}</p>}
+            {form.formState.errors.status && <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.status.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -451,13 +381,13 @@ function EditScholarshipPage() {
               <Select
                 value={type}
                 onValueChange={(value) =>
-                  setValue('type', value as 'merit_based' | 'skill_based', { shouldValidate: true })
+                  form.setValue('scholarshipType', value as ScholarshipType, { shouldValidate: true })
                 }
               >
                 <SelectTrigger
                   disabled={saving}
                   className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                    errors.type
+                    form.formState.errors.scholarshipType
                       ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
                       : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                   }`}
@@ -465,24 +395,24 @@ function EditScholarshipPage() {
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="merit_based">Merit-Based</SelectItem>
-                  <SelectItem value="skill_based">Skill-Based</SelectItem>
+                  <SelectItem value={ScholarshipType.MeritBased}>Merit-Based</SelectItem>
+                  <SelectItem value={ScholarshipType.SkillBased}>Skill-Based</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.type && <p className="text-xs text-[#EF4444] mt-1">{errors.type.message}</p>}
+              {form.formState.errors.scholarshipType && <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.scholarshipType.message}</p>}
             </div>
 
             <div>
               <Select
                 value={purpose}
                 onValueChange={(value) =>
-                  setValue('purpose', value as 'allowance' | 'tuition', { shouldValidate: true })
+                  form.setValue('purpose', value as ScholarshipPurpose, { shouldValidate: true })
                 }
               >
                 <SelectTrigger
                   disabled={saving}
                   className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                    errors.purpose
+                    form.formState.errors.purpose
                       ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]'
                       : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                   }`}
@@ -494,7 +424,7 @@ function EditScholarshipPage() {
                   <SelectItem value="tuition">Tuition</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.purpose && <p className="text-xs text-[#EF4444] mt-1">{errors.purpose.message}</p>}
+              {form.formState.errors.purpose && <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.purpose.message}</p>}
             </div>
           </div>
 
@@ -510,7 +440,7 @@ function EditScholarshipPage() {
                         disabled={saving}
                         onClick={() => {
                           setImagePreview(null);
-                          setValue('imageUrl', '', { shouldValidate: true });
+                          form.setValue('imageUrl', '', { shouldValidate: true });
                         }}
                         className="absolute top-2 right-2 bg-black/50 text-tertiary rounded-full p-1.5 hover:bg-black/70"
                       >
@@ -520,7 +450,7 @@ function EditScholarshipPage() {
                   ) : (
                     <div
                       className={`border-2 border-dashed ${
-                        errors.imageUrl ? 'border-[#EF4444]' : 'border-[#3A52A6]'
+                        form.formState.errors.imageUrl ? 'border-[#EF4444]' : 'border-[#3A52A6]'
                       } rounded-lg text-center cursor-pointer hover:bg-[#F0F7FF] transition-colors flex flex-col items-center justify-center w-full aspect-square px-4`}
                     >
                       <Upload className="mb-3 text-[#5B7BA6]" size={40} />
@@ -529,26 +459,26 @@ function EditScholarshipPage() {
                     </div>
                   )}
                 </label>
-                {errors.imageUrl && <p className="text-xs text-[#EF4444] mt-1">{errors.imageUrl.message}</p>}
+                {form.formState.errors.imageUrl && <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.imageUrl.message}</p>}
               </div>
 
               <div className="md:flex-1 space-y-4">
                 <div>
                   <Controller
-                    control={control}
-                    name="title"
+                    control={form.control}
+                    name="name"
                     render={({ field }) => (
                       <input
                         {...field}
                         placeholder="Scholarship Title"
                         disabled={saving}
                         className={`w-full text-2xl border-b-2 ${
-                          errors.title ? 'border-[#EF4444]' : 'border-transparent'
+                          form.formState.errors.name ? 'border-[#EF4444]' : 'border-transparent'
                         } bg-transparent pb-2 focus:outline-none focus:border-[#3A52A6] text-primary`}
                       />
                     )}
                   />
-                  {errors.title && <p className="text-xs text-[#EF4444] mt-1">{errors.title.message}</p>}
+                  {form.formState.errors.name && <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.name.message}</p>}
                 </div>
 
                 <button
@@ -564,7 +494,7 @@ function EditScholarshipPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Controller
-                      control={control}
+                      control={form.control}
                       name="totalAmount"
                       render={({ field }) => (
                         <input
@@ -573,18 +503,18 @@ function EditScholarshipPage() {
                           disabled={saving}
                           placeholder="Total amount"
                           className={`w-full px-4 py-3 rounded-lg border ${
-                            errors.totalAmount ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                            form.formState.errors.totalAmount ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
                           } bg-[#F8F9FC] text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
                         />
                       )}
                     />
-                    {errors.totalAmount && <p className="text-xs text-[#EF4444] mt-1">{errors.totalAmount.message}</p>}
+                    {form.formState.errors.totalAmount && <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.totalAmount.message}</p>}
                   </div>
 
                   <div>
                     <Controller
-                      control={control}
-                      name="totalSlot"
+                      control={form.control}
+                      name="totalSlots"
                       render={({ field }) => (
                         <input
                           {...field}
@@ -592,18 +522,18 @@ function EditScholarshipPage() {
                           disabled={saving}
                           placeholder="Total slots"
                           className={`w-full px-4 py-3 rounded-lg border ${
-                            errors.totalSlot ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                            form.formState.errors.totalSlots ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
                           } bg-[#F8F9FC] text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
                         />
                       )}
                     />
-                    {errors.totalSlot && <p className="text-xs text-[#EF4444] mt-1">{errors.totalSlot.message}</p>}
+                    {form.formState.errors.totalSlots && <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.totalSlots.message}</p>}
                   </div>
                 </div>
 
                 <div>
                   <Controller
-                    control={control}
+                    control={form.control}
                     name="applicationDeadline"
                     render={({ field }) => (
                       <Popover>
@@ -613,7 +543,7 @@ function EditScholarshipPage() {
                             disabled={saving}
                             className={`w-full px-4 py-3 text-sm border rounded-lg bg-[#F8F9FC] focus:outline-none focus:ring-2 focus:ring-[#3A52A6] flex items-center justify-between ${
                               field.value ? 'text-primary' : 'text-gray-400'
-                            } ${errors.applicationDeadline ? 'border-[#EF4444]' : 'border-[#C4CBD5]'}`}
+                            } ${form.formState.errors.applicationDeadline ? 'border-[#EF4444]' : 'border-[#C4CBD5]'}`}
                           >
                             <span>
                               {field.value
@@ -643,8 +573,8 @@ function EditScholarshipPage() {
                       </Popover>
                     )}
                   />
-                  {errors.applicationDeadline && (
-                    <p className="text-xs text-[#EF4444] mt-1">{errors.applicationDeadline.message}</p>
+                  {form.formState.errors.applicationDeadline && (
+                    <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.applicationDeadline.message}</p>
                   )}
                 </div>
               </div>
@@ -660,7 +590,7 @@ function EditScholarshipPage() {
                 onKeyDown={(event) => event.key === 'Enter' && (event.preventDefault(), addCriterion())}
                 placeholder="Enter eligibility criterion"
                 className={`flex-1 px-4 py-3 rounded-lg border ${
-                  errors.criteria ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                  form.formState.errors.criterias ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
                 } bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
               />
               <button
@@ -672,10 +602,10 @@ function EditScholarshipPage() {
                 <Plus size={20} />
               </button>
             </div>
-            {errors.criteria && <p className="text-xs text-[#EF4444] mt-1">{errors.criteria.message}</p>}
-            {criteria.length > 0 && (
+            {form.formState.errors.criterias && <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.criterias.message}</p>}
+            {criterias.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
-                {criteria.map((criterion, index) => (
+                {criterias.map((criterion, index) => (
                   <span key={index} className="inline-flex items-center gap-2 px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded-md border border-[#E5E7EB]">
                     {criterion}
                     <button disabled={saving} onClick={() => removeCriterion(index)} className="hover:text-[#2A4296]">
@@ -696,7 +626,7 @@ function EditScholarshipPage() {
                 onKeyDown={(event) => event.key === 'Enter' && (event.preventDefault(), addDocument())}
                 placeholder="Enter required document"
                 className={`flex-1 px-4 py-3 rounded-lg border ${
-                  errors.requiredDocuments ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                  form.formState.errors.requirements ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
                 } bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
               />
               <button
@@ -708,8 +638,8 @@ function EditScholarshipPage() {
                 <Plus size={20} />
               </button>
             </div>
-            {errors.requiredDocuments && (
-              <p className="text-xs text-[#EF4444] mt-1">{errors.requiredDocuments.message}</p>
+            {form.formState.errors.requirements && (
+              <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.requirements.message}</p>
             )}
             {requiredDocuments.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
@@ -731,21 +661,21 @@ function EditScholarshipPage() {
               <p className="text-xs text-[#6B7280] ml-0.5">Maintain the form fields applicants complete when applying.</p>
             </div>
 
-            {customFormFields.length > 0 && (
+            {formFields.length > 0 && (
               <div className="space-y-2 mb-3">
-                {customFormFields.map((field, index) => (
+                {formFields.map((field, index) => (
                   <div key={index} className="flex items-center gap-3 p-3 bg-white border border-[#E0ECFF] rounded-lg">
                     <div className="w-9 h-9 bg-[#E0ECFF] rounded-lg flex items-center justify-center">
-                      {renderFieldTypeIcon(field.type as CustomFieldType)}
+                      {renderFieldTypeIcon(field.fieldType || FormFieldType.ShortAnswer)}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-primary">{field.label}</span>
-                        {field.required && (
+                        {field.isRequired && (
                           <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded">Required</span>
                         )}
                       </div>
-                      <p className="text-xs text-[#6B7280]">{getFieldTypeLabel(field.type as CustomFieldType)}</p>
+                      <p className="text-xs text-[#6B7280]">{getFieldTypeLabel(field.fieldType || FormFieldType.ShortAnswer)}</p>
                     </div>
                     <button disabled={saving} onClick={() => openCustomFormModal(index)} className="p-1.5 hover:bg-gray-100 rounded">
                       <Edit2 size={16} className="text-secondary" />
@@ -763,19 +693,19 @@ function EditScholarshipPage() {
               disabled={saving}
               onClick={() => openCustomFormModal()}
               className={`w-full flex cursor-pointer items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
-                errors.customFormFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
+                form.formState.errors.formFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
               } bg-[#E0ECFF] text-secondary text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
             >
               <Plus size={20} />
-              {customFormFields.length === 0 ? 'Add Form Field' : 'Add Another Field'}
+              {formFields.length === 0 ? 'Add Form Field' : 'Add Another Field'}
             </button>
-            {errors.customFormFields && (
-              <p className="text-xs text-[#EF4444] mt-1">{errors.customFormFields.message}</p>
+            {form.formState.errors.formFields && (
+              <p className="text-xs text-[#EF4444] mt-1">{form.formState.errors.formFields.message}</p>
             )}
           </div>
 
           <button
-            onClick={handleSubmit(onSubmit)}
+            onClick={form.handleSubmit(onSubmit)}
             className={`w-full py-3 cursor-pointer bg-[#EFA508] my-2 text-tertiary rounded-lg hover:bg-[#D89407] transition-colors ${
               saving && 'opacity-60 cursor-not-allowed'
             }`}
@@ -796,7 +726,7 @@ function EditScholarshipPage() {
         isOpen={showDescriptionModal}
         onClose={() => setShowDescriptionModal(false)}
         description={description || ''}
-        onSave={(desc) => setValue('description', desc)}
+        onSave={(desc) => form.setValue('description', desc)}
       />
 
       <CustomFormFieldModal
@@ -806,7 +736,7 @@ function EditScholarshipPage() {
           setEditingFieldIndex(null);
         }}
         onSave={handleSaveCustomField}
-        editingField={editingFieldIndex !== null ? customFormFields[editingFieldIndex] : null}
+        editingField={editingFieldIndex !== null ? formFields[editingFieldIndex] : null}
       />
     </div>
   );

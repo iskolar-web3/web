@@ -1,80 +1,16 @@
 import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { normalizeText } from "@/utils/normalize.utils";
 import {
-	FormFieldType,
-	ScholarshipPurpose,
 	ScholarshipStatus,
-	ScholarshipType,
+	type ScholarshipFormData,
 } from "@/lib/scholarship/model";
 import { useAuth } from "@/auth";
 import type { AnySponsor } from "@/lib/sponsor/model";
 import { uploadFile } from "@/lib/api";
 import { ACCESS_TOKEN_KEY } from "@/lib/user/auth";
 import { getCookie } from "@/lib/cookie";
-
-const createFormFieldOptionRequestSchema = z.object({
-	value: z.string().nonempty(),
-});
-export type CreateFormFieldOptionRequest = z.infer<typeof createFormFieldOptionRequestSchema>
-
-const baseFormFieldSchema = z.object({
-	label: z.string().nonempty(),
-	isRequired: z.boolean(),
-	fieldType: z.enum(FormFieldType),
-	options: createFormFieldOptionRequestSchema.array().default([]),
-});
-
-function validateFormField(fieldType: FormFieldType, numOfOptions: number) {
-	const typesWithOptions = [
-		FormFieldType.MultipleChoice,
-		FormFieldType.Dropdown,
-		FormFieldType.Checkbox,
-	];
-
-	if (typesWithOptions.includes(fieldType)) {
-		return numOfOptions > 0;
-	}
-
-	return numOfOptions === 0;
-}
-
-const createFormFieldRequestSchema = baseFormFieldSchema.refine(
-	(data) => validateFormField(data.fieldType, data.options.length),
-);
-export type CreateFormFieldRequest = z.infer<
-	typeof createFormFieldRequestSchema
->;
-
-// Validation
-const createScholarshipRequestSchema = z.object({
-	name: z
-		.string()
-		.nonempty("Scholarship title is required")
-		.max(150, "Title must be less than 150 characters"),
-	description: z.string().optional(),
-	scholarshipType: z.enum(ScholarshipType, {
-		error: "Please select a scholarship type",
-	}),
-	status: z.enum(ScholarshipStatus).default(ScholarshipStatus.Draft),
-	totalAmount: z.coerce.number().positive(),
-	totalSlots: z.coerce.number().positive(),
-	applicationDeadline: z.date(),
-	imageUrl: z.string().nonempty("Please upload a scholarship image"),
-	purpose: z.enum(ScholarshipPurpose, { message: "Please select a purpose" }),
-	criterias: z.string().array(),
-	requirements: z.string().array(),
-	sponsorId: z.uuidv4(),
-	formFields: createFormFieldRequestSchema.array(),
-});
-/**
- * Scholarship form data type inferred from Zod schema
- */
-export type ScholarshipFormData = z.infer<
-	typeof createScholarshipRequestSchema
->;
 
 /**
  * Custom hook for managing scholarship creation/edit form
@@ -102,7 +38,7 @@ export type ScholarshipFormData = z.infer<
 export function useScholarshipForm() {
 	const auth = useAuth<AnySponsor>();
 	const form = useForm<ScholarshipFormData>({
-        // @ts-expect-error This works fine but it has TS error for some reason
+		// @ts-expect-error This works fine but it has TS error for some reason
 		resolver: zodResolver(createScholarshipRequestSchema),
 		mode: "onBlur",
 		defaultValues: {
@@ -113,7 +49,7 @@ export function useScholarshipForm() {
 			name: "",
 			requirements: [],
 			sponsorId: auth.profile.id,
-            status: ScholarshipStatus.Draft,
+			status: ScholarshipStatus.Draft,
 		},
 	});
 
@@ -135,11 +71,13 @@ export function useScholarshipForm() {
 				};
 				reader.readAsDataURL(file);
 
-                const token = getCookie(ACCESS_TOKEN_KEY);
-                if (token) {
-                    const uploadRes = await uploadFile(file, token)
-					form.setValue("imageUrl", uploadRes.data.url, { shouldValidate: true });
-                }
+				const token = getCookie(ACCESS_TOKEN_KEY);
+				if (token) {
+					const uploadRes = await uploadFile(file, token);
+					form.setValue("imageUrl", uploadRes.data.url, {
+						shouldValidate: true,
+					});
+				}
 			}
 		},
 		[form],

@@ -100,6 +100,8 @@ export const getFieldTypeLabel = (fieldType: FormFieldType) => {
         return "Phone number"
       case FormFieldType.File:
         return "File upload"
+      default:
+          return "IDK"
   }
 };
 

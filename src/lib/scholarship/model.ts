@@ -1,6 +1,7 @@
 import z from "zod";
 import { enumDetailSchema } from "../api";
 import type { AnySponsor } from "../sponsor/model";
+import { validateFormField } from "./helper";
 
 export enum ScholarshipType {
 	MeritBased = "merit-based",
@@ -76,3 +77,84 @@ export type Scholarship<T extends AnySponsor = AnySponsor> = Omit<
 > & {
 	sponsor: T;
 };
+
+export const createFormFieldOptionRequestSchema = z.object({
+	value: z.string().nonempty(),
+});
+export type CreateFormFieldOptionRequest = z.infer<typeof createFormFieldOptionRequestSchema>
+
+export const baseFormFieldSchema = z.object({
+	label: z.string().nonempty(),
+	isRequired: z.boolean(),
+	fieldType: z.enum(FormFieldType),
+	options: createFormFieldOptionRequestSchema.array().default([]),
+});
+
+export const createFormFieldRequestSchema = baseFormFieldSchema.refine(
+	(data) => validateFormField(data.fieldType, data.options.length),
+);
+export type CreateFormFieldRequest = z.infer<
+	typeof createFormFieldRequestSchema
+>;
+
+// Validation
+export const createScholarshipRequestSchema = z.object({
+	name: z
+		.string()
+		.nonempty("Scholarship title is required")
+		.max(150, "Title must be less than 150 characters"),
+	description: z.string().optional(),
+	scholarshipType: z.enum(ScholarshipType, {
+		error: "Please select a scholarship type",
+	}),
+	status: z.enum(ScholarshipStatus).default(ScholarshipStatus.Draft),
+	totalAmount: z.coerce.number().positive(),
+	totalSlots: z.coerce.number().positive(),
+	applicationDeadline: z.date(),
+	imageUrl: z.string().nonempty("Please upload a scholarship image"),
+	purpose: z.enum(ScholarshipPurpose, { message: "Please select a purpose" }),
+	criterias: z.string().array(),
+	requirements: z.string().array(),
+	sponsorId: z.uuidv4(),
+	formFields: createFormFieldRequestSchema.array(),
+});
+/**
+ * Scholarship form data type inferred from Zod schema
+ */
+export type ScholarshipFormData = z.infer<
+	typeof createScholarshipRequestSchema
+>;
+
+
+const updateFormFieldOptionRequestSchema = createFormFieldOptionRequestSchema
+	.extend({
+		id: z.uuidv4(),
+	})
+	.partial();
+export const updateFormFieldRequestSchema = baseFormFieldSchema
+	.extend({
+		options: updateFormFieldOptionRequestSchema.array(),
+		id: z.uuidv4(),
+	})
+	.refine((data) => validateFormField(data.fieldType, data.options.length), {
+		error:
+			"Options are required for choice-based fields and must be empty for others",
+		path: ["options"],
+	})
+	.partial();
+
+export const updateScholarshipRequestSchema = createScholarshipRequestSchema
+	.omit({
+		sponsorId: true,
+	})
+	.extend({
+		formFields: updateFormFieldRequestSchema.array(),
+	})
+	.partial()
+	.extend({
+		id: z.uuidv4(),
+	});
+
+export type EditScholarshipFormData = z.infer<
+	typeof updateScholarshipRequestSchema
+>;

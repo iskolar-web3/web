@@ -1,7 +1,13 @@
 import { queryOptions } from "@tanstack/react-query";
 import { BACKEND_URL, type ApiResponse } from "../api";
 import { anySponsorSchema } from "../sponsor/model";
-import { scholarshipSchema, type Scholarship } from "./model";
+import {
+	scholarshipSchema,
+	type EditScholarshipFormData,
+	type Scholarship,
+} from "./model";
+import { getCookie } from "../cookie";
+import { ACCESS_TOKEN_KEY } from "../user/auth";
 
 async function getMyScholarships(
 	token: string,
@@ -25,3 +31,52 @@ export const getMyScholarshipsQuery = (token: string, sponsorId: string) =>
 		queryKey: ["scholarships", sponsorId],
 		queryFn: () => getMyScholarships(token, sponsorId),
 	});
+
+async function getScholarshipById(
+	token: string,
+	id: string,
+): Promise<Scholarship> {
+	const url = new URL(`${BACKEND_URL}/scholarships/${id}`);
+
+	const response = await fetch(url.toString(), {
+		method: "GET",
+		headers: { Authorization: `Bearer ${token}` },
+		credentials: "include",
+	});
+	const result: ApiResponse<Scholarship> = await response.json();
+
+	console.log(result.data);
+
+	return scholarshipSchema(anySponsorSchema).parse(result.data);
+}
+
+export const getScholarshipByIdQuery = (token: string, id: string) =>
+	queryOptions({
+		queryKey: ["scholarships", id],
+		queryFn: () => getScholarshipById(token, id),
+	});
+
+export async function updateScholarship(
+	data: EditScholarshipFormData,
+): Promise<ApiResponse<Scholarship>> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	if (!token) {
+		throw new Error("Access token not found.");
+	}
+
+	const url = new URL(`${BACKEND_URL}/scholarships/${data.id}`);
+	const response = await fetch(url.toString(), {
+		method: "PATCH",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+		credentials: "include",
+	});
+	const result: ApiResponse<Scholarship> = await response.json();
+
+	scholarshipSchema(anySponsorSchema).parse(result.data);
+
+	return result;
+}
