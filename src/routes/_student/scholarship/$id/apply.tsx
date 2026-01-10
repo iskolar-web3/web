@@ -53,6 +53,7 @@ import { useAuth } from "@/auth";
 import { getSponsorName } from "@/lib/sponsor/api";
 import type { Student } from "@/types/student";
 import { getValidatedApplicationSchema } from "@/lib/scholarship/helper";
+import { uploadFile } from "@/lib/api";
 
 export const Route = createFileRoute("/_student/scholarship/$id/apply")({
 	component: ApplyScholarshipPage,
@@ -82,6 +83,7 @@ function ApplyScholarshipPage() {
 		control,
 		handleSubmit,
 		formState: { errors },
+		setValue,
 	} = useForm({
 		resolver: zodResolver(getValidatedApplicationSchema(customFields)),
 		mode: "onBlur",
@@ -106,7 +108,8 @@ function ApplyScholarshipPage() {
 	};
 
 	const handleFileUpload = async (
-		fieldLabel: string,
+		fieldId: string,
+		index: number,
 		event: React.ChangeEvent<HTMLInputElement>,
 	) => {
 		const files = Array.from(event.target.files || []);
@@ -160,9 +163,14 @@ function ApplyScholarshipPage() {
 			// Compress the file
 			const compressedFile = await compressFile(file);
 
+			setValue(`formFieldAnswers.${index}.value`, compressedFile, {
+				shouldValidate: true,
+				shouldDirty: true,
+			});
+
 			setCustomFiles((prev) => ({
 				...prev,
-				[fieldLabel]: [compressedFile],
+				[fieldId]: [compressedFile],
 			}));
 		} catch (error) {
 			logger.error("File compression error:", error);
@@ -170,7 +178,7 @@ function ApplyScholarshipPage() {
 
 			setCustomFiles((prev) => ({
 				...prev,
-				[fieldLabel]: [file],
+				[fieldId]: [file],
 			}));
 		}
 
@@ -205,8 +213,6 @@ function ApplyScholarshipPage() {
 	};
 
 	const onSubmit = (data: CreateApplicationRequest) => {
-		const normalizedData = data;
-
 		// customFields.forEach(field => {
 		//   const value = normalizedData[field.label];
 		//
@@ -242,7 +248,7 @@ function ApplyScholarshipPage() {
 		const fileErrors: string[] = [];
 		customFields.forEach((field) => {
 			if (field.fieldType.code === FormFieldType.File && field.isRequired) {
-				const files = customFiles[field.label] || [];
+				const files = customFiles[field.id] || [];
 				if (files.length === 0) {
 					fileErrors.push(`${field.label} is required`);
 				}
@@ -253,6 +259,22 @@ function ApplyScholarshipPage() {
 			showError("Missing Required Files", fileErrors.join(", "), 2500);
 			return;
 		}
+
+		const normalizedData: CreateApplicationRequest = {
+			...data,
+			formFieldAnswers: data.formFieldAnswers.map((answer) => {
+				const fieldId = answer.formFieldId;
+
+				// If this fieldId exists in our customFiles state, attach the file(s)
+				if (customFiles[fieldId]) {
+					return {
+						...answer,
+						value: customFiles[fieldId],
+					};
+				}
+				return answer;
+			}),
+		};
 
 		setPendingData(normalizedData);
 		setShowConfirmation(true);
@@ -278,10 +300,39 @@ function ApplyScholarshipPage() {
 		setShowConfirmation(false);
 
 		try {
-			console.log(pendingData);
-			mutation.mutate(pendingData);
+			const updatedAnswers = await Promise.all(
+				pendingData.formFieldAnswers.map(async (answer) => {
+					const fieldDef = customFields.find(
+						(f) => f.id === answer.formFieldId,
+					);
+
+					if (fieldDef?.fieldType.code === FormFieldType.File) {
+						const files = customFiles[fieldDef.id] || [];
+
+						if (files.length > 0) {
+							// TODO: Handle multiple files
+							const file = files[0];
+							const uploadRes = await uploadFile(file, auth.sessionToken);
+
+							return {
+								...answer,
+								value: uploadRes.data.url,
+							};
+						}
+					}
+					return answer;
+				}),
+			);
+
+			const finalData = {
+				...pendingData,
+				formFieldAnswers: updatedAnswers,
+			};
+
+			mutation.mutate(finalData);
 			showSuccess("Success", "Application submitted successfully", 2000);
-			// TODO: Implement checking for existing application
+
+			// TODO: Implement checking for existing scholarship application
 			// const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship?.scholarship_id));
 			//
 			// if (response.success) {
@@ -360,9 +411,7 @@ function ApplyScholarshipPage() {
 	};
 
 	const renderFormField = (field: FormField, index: number) => {
-		const fieldKey = field.label;
 		const fieldName = `formFieldAnswers.${index}.value` as const;
-		const fieldIdName = `formFieldAnswers.${index}.formFieldId` as const;
 		const fieldError = errors.formFieldAnswers?.[index]?.value;
 
 		return (
@@ -552,7 +601,7 @@ function ApplyScholarshipPage() {
 											>
 												<input
 													type="radio"
-													name={fieldKey}
+													name={field.id}
 													checked={isSelected}
 													onChange={() => onChange(option.value)}
 													className="w-3 h-3 md:w-4 md:h-4 border-[#C4CBD5] text-secondary focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
@@ -619,26 +668,26 @@ function ApplyScholarshipPage() {
 							<input
 								type="file"
 								accept=".pdf,.jpg,.jpeg,.png,"
-								onChange={(e) => handleFileUpload(fieldKey, e)}
+								onChange={(e) => handleFileUpload(field.id, index, e)}
 								className="hidden"
 							/>
 						</label>
 
-						{customFiles[fieldKey] && customFiles[fieldKey].length > 0 && (
+						{customFiles[field.id] && customFiles[field.id].length > 0 && (
 							<div className="space-y-2">
 								{/* Only show the single file */}
 								<div className="flex items-center gap-3 px-4 py-2 bg-[#F6F9FF] border border-[#E0ECFF] rounded-lg">
 									<div className="flex-1 min-w-0">
 										<p className="text-xs text-primary truncate">
-											{customFiles[fieldKey][0].name}
+											{customFiles[field.id][0].name}
 										</p>
 										<p className="text-[11px] text-[#6B7280]">
-											{formatFileSize(customFiles[fieldKey][0].size)}
+											{formatFileSize(customFiles[field.id][0].size)}
 										</p>
 									</div>
 									<button
 										type="button"
-										onClick={() => removeFile(fieldKey, 0)}
+										onClick={() => removeFile(field.id, 0)}
 										className="p-1 hover:bg-[#EF4444]/10 rounded transition-colors"
 									>
 										<X size={16} className="text-[#EF4444]" />
@@ -785,6 +834,14 @@ function ApplyScholarshipPage() {
 					</div>
 				)}
 
+				<button
+					onClick={() => {
+						console.log(errors);
+						console.log(customFiles);
+					}}
+				>
+					Test
+				</button>
 				{/* Submit Button */}
 				<button
 					onClick={handleSubmit(onSubmit)}

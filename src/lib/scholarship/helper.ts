@@ -41,8 +41,9 @@ export function getValidatedApplicationSchema(fields: FormField[]) {
 
 			if (
 				field.isRequired &&
-				(value === undefined || value === null || value === "")
+                !value
 			) {
+                console.log(value)
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
 					message: `${field.label} is required`,
@@ -97,7 +98,7 @@ export function getValidatedApplicationSchema(fields: FormField[]) {
 					}
 					break;
 
-				case "checkbox":
+				case FormFieldType.Checkbox:
 					const selectedValues = Array.isArray(value) ? value : [];
 					const allowedValues = field.options.map((opt) => opt.value);
 					const allValid = selectedValues.every((v: any) =>
