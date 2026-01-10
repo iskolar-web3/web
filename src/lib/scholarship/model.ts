@@ -227,3 +227,14 @@ export const createApplicationSchema = z.object({
 	formFieldAnswers: createFormFieldAnswerSchema.array(),
 });
 export type CreateApplicationRequest = z.infer<typeof createApplicationSchema>;
+
+const selectedScholarSchema = z.object({
+	applicationId: z.uuidv4(),
+	status: z.enum(ScholarshipApplicationStatus),
+	remarks: z.string().optional(),
+});
+export const selectScholarSchema = z.object({
+	scholarshipId: z.uuidv4(),
+	scholars: selectedScholarSchema.array(),
+});
+export type SelectScholarRequest = z.infer<typeof selectScholarSchema>;

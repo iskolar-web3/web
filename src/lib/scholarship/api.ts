@@ -12,6 +12,7 @@ import {
 	type GetApplicationsQueryParam,
 	type GetScholarshipQueryParam,
 	type Scholarship,
+	type SelectScholarRequest,
 } from "./model";
 import { getCookie } from "../cookie";
 import { ACCESS_TOKEN_KEY } from "../user/auth";
@@ -172,6 +173,35 @@ export async function createApplication(
 		credentials: "include",
 	});
 	const result: ApiResponse = await response.json();
+
+	return result;
+}
+
+export async function updateApplication(
+	data: SelectScholarRequest,
+): Promise<ApiResponse> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	if (!token) {
+		throw new Error("Access token not found.");
+	}
+	const url = new URL(
+		`${BACKEND_URL}/scholarships/${data.scholarshipId}/applications`,
+	);
+
+	const response = await fetch(url.toString(), {
+		method: "PATCH",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+		credentials: "include",
+	});
+	const result: ApiResponse = await response.json();
+
+	if (!response.ok) {
+		throw new Error(result.message);
+	}
 
 	return result;
 }

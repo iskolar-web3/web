@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, createElement } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -46,6 +46,7 @@ import {
 	ScholarshipApplicationStatus,
 	type Applicant,
 } from "@/lib/scholarship/model";
+import { updateApplication } from "@/lib/scholarship/api";
 
 const USE_MOCK_DATA = true;
 
@@ -80,12 +81,12 @@ export const Route = createFileRoute("/_sponsor/scholarship/$id/applicants")({
 function ApplicantsListPage() {
 	usePageTitle("Applicants");
 
-	const { id } = Route.useParams();
+	const params = Route.useParams();
 	const queryClient = useQueryClient();
 
 	// Query Hooks
 	const { applicantsQuery, scholarshipQuery } = useScholarshipApplicants(
-		id || "",
+		params.id || "",
 	);
 	const {
 		data: applicants = [],
@@ -194,7 +195,7 @@ function ApplicantsListPage() {
 				if (response.success) {
 					// Update Cache
 					queryClient.setQueryData(
-						["scholarship-applicants", id],
+						["scholarship-applicants", params.id],
 						(oldData: ApplicantOld[] | undefined) => {
 							if (!oldData) return [];
 							return oldData.map((app) =>
@@ -237,7 +238,7 @@ function ApplicantsListPage() {
 					setSelectedApplicantIds(new Set());
 					setBulkMode(false);
 					queryClient.invalidateQueries({
-						queryKey: ["scholarship-applicants", id],
+						queryKey: ["scholarship-applicants", params.id],
 					});
 				} else {
 					showError("Error", response.message, 2500);
@@ -252,6 +253,18 @@ function ApplicantsListPage() {
 		}
 	};
 
+	const mutation = useMutation({
+		mutationFn: updateApplication,
+		onSuccess: async (res) => {
+			console.log(res);
+			showSuccess(`Success`, res.message, 1250);
+		},
+		onError: (err) => {
+			showError("Error", err.message);
+			console.error(err);
+		},
+	});
+
 	const handleUpdateStatus = async (
 		applicationId: string,
 		newStatus: ScholarshipApplicationStatus,
@@ -261,6 +274,19 @@ function ApplicantsListPage() {
 
 		try {
 			setIsUpdatingStatus(true);
+            const payload = {
+				scholarshipId: params.id,
+				scholars: [
+					{
+						applicationId: applicationId,
+						status: newStatus,
+						remarks: remarks,
+					},
+				],
+			}
+
+			console.log("Updating status", payload);
+			mutation.mutate(payload);
 
 			// if (USE_MOCK_DATA) {
 			//   // Use mock update
@@ -463,7 +489,7 @@ function ApplicantsListPage() {
 					<button
 						onClick={() =>
 							queryClient.invalidateQueries({
-								queryKey: ["scholarship-applicants", id],
+								queryKey: ["scholarship-applicants", params.id],
 							})
 						}
 						className="mt-4 px-6 py-3 bg-[#3A52A6] text-tertiary rounded-md hover:bg-[#2A4296] transition-colors"
@@ -1091,9 +1117,10 @@ function ApplicantsListPage() {
 				>
 					<DialogHeader>
 						<h3 className="text-lg text-primary mb-1">
-							{pendingAction?.type === "approved"
+							{pendingAction?.type === ScholarshipApplicationStatus.Approved
 								? "Approve Application"
-								: pendingAction?.type === "shortlisted"
+								: pendingAction?.type ===
+										ScholarshipApplicationStatus.Shortlisted
 									? "Shortlist Application"
 									: "Deny Application"}
 						</h3>
@@ -1170,9 +1197,10 @@ function ApplicantsListPage() {
 								</span>
 							) : (
 								<span>
-									{pendingAction?.type === "approved"
+									{pendingAction?.type === ScholarshipApplicationStatus.Approved
 										? "Approve"
-										: pendingAction?.type === "shortlisted"
+										: pendingAction?.type ===
+												ScholarshipApplicationStatus.Shortlisted
 											? "Shortlist"
 											: "Deny"}
 								</span>
