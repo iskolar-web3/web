@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { ScholarshipFormData } from './useScholarshipForm';
-import type { Scholarship } from '@/types/scholarship.types';
+import type { ScholarshipOld } from '@/types/scholarship.types';
 
 /**
  * Custom hook for generating a preview of scholarship data from form values
@@ -11,7 +11,7 @@ import type { Scholarship } from '@/types/scholarship.types';
  *   - previewScholarship: Partial scholarship object for preview display
  */
 export function useScholarshipPreview(formData: ScholarshipFormData) {
-  const previewScholarship = useMemo<Partial<Scholarship>>(() => ({
+  const previewScholarship = useMemo<Partial<ScholarshipOld>>(() => ({
     type: formData.scholarshipType,
     purpose: formData.purpose,
     title: formData.name,

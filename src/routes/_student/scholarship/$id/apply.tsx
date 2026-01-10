@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import {  useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,187 +24,60 @@ import {
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { compressFile } from '@/utils/fileCompression.utils';
 import { normalizeText, normalizeEmail, normalizePhone, normalizeNumber } from '@/utils/normalize.utils';
 import { handleError } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
-import { mockScholarshipDetails, mockApiDelay } from '@/mocks/scholarshipDetails.mock';
-import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
-import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
-
-const USE_MOCK_DATA = true;
+import { FormFieldType, type CreateApplicationRequest, type FormField, type Scholarship } from '@/lib/scholarship/model';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { createApplication, getScholarshipByIdQuery } from '@/lib/scholarship/api';
+import { useAuth } from '@/auth';
+import { getSponsorName } from '@/lib/sponsor/api';
+import type { Student } from '@/types/student';
+import { getValidatedApplicationSchema } from '@/lib/scholarship/helper';
 
 export const Route = createFileRoute('/_student/scholarship/$id/apply')({
-  // params: {
-  //   parse: (params) => {
-  //     const schema = z.object({
-  //       id: z.string().uuid('Invalid ID format'),
-  //     });
-  //     return schema.parse(params);
-  //   },
-  //   stringify: (params) => ({
-  //     id: params.id,
-  //   }),
-  // },
   component: ApplyScholarshipPage,
 });
-
-// Helper schema builder
-const buildValidationSchema = (fields: CustomFormField[]) => {
-  const schemaObject: Record<string, z.ZodTypeAny> = {};
-
-  fields.forEach((field) => {
-    const fieldKey = field.label;
-
-    switch (field.type) {
-      case 'text':
-      case 'textarea':
-        schemaObject[fieldKey] = field.required
-          ? z.string().min(1, `${field.label} is required`)
-          : z.string().optional();
-        break;
-
-      case 'email':
-        schemaObject[fieldKey] = field.required
-          ? z.string().min(1, `${field.label} is required`).email(`${field.label} must be a valid email`)
-          : z.string().email(`${field.label} must be a valid email`).optional().or(z.literal(''));
-        break;
-
-      case 'phone':
-        const phoneValidation = z.string().refine((val) => {
-          if (!val) return true;
-          const phoneDigits = val.replace(/\D/g, '');
-          return phoneDigits.length >= 10 && phoneDigits.length <= 12;
-        }, `${field.label} must be a valid phone number`);
-        
-        schemaObject[fieldKey] = field.required
-          ? phoneValidation.min(1, `${field.label} is required`)
-          : phoneValidation.optional();
-        break;
-
-      case 'number':
-        schemaObject[fieldKey] = field.required
-          ? z.string().min(1, `${field.label} is required`).refine((val) => !isNaN(Number(val)), `${field.label} must be a valid number`)
-          : z.string().refine((val) => !val || !isNaN(Number(val)), `${field.label} must be a valid number`).optional();
-        break;
-
-      case 'date':
-        schemaObject[fieldKey] = field.required
-          ? z.string().min(1, `${field.label} is required`)
-          : z.string().optional();
-        break;
-
-      case 'dropdown':
-      case 'multiple_choice':
-        if (field.options && field.options.length > 0) {
-          schemaObject[fieldKey] = field.required
-            ? z.enum([field.options[0], ...field.options.slice(1)] as [string, ...string[]], { message: `${field.label} is required` })
-            : z.enum([field.options[0], ...field.options.slice(1)] as [string, ...string[]]).optional().or(z.literal(''));
-        } else {
-          schemaObject[fieldKey] = field.required
-            ? z.string().min(1, `${field.label} is required`)
-            : z.string().optional();
-        }
-        break;
-
-      case 'checkbox':
-        if (field.options && field.options.length > 0) {
-          const checkboxValidation = z.array(z.enum([field.options[0], ...field.options.slice(1)] as [string, ...string[]]));
-          schemaObject[fieldKey] = field.required
-            ? checkboxValidation.min(1, `${field.label} requires at least one selection`)
-            : checkboxValidation.optional();
-        } else {
-          schemaObject[fieldKey] = field.required
-            ? z.array(z.string()).min(1, `${field.label} requires at least one selection`)
-            : z.array(z.string()).optional();
-        }
-        break;
-
-      case 'file':
-        schemaObject[fieldKey] = z.any().optional();
-        break;
-
-      default:
-        schemaObject[fieldKey] = field.required
-          ? z.string().min(1, `${field.label} is required`)
-          : z.string().optional();
-    }
-  });
-
-  return z.object(schemaObject);
-};
 
 function ApplyScholarshipPage() {
   usePageTitle('Apply');
 
-  const { id } = Route.useParams();
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [scholarship, setScholarship] = useState<Partial<Scholarship> | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [pendingData, setPendingData] = useState<Record<string, any> | null>(null);
+  const [pendingData, setPendingData] = useState<CreateApplicationRequest>();
   const [customFiles, setCustomFiles] = useState<Record<string, File[]>>({});
   const { toast, showSuccess, showError } = useToast();
 
-  const customFields = scholarship?.custom_form_fields || [];
-  const validationSchema = buildValidationSchema(customFields);
+  const auth = useAuth<Student>()
+  const params = Route.useParams()
+  const scholarshipQuery = useSuspenseQuery(getScholarshipByIdQuery(auth.sessionToken, params.id))
+  const scholarship = scholarshipQuery.data
+
+  const customFields = scholarship?.formFields || [];
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm({
-    resolver: zodResolver(validationSchema),
+    resolver: zodResolver(getValidatedApplicationSchema(customFields)),
     mode: 'onBlur',
-    defaultValues: customFields.reduce((acc, field) => {
-      acc[field.label] = field.type === 'checkbox' ? [] : '';
-      return acc;
-    }, {} as Record<string, any>),
+    defaultValues: {
+        studentId: auth.profile.id,
+        scholarshipId: params.id,
+        formFieldAnswers: customFields.map(f => ({
+            formFieldId: f.id,
+            value: "",
+        }))
+    },
   });
 
-  const fetchScholarshipDetails = useCallback(async () => {
-    setLoading(true);
-    try {
-      if (USE_MOCK_DATA) {
-        // Mock data path
-        await mockApiDelay(2000);
-        setScholarship(mockScholarshipDetails);
-        
-        const defaultValues = mockScholarshipDetails.custom_form_fields?.reduce((acc, field) => {
-          acc[field.label] = field.type === 'checkbox' ? [] : '';
-          return acc;
-        }, {} as Record<string, any>);
-        reset(defaultValues);
-      } else {
-        const response = await scholarshipManagementService.getScholarshipById(id);
-        if (response.success && response.scholarship) {
-          setScholarship(response.scholarship);
-          const defaultValues = response.scholarship.custom_form_fields?.reduce((acc, field) => {
-            acc[field.label] = field.type === 'checkbox' ? [] : '';
-            return acc;
-          }, {} as Record<string, any>);
-          reset(defaultValues);
-        }
-      }
-    } catch (err) {
-      const handled = handleError(err, 'Failed to connect to server.');
-      logger.error('Fetch scholarship details error:', handled.raw);
-      setError(handled.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [id, reset]);
 
-  useEffect(() => {
-    fetchScholarshipDetails();
-  }, [fetchScholarshipDetails]);
-
-  const formatDate = (dateString?: string) => {
+  const formatDate = (dateString?: string | Date) => {
     if (!dateString) return 'No deadline';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -296,44 +169,44 @@ function ApplyScholarshipPage() {
     });
   };
 
-  const onSubmit = (data: Record<string, any>) => {
-    const normalizedData = { ...data };
+  const onSubmit = (data: CreateApplicationRequest) => {
+    const normalizedData = data;
     
-    customFields.forEach(field => {
-      const value = normalizedData[field.label];
-      
-      if (!value || (typeof value === 'string' && value.trim() === '')) return;
-      
-      // Normalize based on field type
-      switch (field.type) {
-        case 'text':
-        case 'textarea':
-          normalizedData[field.label] = normalizeText(value);
-          break;
-        
-        case 'email':
-          normalizedData[field.label] = normalizeEmail(value);
-          break;
-        
-        case 'phone':
-          normalizedData[field.label] = normalizePhone(value);
-          break;
-        
-        case 'number':
-          normalizedData[field.label] = normalizeNumber(value);
-          break;
-        
-        case 'checkbox':
-          if (Array.isArray(value)) {
-            normalizedData[field.label] = value.map(v => normalizeText(v));
-          }
-          break;
-      }
-    });
+    // customFields.forEach(field => {
+    //   const value = normalizedData[field.label];
+    //
+    //   if (!value || (typeof value === 'string' && value.trim() === '')) return;
+    //
+    //   // Normalize based on field type
+    //   switch (field.fieldType.code) {
+    //     case FormFieldType.ShortAnswer:
+    //     case FormFieldType.Paragraph:
+    //       normalizedData[field.label] = normalizeText(value);
+    //       break;
+    //
+    //     case FormFieldType.Email:
+    //       normalizedData[field.label] = normalizeEmail(value);
+    //       break;
+    //
+    //     case FormFieldType.Phone:
+    //       normalizedData[field.label] = normalizePhone(value);
+    //       break;
+    //
+    //     case FormFieldType.Number:
+    //       normalizedData[field.label] = normalizeNumber(value);
+    //       break;
+    //
+    //     case FormFieldType.Checkbox:
+    //       if (Array.isArray(value)) {
+    //         normalizedData[field.label] = value.map(v => normalizeText(v));
+    //       }
+    //       break;
+    //   }
+    // });
 
     const fileErrors: string[] = [];
     customFields.forEach(field => {
-      if (field.type === 'file' && field.required) {
+      if (field.fieldType.code === FormFieldType.File && field.isRequired) {
         const files = customFiles[field.label] || [];
         if (files.length === 0) {
           fileErrors.push(`${field.label} is required`);
@@ -350,6 +223,23 @@ function ApplyScholarshipPage() {
     setShowConfirmation(true);
   };
 
+	const mutation = useMutation({
+		mutationFn: createApplication,
+		onSuccess: async (res) => {
+            console.log(res)
+			showSuccess(
+				`Success`,
+				res.message,
+				1250,
+			);
+			setLoading(false);
+		},
+      onError: (err) => {
+          showError("Error", err.message)
+          console.error(err)
+      }
+	});
+
   const processSubmission = async () => {
     if (!pendingData) return;
 
@@ -357,83 +247,78 @@ function ApplyScholarshipPage() {
     setShowConfirmation(false);
 
     try {
-      if (USE_MOCK_DATA) {
-        // Mock submission
-        await mockApiDelay(2000);
+        console.log(pendingData)
+        mutation.mutate(pendingData)
         showSuccess('Success', 'Application submitted successfully', 2000);
-        
-        setTimeout(() => {
-          window.history.back();
-        }, 1500);
-      } else {
-        const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship?.scholarship_id));
-
-        if (response.success) {
-          showError('Already Applied', response.message, 2500);
-          return;
-        }
-
-        // Transform form data into custom_form_response format
-        const customFormResponse = Object.entries(pendingData).map(([label, value]) => ({
-          label,
-          value,
-        }));
-
-        // Submit application (without files first)
-        const submitResult = await scholarshipApplicationService.submitApplication(
-          id,
-          customFormResponse
-        );
-
-        if (!submitResult.success) {
-          throw new Error(submitResult.message);
-        }
-
-        const applicationId = submitResult.application?.scholarship_application_id;
-
-        if (!applicationId) {
-          throw new Error('Application ID not returned from server');
-        }
-
-        // Upload files if any exist
-        const fileUploadPromises: Promise<any>[] = [];
-
-        for (const [fieldKey, files] of Object.entries(customFiles)) {
-          if (files.length > 0) {
-            const filesData = await Promise.all(
-              files.map(async (file) => ({
-                uri: await fileToBase64(file),
-                name: file.name,
-                mimeType: file.type,
-                size: file.size,
-              }))
-            );
-
-            fileUploadPromises.push(
-              scholarshipApplicationService.uploadApplicationFiles(
-                applicationId,
-                fieldKey,
-                filesData
-              )
-            );
-          }
-        }
-
-        if (fileUploadPromises.length > 0) {
-          const uploadResults = await Promise.all(fileUploadPromises);
-          
-          const failedUploads = uploadResults.filter(response => !response.success);
-          if (failedUploads.length > 0) {
-            logger.warn('Some files failed to upload:', failedUploads);
-          }
-        }
-
-        showSuccess('Success', 'Application submitted successfully', 2000);
-        
-        setTimeout(() => {
-          window.history.back();
-        }, 1500);
-      }
+        // TODO: Implement checking for existing application
+        // const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship?.scholarship_id));
+        //
+        // if (response.success) {
+        //   showError('Already Applied', response.message, 2500);
+        //   return;
+        // }
+        //
+        // // Transform form data into custom_form_response format
+        // const customFormResponse = Object.entries(pendingData).map(([label, value]) => ({
+        //   label,
+        //   value,
+        // }));
+        //
+        // // Submit application (without files first)
+        // const submitResult = await scholarshipApplicationService.submitApplication(
+        //   id,
+        //   customFormResponse
+        // );
+        //
+        // if (!submitResult.success) {
+        //   throw new Error(submitResult.message);
+        // }
+        //
+        // const applicationId = submitResult.application?.scholarship_application_id;
+        //
+        // if (!applicationId) {
+        //   throw new Error('Application ID not returned from server');
+        // }
+        //
+        // // Upload files if any exist
+        // const fileUploadPromises: Promise<any>[] = [];
+        //
+        // for (const [fieldKey, files] of Object.entries(customFiles)) {
+        //   if (files.length > 0) {
+        //     const filesData = await Promise.all(
+        //       files.map(async (file) => ({
+        //         uri: await fileToBase64(file),
+        //         name: file.name,
+        //         mimeType: file.type,
+        //         size: file.size,
+        //       }))
+        //     );
+        //
+        //     fileUploadPromises.push(
+        //       scholarshipApplicationService.uploadApplicationFiles(
+        //         applicationId,
+        //         fieldKey,
+        //         filesData
+        //       )
+        //     );
+        //   }
+        // }
+        //
+        // if (fileUploadPromises.length > 0) {
+        //   const uploadResults = await Promise.all(fileUploadPromises);
+        //
+        //   const failedUploads = uploadResults.filter(response => !response.success);
+        //   if (failedUploads.length > 0) {
+        //     logger.warn('Some files failed to upload:', failedUploads);
+        //   }
+        // }
+        //
+        // showSuccess('Success', 'Application submitted successfully', 2000);
+        //
+        // setTimeout(() => {
+        //   window.history.back();
+        // }, 1500);
+      // }
     } catch (error) {
       const handled = handleError(error, 'Failed to submit application.');
       logger.error('Submission error:', handled.raw);
@@ -443,21 +328,23 @@ function ApplyScholarshipPage() {
     }
   };
 
-  const renderFormField = (field: CustomFormField, index: number) => {
+  const renderFormField = (field: FormField, index: number) => {
     const fieldKey = field.label;
-    const fieldError = errors[fieldKey];
+    const fieldName = `formFieldAnswers.${index}.value` as const;
+    const fieldIdName = `formFieldAnswers.${index}.formFieldId` as const;
+    const fieldError = errors.formFieldAnswers?.[index]?.value;
 
     return (
-      <div key={`${fieldKey}-${index}`} className="space-y-2">
+      <div key={field.id} className="space-y-2">
         <label className="block text-xs md:text-sm text-primary">
           {field.label}
-          {field.required && <span className="text-[#EF4444] ml-1">*</span>}
+          {field.isRequired && <span className="text-[#EF4444] ml-1">*</span>}
         </label>
 
-        {field.type === 'text' && (
+        {field.fieldType.code === FormFieldType.ShortAnswer && (
           <Controller
             control={control}
-            name={fieldKey}
+            name={fieldName}
             render={({ field: { onChange, onBlur, value } }) => (
               <input
                 type="text"
@@ -473,10 +360,10 @@ function ApplyScholarshipPage() {
           />
         )}
 
-        {field.type === 'textarea' && (
+        {field.fieldType.code === FormFieldType.Paragraph && (
           <Controller
             control={control}
-            name={fieldKey}
+            name={fieldName}
             render={({ field: { onChange, onBlur, value } }) => (
               <textarea
                 value={value}
@@ -492,10 +379,10 @@ function ApplyScholarshipPage() {
           />
         )}
 
-        {field.type === 'number' && (
+        {field.fieldType.code === FormFieldType.Number && (
           <Controller
             control={control}
-            name={fieldKey}
+            name={fieldName}
             render={({ field: { onChange, onBlur, value } }) => (
               <input
                 type="number"
@@ -512,10 +399,10 @@ function ApplyScholarshipPage() {
           />
         )}
 
-        {field.type === 'email' && (
+        {field.fieldType.code === FormFieldType.Email && (
           <Controller
             control={control}
-            name={fieldKey}
+            name={fieldName}
             render={({ field: { onChange, onBlur, value } }) => (
               <input
                 type="email"
@@ -531,10 +418,10 @@ function ApplyScholarshipPage() {
           />
         )}
 
-        {field.type === 'phone' && (
+        {field.fieldType.code === FormFieldType.Phone && (
           <Controller
             control={control}
-            name={fieldKey}
+            name={fieldName}
             render={({ field: { onChange, onBlur, value } }) => (
               <input
                 type="tel"
@@ -550,10 +437,10 @@ function ApplyScholarshipPage() {
           />
         )}
 
-        {field.type === 'date' && (
+        {field.fieldType.code === FormFieldType.Date && (
           <Controller
             control={control}
-            name={fieldKey}
+            name={fieldName}
             render={({ field: { onChange, value } }) => (
               <Popover>
                 <PopoverTrigger asChild>
@@ -586,10 +473,10 @@ function ApplyScholarshipPage() {
           />
         )}
 
-        {field.type === 'dropdown' && field.options && (
+        {field.fieldType.code === FormFieldType.Dropdown && field.options && (
           <Controller
             control={control}
-            name={fieldKey}
+            name={fieldName}
             render={({ field: { onChange, value } }) => (
               <Select value={value} onValueChange={onChange}>
                 <SelectTrigger
@@ -603,8 +490,8 @@ function ApplyScholarshipPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {field.options?.map((option, idx) => (
-                    <SelectItem key={idx} value={option}>
-                      {option}
+                    <SelectItem key={idx} value={option.value}>
+                      {option.value}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -613,14 +500,14 @@ function ApplyScholarshipPage() {
           />
         )}
 
-        {field.type === 'multiple_choice' && field.options && (
+        {field.fieldType.code === FormFieldType.MultipleChoice && field.options && (
           <Controller
             control={control}
-            name={fieldKey}
+            name={fieldName}
             render={({ field: { onChange, value } }) => (
               <div className="space-y-1">
                 {field.options?.map((option, idx) => {
-                  const isSelected = value === option;
+                  const isSelected = value === option.value;
 
                   return (
                     <label
@@ -631,10 +518,10 @@ function ApplyScholarshipPage() {
                         type="radio"
                         name={fieldKey}
                         checked={isSelected}
-                        onChange={() => onChange(option)}
+                        onChange={() => onChange(option.value)}
                         className="w-3 h-3 md:w-4 md:h-4 border-[#C4CBD5] text-secondary focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
                       />
-                      <span className="text-xs md:text-sm text-primary">{option}</span>
+                      <span className="text-xs md:text-sm text-primary">{option.value}</span>
                     </label>
                   );
                 })}
@@ -643,15 +530,15 @@ function ApplyScholarshipPage() {
           />
         )}
 
-        {field.type === 'checkbox' && field.options && (
+        {field.fieldType.code === FormFieldType.Checkbox && field.options && (
           <Controller
             control={control}
-            name={fieldKey}
+            name={fieldName}
             render={({ field: { onChange, value } }) => (
               <div className="space-y-1">
                 {field.options?.map((option, idx) => {
                   const selectedValues = Array.isArray(value) ? value : [];
-                  const isChecked = selectedValues.includes(option);
+                  const isChecked = selectedValues.includes(option.value);
 
                   return (
                     <label
@@ -664,14 +551,14 @@ function ApplyScholarshipPage() {
                         onChange={() => {
                           const currentValues = Array.isArray(value) ? [...value] : [];
                           if (isChecked) {
-                            onChange(currentValues.filter(v => v !== option));
+                            onChange(currentValues.filter(v => v !== option.value));
                           } else {
-                            onChange([...currentValues, option]);
+                            onChange([...currentValues, option.value]);
                           }
                         }}
                         className="w-3 h-3 md:w-4 md:h-4 rounded border-[#C4CBD5] text-secondary focus:ring-2 focus:ring-[#3A52A6] accent-[#3A52A6]"
                       />
-                      <span className="text-xs md:text-sm text-primary">{option}</span>
+                      <span className="text-xs md:text-sm text-primary">{option.value}</span>
                     </label>
                   );
                 })}
@@ -680,7 +567,7 @@ function ApplyScholarshipPage() {
           />
         )}
 
-        {field.type === 'file' && (
+        {field.fieldType.code === FormFieldType.File && (
           <div className="space-y-3">
             <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[#3A52A6] bg-[#E0ECFF] text-secondary rounded-lg cursor-pointer hover:bg-[#D0DCFF] transition-colors">
               <Upload size={16} />
@@ -724,80 +611,80 @@ function ApplyScholarshipPage() {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F8F9FC]">
-        <div className="max-w-[40rem] mx-auto space-y-4">
-          {/* Scholarship Details Skeleton */}
-          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
-            {/* Title Skeleton */}
-            <Skeleton className="h-7 w-full md:h-8 mb-3 bg-muted-foreground" />
-            
-            {/* Sponsor Info Skeleton */}
-            <div className="flex items-center gap-2 mb-2">
-              <Skeleton className="w-4 h-4 rounded-full bg-muted-foreground" />
-              <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-muted-foreground" />
-            </div>
-            
-            {/* Deadline Skeleton */}
-            <div className="flex items-center gap-2">
-              <Skeleton className="w-4 h-4 rounded bg-muted-foreground" />
-              <Skeleton className="h-4 w-40 md:h-5 md:w-48 bg-muted-foreground" />
-            </div>
-          </div>
-
-          {/* Application Form Skeleton */}
-          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
-            {/* Form Header Skeleton */}
-            <Skeleton className="h-5 w-36 md:h-6 md:w-40 mb-1 bg-muted-foreground" />
-            <Skeleton className="h-4 w-64 md:h-5 md:w-72 mb-6 md:mb-8 bg-muted-foreground" />
-
-            {/* Form Fields Skeleton */}
-            <div className="space-y-5">
-              {/* Text Field Skeleton */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24 md:h-5 md:w-28 bg-muted-foreground" />
-                <Skeleton className="h-11 w-full rounded-lg bg-muted-foreground" />
-              </div>
-
-              {/* Email Field Skeleton */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-32 md:h-5 md:w-36 bg-muted-foreground" />
-                <Skeleton className="h-11 w-full rounded-lg bg-muted-foreground" />
-              </div>
-
-              {/* File Upload Field Skeleton */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-muted-foreground" />
-                <Skeleton className="h-12 w-full rounded-lg border-2 border-dashed bg-muted-foreground" />
-              </div>
-            </div>
-          </div>
-          
-          <Skeleton className="h-10 md:h-12 w-full rounded-lg bg-muted-foreground" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <AlertCircle className="w-12 h-12 text-[#EF4444] mx-auto mb-4" />
-          <h3 className="text-lg text-primary mb-2">Something went wrong</h3>
-          <p className="text-[#5D6673] mb-6">{error}</p>
-          <button
-            onClick={fetchScholarshipDetails}
-            className="px-6 py-2.5 bg-[#3A52A6] text-tertiary rounded-lg hover:bg-[#2A4296] transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen bg-[#F8F9FC]">
+  //       <div className="max-w-[40rem] mx-auto space-y-4">
+  //         {/* Scholarship Details Skeleton */}
+  //         <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
+  //           {/* Title Skeleton */}
+  //           <Skeleton className="h-7 w-full md:h-8 mb-3 bg-muted-foreground" />
+  //
+  //           {/* Sponsor Info Skeleton */}
+  //           <div className="flex items-center gap-2 mb-2">
+  //             <Skeleton className="w-4 h-4 rounded-full bg-muted-foreground" />
+  //             <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-muted-foreground" />
+  //           </div>
+  //
+  //           {/* Deadline Skeleton */}
+  //           <div className="flex items-center gap-2">
+  //             <Skeleton className="w-4 h-4 rounded bg-muted-foreground" />
+  //             <Skeleton className="h-4 w-40 md:h-5 md:w-48 bg-muted-foreground" />
+  //           </div>
+  //         </div>
+  //
+  //         {/* Application Form Skeleton */}
+  //         <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
+  //           {/* Form Header Skeleton */}
+  //           <Skeleton className="h-5 w-36 md:h-6 md:w-40 mb-1 bg-muted-foreground" />
+  //           <Skeleton className="h-4 w-64 md:h-5 md:w-72 mb-6 md:mb-8 bg-muted-foreground" />
+  //
+  //           {/* Form Fields Skeleton */}
+  //           <div className="space-y-5">
+  //             {/* Text Field Skeleton */}
+  //             <div className="space-y-2">
+  //               <Skeleton className="h-4 w-24 md:h-5 md:w-28 bg-muted-foreground" />
+  //               <Skeleton className="h-11 w-full rounded-lg bg-muted-foreground" />
+  //             </div>
+  //
+  //             {/* Email Field Skeleton */}
+  //             <div className="space-y-2">
+  //               <Skeleton className="h-4 w-32 md:h-5 md:w-36 bg-muted-foreground" />
+  //               <Skeleton className="h-11 w-full rounded-lg bg-muted-foreground" />
+  //             </div>
+  //
+  //             {/* File Upload Field Skeleton */}
+  //             <div className="space-y-2">
+  //               <Skeleton className="h-4 w-48 md:h-5 md:w-56 bg-muted-foreground" />
+  //               <Skeleton className="h-12 w-full rounded-lg border-2 border-dashed bg-muted-foreground" />
+  //             </div>
+  //           </div>
+  //         </div>
+  //
+  //         <Skeleton className="h-10 md:h-12 w-full rounded-lg bg-muted-foreground" />
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  //
+  // if (error) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center p-4">
+  //       <div className="text-center max-w-md">
+  //         <AlertCircle className="w-12 h-12 text-[#EF4444] mx-auto mb-4" />
+  //         <h3 className="text-lg text-primary mb-2">Something went wrong</h3>
+  //         <p className="text-[#5D6673] mb-6">{error}</p>
+  //         <button
+  //           onClick={() => queryClient.refetchQueries(getScholarshipByIdQuery(auth.sessionToken, params.id))}
+  //           className="px-6 py-2.5 bg-[#3A52A6] text-tertiary rounded-lg hover:bg-[#2A4296] transition-colors"
+  //         >
+  //           Try Again
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  //
   return (
     <div className="min-h-screen bg-[#F8F9FC]">
       {toast && <Toast {...toast} />}
@@ -805,26 +692,26 @@ function ApplyScholarshipPage() {
       <div className="max-w-[40rem] mx-auto space-y-4">
         {/* Scholarship Details */}
         <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border border-[#E0ECFF]">
-          <h1 className="text-xl md:text-2xl text-primary mb-3">{scholarship?.title}</h1>
+          <h1 className="text-xl md:text-2xl text-primary mb-3">{scholarship?.name}</h1>
           <div className="flex items-center gap-2 text-xs md:text-sm text-[#6B7280] mb-2">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-card flex items-center justify-center flex-shrink-0">
-                {scholarship?.sponsor?.profile_url ? (
+                {scholarship?.sponsor?.avatarUrl ? (
                   <img
-                    src={scholarship?.sponsor?.profile_url}
-                    alt={scholarship.sponsor.name}
+                    src={scholarship?.sponsor?.avatarUrl}
+                    alt={getSponsorName(scholarship.sponsor)}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
                   <UserIcon className="w-full h-full text-secondary" />
                 )}
               </div>
-              <span>{scholarship?.sponsor?.name || 'Unknown Sponsor'}</span>
+              <span>{getSponsorName(scholarship.sponsor) || 'Unknown Sponsor'}</span>
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs md:text-sm text-[#6B7280]">
             <CalendarDays size={16} />
-            <span>{formatDate(scholarship?.application_deadline)}</span>
+            <span>{formatDate(scholarship?.applicationDeadline)}</span>
           </div>
         </div>
 

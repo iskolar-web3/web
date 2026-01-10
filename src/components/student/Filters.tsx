@@ -9,11 +9,11 @@ interface FilterProps {
   /** Title/label for the filter dropdown */
   title: string;
   /** Array of available filter options */
-  options: string[];
+  options: any[];
   /** Currently selected value */
-  value: string;
+  value: string | null;
   /** Callback function when selection changes */
-  onChange: (value: string) => void;
+  onChange: (value: any) => void;
 }
 
 /**

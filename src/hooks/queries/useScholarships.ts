@@ -1,31 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
-import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
-import { mockScholarships, mockApiDelay } from '@/mocks/scholarships.mock';
-
-const USE_MOCK_DATA = true;
+import { useQuery } from "@tanstack/react-query";
+import { getMyScholarshipsQuery } from "@/lib/scholarship/api";
+import { getCookie } from "@/lib/cookie";
+import { ACCESS_TOKEN_KEY } from "@/lib/user/auth";
 
 /**
  * Custom React Query hook for fetching all available scholarships
  * Supports mock data mode for development/testing
  * Implements 10-minute stale time for optimal caching
- * 
+ *
  * @returns React Query result containing array of all scholarships
  */
 export const useScholarships = () => {
-  return useQuery({
-    queryKey: ['scholarships'],
-    queryFn: async () => {
-      if (USE_MOCK_DATA) {
-        await mockApiDelay(2000);
-        return mockScholarships;
-      }
-
-      const response = await scholarshipManagementService.getAllScholarships();
-      if (!response.success) {
-        throw new Error(response.message);
-      }
-      return response.scholarships || [];
-    },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-  });
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	if (!token) {
+		throw new Error("Access token not found");
+	}
+	return useQuery(getMyScholarshipsQuery(token));
 };

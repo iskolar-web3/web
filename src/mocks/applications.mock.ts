@@ -1,5 +1,5 @@
 import type { ApplicationOld } from '@/types/application.types';
-import type { Scholarship } from '@/types/scholarship.types';
+import type { ScholarshipOld } from '@/types/scholarship.types';
 
 /**
  * Mock delay to simulate API latency
@@ -11,7 +11,7 @@ export const mockApiDelay = (ms: number = 1500): Promise<void> => {
 /**
  * Mock applications data for homepage
  */
-const createMockScholarship = (overrides: Partial<Scholarship> = {}): Scholarship => ({
+const createMockScholarship = (overrides: Partial<ScholarshipOld> = {}): ScholarshipOld => ({
   scholarship_id: '1',
   sponsor_id: '1',
   status: 'active',

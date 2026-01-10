@@ -1,4 +1,4 @@
-import type { Scholarship } from '@/types/scholarship.types';
+import type { ScholarshipOld } from '@/types/scholarship.types';
 
 /**
  * Mock delay to simulate API latency
@@ -10,7 +10,7 @@ export const mockApiDelay = (ms: number = 1500): Promise<void> => {
 /**
  * Mock scholarship data for discover page
  */
-export const mockScholarships: Scholarship[] = Array(23).fill(null).map((_, i) => ({
+export const mockScholarships: ScholarshipOld[] = Array(23).fill(null).map((_, i) => ({
   scholarship_id: `scholarship-${i + 1}`,
   sponsor_id: `sponsor-${i + 1}`,
   status: 'active',
@@ -41,7 +41,7 @@ export const mockScholarships: Scholarship[] = Array(23).fill(null).map((_, i) =
 }));
 
 // Mock scholarships for scholarships page
-export const mockSponsorScholarships: Scholarship[] = Array(5).fill(null).map((_, i) => ({
+export const mockSponsorScholarships: ScholarshipOld[] = Array(5).fill(null).map((_, i) => ({
   scholarship_id: `sponsor-scholarship-${i + 1}`,
   sponsor_id: `sponsor-${i + 1}`,
   status: 'active',

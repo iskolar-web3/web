@@ -1,6 +1,6 @@
 // TODO: Delete these later
 // Replace with types on /lib/scholarship/model.ts
-export interface Scholarship {
+export interface ScholarshipOld {
   scholarship_id: string;
   sponsor_id: string;
   status: string;

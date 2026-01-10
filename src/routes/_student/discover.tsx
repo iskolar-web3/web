@@ -7,10 +7,11 @@ import { Filter, X, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
-import type { Scholarship } from '@/types/scholarship.types';
 import ScholarshipDetailsModal from '@/components/student/ScholarshipDetailsDrawer';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import { useScholarships } from '@/hooks/queries/useScholarships';
+import { ScholarshipPurpose, ScholarshipType, type Scholarship } from '@/lib/scholarship/model';
+import { SponsorType } from '@/lib/sponsor/model';
 
 export const Route = createFileRoute('/_student/discover')({
   component: DiscoverScholarship,
@@ -20,9 +21,9 @@ function DiscoverScholarship() {
   usePageTitle("Discover")
 
   const [sortBy, setSortBy] = useState('Newest');
-  const [scholarshipType, setScholarshipType] = useState('All');
-  const [purpose, setPurpose] = useState('All');
-  const [sponsorType, setSponsorType] = useState('All');
+  const [scholarshipType, setScholarshipType] = useState<ScholarshipType | null>(null);
+  const [purpose, setPurpose] = useState<ScholarshipPurpose | null>(null);
+  const [sponsorType, setSponsorType] = useState<SponsorType | null>(null);
   const [amountRange, setAmountRange] = useState({ min: '', max: '' });
   const [slotRange, setSlotRange] = useState({ min: '', max: '' });
   const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
@@ -41,18 +42,18 @@ function DiscoverScholarship() {
   const filteredScholarships = useMemo(() => {
     return scholarships.filter((scholarship) => {
       const matchesType =
-        scholarshipType === 'All' ||
-        scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
+        scholarshipType === null ||
+        scholarship.scholarshipType.code === scholarshipType;
 
       const matchesPurpose =
-        purpose === 'All' || scholarship.purpose.toLowerCase() === purpose.toLowerCase();
+        purpose === null || scholarship.purpose.code === purpose;
 
       const matchesSponsorType =
-        sponsorType === 'All' || scholarship.sponsor?.name?.toLowerCase().includes(sponsorType.toLowerCase());
+        sponsorType === null || scholarship.sponsor?.sponsorType.code === sponsorType;
 
       const amountPerScholar =
-        scholarship.total_amount && scholarship.total_slot
-          ? scholarship.total_amount / scholarship.total_slot
+        scholarship.totalAmount && scholarship.totalSlots
+          ? scholarship.totalAmount / scholarship.totalSlots
           : 0;
 
       const matchesAmount =
@@ -60,8 +61,8 @@ function DiscoverScholarship() {
         (!amountRange.max || amountPerScholar <= Number(amountRange.max));
 
       const matchesSlots =
-        (!slotRange.min || scholarship.total_slot >= Number(slotRange.min)) &&
-        (!slotRange.max || scholarship.total_slot <= Number(slotRange.max));
+        (!slotRange.min || scholarship.totalSlots >= Number(slotRange.min)) &&
+        (!slotRange.max || scholarship.totalSlots <= Number(slotRange.max));
 
       return matchesType && matchesPurpose && matchesSponsorType && matchesAmount && matchesSlots;
     });
@@ -143,19 +144,19 @@ function DiscoverScholarship() {
                 />
                 <Filters
                   title="Scholarship Type"
-                  options={['All', 'Merit-Based', 'Skill-Based']}
+                  options={[null, ScholarshipType.MeritBased, ScholarshipType.SkillBased]}
                   value={scholarshipType}
                   onChange={setScholarshipType}
                 />
                 <Filters
                   title="Scholarship Purpose"
-                  options={['All', 'Allowance', 'Tuition']}
+                  options={[null, ScholarshipPurpose.Allowance, ScholarshipPurpose.Tuition]}
                   value={purpose}
                   onChange={setPurpose}
                 />
                 <Filters
                   title="Sponsor Type"
-                  options={['All', 'Individual', 'Organization', 'Government']}
+                  options={[null, ...Object.values(SponsorType)]}
                   value={sponsorType}
                   onChange={setSponsorType}
                 />
@@ -322,7 +323,7 @@ function DiscoverScholarship() {
             ) : (
               filteredScholarships.map((scholarship, index) => (
                 <ScholarshipCard
-                  key={`${scholarship.scholarship_id}-${index}`}
+                  key={`${scholarship.id}-${index}`}
                   scholarship={scholarship}
                   index={index}
                   onClick={() => setSelectedScholarship(scholarship)}

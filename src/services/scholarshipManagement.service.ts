@@ -1,5 +1,5 @@
 import { authService } from './auth.service';
-import type { Scholarship, CustomFormField } from '@/types/scholarship.types';
+import type { ScholarshipOld, CustomFormField } from '@/types/scholarship.types';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/lib/errorHandler';
 
@@ -33,7 +33,7 @@ interface ScholarshipResponse {
   success: boolean;
   message: string;
   data?: {
-    scholarship?: Scholarship;
+    scholarship?: ScholarshipOld;
   };
 }
 
@@ -41,7 +41,7 @@ interface ScholarshipsResponse {
   success: boolean;
   message: string;
   data?: {
-    scholarships?: Scholarship[];
+    scholarships?: ScholarshipOld[];
   };
 }
 
@@ -58,7 +58,7 @@ class ScholarshipManagementService {
   async createScholarship(scholarshipData: ScholarshipData): Promise<{ 
     success: boolean; 
     message: string; 
-    scholarship?: Scholarship; 
+    scholarship?: ScholarshipOld; 
   }> {
     try {
       const response = await authService.authenticatedRequest('/scholarship/create', {
@@ -90,7 +90,7 @@ class ScholarshipManagementService {
   async updateScholarship(scholarshipId: string, data: Partial<ScholarshipData> & { status?: string; custom_form_fields?: CustomFormField[] }): Promise<{
     success: boolean;
     message: string;
-    scholarship?: Scholarship;
+    scholarship?: ScholarshipOld;
   }> {
     try {
       const response = await authService.authenticatedRequest(`/scholarship/edit/${scholarshipId}`, {
@@ -149,7 +149,7 @@ class ScholarshipManagementService {
   async archiveScholarship(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
-    scholarship?: Scholarship;
+    scholarship?: ScholarshipOld;
   }> {
     try {
       const response = await authService.authenticatedRequest(`/scholarship/archive/${scholarshipId}`, {
@@ -178,7 +178,7 @@ class ScholarshipManagementService {
   async getAllScholarships(): Promise<{ 
     success: boolean; 
     message: string;
-    scholarships?: Scholarship[]; 
+    scholarships?: ScholarshipOld[]; 
   }> {
     try {
       const response = await authService.authenticatedRequest(`/scholarship/`, {
@@ -208,7 +208,7 @@ class ScholarshipManagementService {
   async getScholarshipById(scholarshipId: string): Promise<{
     success: boolean;
     message: string;
-    scholarship?: Scholarship;
+    scholarship?: ScholarshipOld;
   }> {
     try {
       const response = await authService.authenticatedRequest(`/scholarship/${scholarshipId}`, {
@@ -237,7 +237,7 @@ class ScholarshipManagementService {
   async getMyScholarships(): Promise<{ 
     success: boolean; 
     message: string;
-    scholarships?: Scholarship[]; 
+    scholarships?: ScholarshipOld[]; 
   }> {
     try {
       const response = await authService.authenticatedRequest('/scholarship/my-scholarships', {

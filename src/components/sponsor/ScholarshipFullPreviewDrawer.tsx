@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Users, Coins, ChevronsRight, Images, UserIcon } from 'lucide-react';
 import { useState } from 'react';
-import type { Scholarship } from '@/types/scholarship.types';
+import type { ScholarshipOld } from '@/types/scholarship.types';
 import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting.utils';
 
 /**
@@ -9,7 +9,7 @@ import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/uti
  */
 interface ScholarshipFullPreviewModalProps {
   /** Partial scholarship data to display in preview */
-  scholarship: Partial<Scholarship>;
+  scholarship: Partial<ScholarshipOld>;
   /** Callback function to close the modal */
   onClose: () => void;
   /** Whether this is a preview mode (hides apply button) */

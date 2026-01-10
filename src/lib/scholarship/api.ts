@@ -7,6 +7,7 @@ import {
 	scholarshipSchema,
 	type Applicant,
 	type Application,
+	type CreateApplicationRequest,
 	type EditScholarshipFormData,
 	type GetApplicationsQueryParam,
 	type GetScholarshipQueryParam,
@@ -39,7 +40,7 @@ async function getMyScholarships(
 
 export const getMyScholarshipsQuery = (
 	token: string,
-	params: GetScholarshipQueryParam,
+	params?: GetScholarshipQueryParam,
 ) =>
 	queryOptions({
 		queryKey: ["scholarships", params],
@@ -149,3 +150,28 @@ export const getMyApplicationsQuery = (param: GetApplicationsQueryParam) =>
 		queryKey: ["scholarships", "applications", param],
 		queryFn: () => getMyApplications(param),
 	});
+
+export async function createApplication(
+	data: CreateApplicationRequest,
+): Promise<ApiResponse> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	if (!token) {
+		throw new Error("Access token not found.");
+	}
+	const url = new URL(
+		`${BACKEND_URL}/scholarships/${data.scholarshipId}/applications`,
+	);
+
+	const response = await fetch(url.toString(), {
+		method: "POST",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+		credentials: "include",
+	});
+	const result: ApiResponse = await response.json();
+
+	return result;
+}

@@ -1,4 +1,4 @@
-import type { Scholarship } from '@/types/scholarship.types';
+import type { ScholarshipOld } from '@/types/scholarship.types';
 import type { FormFieldResponse } from '@/types/form.types';
 
 export type ApplicationStatusOld = 'pending' | 'shortlisted' | 'approved' | 'denied' | 'granted';
@@ -10,5 +10,5 @@ export interface ApplicationOld {
   applied_at: string;
   updated_at: string;
   custom_form_response?: FormFieldResponse[];
-  scholarship: Scholarship;
+  scholarship: ScholarshipOld;
 }

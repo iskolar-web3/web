@@ -50,6 +50,7 @@ const formFieldSchema = z.object({
 	fieldType: enumDetailSchema(FormFieldType),
 	options: formFieldOptionSchema.array().default([]),
 });
+export type FormField = z.infer<typeof formFieldSchema>;
 
 export const scholarshipSchema = <T extends z.ZodType>(sponsor: T) =>
 	z.object({
@@ -214,3 +215,15 @@ export const applicationSchema = z.object({
 	application: baseApplicationSchema,
 });
 export type Application = z.output<typeof applicationSchema>;
+
+const createFormFieldAnswerSchema = z.object({
+	formFieldId: z.uuidv4(),
+	value: z.any(),
+});
+
+export const createApplicationSchema = z.object({
+	scholarshipId: z.uuidv4(),
+	studentId: z.uuidv4(),
+	formFieldAnswers: createFormFieldAnswerSchema.array(),
+});
+export type CreateApplicationRequest = z.infer<typeof createApplicationSchema>;
