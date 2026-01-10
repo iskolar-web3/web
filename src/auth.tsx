@@ -6,7 +6,7 @@ import {
 	useState,
 	useEffect,
 } from "react";
-import { deleteCookie, getCookie } from "./lib/cookie";
+import { deleteCookie, getCookie, setCookie } from "./lib/cookie";
 import { UserRole, type AuthSession, type User } from "./lib/user/model";
 import {
 	ACCESS_TOKEN_KEY,
@@ -50,6 +50,8 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 
 		setUser(session.user);
 		setSessionToken(token);
+		setCookie(ACCESS_TOKEN_KEY, session.token);
+		setCookie(REFRESH_TOKEN_KEY, session.refreshToken);
 
 		switch (session.user.role?.code) {
 			case UserRole.Student:
