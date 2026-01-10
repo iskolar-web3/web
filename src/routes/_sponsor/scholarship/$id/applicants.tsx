@@ -357,7 +357,7 @@ function ApplicantsListPage() {
   };
 
   const filteredApplicants = useMemo(
-    () => applicants.filter((app) => (filterStatus === null ? true : app.status.code === filterStatus)),
+    () => applicants.filter((app) => (filterStatus === "all" ? true : app.status.code === filterStatus)),
     [applicants, filterStatus]
   );
 
