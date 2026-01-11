@@ -78,8 +78,6 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 			return;
 		}
 
-		// TODO: Implement logout
-
 		setUser(null);
 		deleteCookie(ACCESS_TOKEN_KEY);
 		deleteCookie(REFRESH_TOKEN_KEY);
