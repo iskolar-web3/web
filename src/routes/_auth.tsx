@@ -1,13 +1,30 @@
+import { UserRole } from "@/lib/user/model";
 import {
 	createFileRoute,
 	Link,
 	Outlet,
+	redirect,
 	useRouterState,
 } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 export const Route = createFileRoute("/_auth")({
 	component: AuthLayout,
+	beforeLoad: async ({ context }) => {
+		const session = await context.auth.getSession();
+		if (!session) {
+			return;
+		}
+
+		switch (session.user.role?.code) {
+			case UserRole.Student:
+				throw redirect({ to: "/home" });
+			case UserRole.Sponsor:
+				throw redirect({ to: "/scholarships" });
+			default:
+				throw redirect({ to: "/role-selection" });
+		}
+	},
 });
 
 function AuthLayout(): JSX.Element {
