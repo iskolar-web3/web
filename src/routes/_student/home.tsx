@@ -9,7 +9,6 @@ import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/useToast';
 import Toast from '@/components/Toast';
-import type { ApplicationOld } from '@/types/application.types';
 import { formatDate, formatTime, formatAmountPerScholar } from '@/utils/formatting.utils';
 import { useMyApplications } from '@/hooks/queries/useMyApplications';
 import { useAuth } from '@/auth';

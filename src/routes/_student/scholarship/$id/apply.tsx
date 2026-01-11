@@ -834,14 +834,6 @@ function ApplyScholarshipPage() {
 					</div>
 				)}
 
-				<button
-					onClick={() => {
-						console.log(errors);
-						console.log(customFiles);
-					}}
-				>
-					Test
-				</button>
 				{/* Submit Button */}
 				<button
 					onClick={handleSubmit(onSubmit)}
