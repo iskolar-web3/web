@@ -25,7 +25,6 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { handleError } from "@/lib/errorHandler";
 import { logger } from "@/lib/logger";
-import { Gender, type Student } from "@/types/student";
 import { BACKEND_URL, type ApiResponse } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { ContactType } from "@/lib/user/model";
@@ -41,6 +40,7 @@ import {
 	type IndividualSponsor,
 	type OrganizationSponsor,
 } from "@/lib/sponsor/model";
+import { Gender, type Student } from "@/lib/student/model";
 // import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute("/_onboarding/profile-setup")({
@@ -77,7 +77,7 @@ const createContactRequestSchema = z.object({
 });
 
 // Student validation
-const studentSchema = z.object({
+const createStudentSchema = z.object({
 	userId: z.uuidv4(),
 	firstName: z.string().min(1, "First name is required"),
 	middleName: z.string().optional(),
@@ -139,7 +139,7 @@ const schoolSchema = z.object({
 		.min(11, "Contact number must be at least 11 digits"),
 });
 
-type StudentFormData = z.infer<typeof studentSchema>;
+type StudentFormData = z.infer<typeof createStudentSchema>;
 type IndividualSponsorFormData = z.infer<typeof individualSponsorSchema>;
 type OrganizationSponsorFormData = z.infer<typeof organizationSponsorSchema>;
 type GovernmentSponsorFormData = z.infer<typeof governmentSponsorSchema>;
@@ -242,7 +242,7 @@ function ProfileSetup() {
 
 	// Student form
 	const studentForm = useForm<StudentFormData>({
-		resolver: zodResolver(studentSchema),
+		resolver: zodResolver(createStudentSchema),
 		mode: "onBlur",
 		defaultValues: {
 			userId: auth.user?.id,
