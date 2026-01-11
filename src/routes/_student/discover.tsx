@@ -239,19 +239,19 @@ function DiscoverScholarship() {
             />
             <Filters
               title="Scholarship Type"
-              options={['All', 'Merit-Based', 'Skill-Based']}
+                  options={[null, ScholarshipType.MeritBased, ScholarshipType.SkillBased]}
               value={scholarshipType}
               onChange={setScholarshipType}
             />
             <Filters
               title="Scholarship Purpose"
-              options={['All', 'Allowance', 'Tuition']}
+                  options={[null, ScholarshipPurpose.Allowance, ScholarshipPurpose.Tuition]}
               value={purpose}
               onChange={setPurpose}
             />
             <Filters
               title="Sponsor Type"
-              options={['All', 'Individual', 'Organization', 'Government']}
+                  options={[null, ...Object.values(SponsorType)]}
               value={sponsorType}
               onChange={setSponsorType}
             />
