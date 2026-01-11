@@ -14,7 +14,7 @@ type CookieOptions = { path?: string; expires?: Date; secure?: boolean };
 export function setCookie(
 	key: string,
 	value: string,
-	options: CookieOptions = {},
+	options: CookieOptions = { path: "/" },
 ): void {
 	if (typeof document === "undefined") {
 		return;
