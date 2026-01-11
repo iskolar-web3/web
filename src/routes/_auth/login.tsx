@@ -16,10 +16,6 @@ import { useMutation } from "@tanstack/react-query";
 import { setCookie } from "@/lib/cookie";
 import { UserRole, type AuthSession } from "@/lib/user/model";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/lib/user/auth";
-// import { handleError } from '@/lib/errorHandler';
-// import { logger } from "@/lib/logger";
-// import { authService } from '@/services/auth.service';
-// import { profileService } from '@/services/profile.service';
 
 export const Route = createFileRoute("/_auth/login")({
   component: LoginPage,
@@ -62,29 +58,6 @@ function LoginPage(): JSX.Element {
   const [showPassword, setShowPassword] = useState(false);
   const [showPreloader, setShowPreloader] = useState(false);
   const { toast, showSuccess, showError } = useToast();
-
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const hasToken = await authService.hasValidToken();
-  //       if (hasToken) {
-  //         const result = await profileService.getProfileStatus();
-
-  //         if (result.user?.role === 'student') {
-  //           navigate({ to: '/home', replace: true });
-  //         } else if (result.user?.role === 'individual_sponsor' || result.user?.role === 'organization_sponsor' || result.user?.role === 'government_sponsor') {
-  //           navigate({ to: '/my-scholarships', replace: true });
-  //         }
-  //       }
-  //     } catch (e) {
-  //       // Ignore
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   checkAuth();
-  // }, []);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
