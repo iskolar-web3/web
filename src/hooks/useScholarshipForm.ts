@@ -60,28 +60,28 @@ export function useScholarshipForm(sponsorId: string) {
 	const criteria = form.watch("criterias");
 	const requirements = form.watch("requirements");
 
-	const handleImageUpload = useCallback(
-		async (e: React.ChangeEvent<HTMLInputElement>) => {
-			const file = e.target.files?.[0];
-			if (file) {
-				const reader = new FileReader();
-				reader.onloadend = () => {
-					const result = reader.result as string;
-					setImagePreview(result);
-				};
-				reader.readAsDataURL(file);
+	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				const result = reader.result as string;
+				setImagePreview(result);
+			};
+			reader.readAsDataURL(file);
 
-				const token = getCookie(ACCESS_TOKEN_KEY);
-				if (token) {
-					const uploadRes = await uploadFile(file, token);
-					form.setValue("imageUrl", uploadRes.data.url, {
-						shouldValidate: true,
-					});
-				}
+			const token = getCookie(ACCESS_TOKEN_KEY);
+			if (token) {
+				const uploadRes = await uploadFile(file, token);
+				console.log("Scholarship image upload:", uploadRes);
+
+				form.setValue("imageUrl", uploadRes.data.url, {
+					shouldValidate: true,
+				});
+				console.log("Set scholarship imageUrl value");
 			}
-		},
-		[form],
-	);
+		}
+	};
 
 	const removeImage = useCallback(() => {
 		setImagePreview(null);
