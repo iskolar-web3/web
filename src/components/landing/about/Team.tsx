@@ -1,11 +1,10 @@
 import { MotionContainer, MotionItem } from "@/components/landing/MotionContainer"
 import { Linkedin } from "lucide-react"
 
-const Card = ({ image, name, role, link, isLead = false }: { image: string; name: string; role: string; link: string; isLead?: boolean }) => (
+const Card = ({ image, name, role, link }: { image: string; name: string; role: string; link: string; }) => (
   <div className={`
-    relative bg-card/75 backdrop-blur-sm border border-secondary/10 shadow-lg rounded-xl
+    relative bg-background backdrop-blur-sm border border-secondary/10 shadow-lg rounded-xl
     flex flex-col items-center text-center p-6
-    ${isLead ? 'border-secondary/30 shadow-secondary/10' : ''}
     w-full min-w-[240px] max-w-[280px]
     transition-transform hover:-translate-y-1 duration-300 group
   `}>
@@ -24,9 +23,9 @@ const Card = ({ image, name, role, link, isLead = false }: { image: string; name
 
 export default function TeamSection() {
   return (
-    <div id="team" className="bg-background py-36 pb-24 text-secondary w-full overflow-hidden">
+    <section id="team" className="py-36 pb-24 text-secondary w-full overflow-hidden">
       <MotionContainer>
-        <div className="px-4 sm:px-12 lg:px-26 max-w-7xl mx-auto relative z-26">
+        <div className="px-4 sm:px-12 lg:px-26 max-w-8xl mx-auto relative z-26">
           <h2 className="text-4xl md:text-5xl mb-4 text-center text-secondary">
             Meet Our Team
           </h2>
@@ -34,28 +33,56 @@ export default function TeamSection() {
             The dreamers, builders, and students behind iSkolar.
           </p>
           
-          <div className="flex flex-col items-center">
-              {/* Horizontal Team Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-6xl justify-items-center">
-                  <MotionItem>
-                      <Card image="/team/CEO.jpg" name="Justin Luzano" role="Founder & CEO" link="https://www.linkedin.com/in/justinluzano23/" isLead />
-                  </MotionItem>
-                  
-                  <MotionItem>
-                      <Card image="/team/COO.jpg" name="Adam Ruadilla" role="Co-Founder & COO" link="https://www.linkedin.com/in/adam-r-35946332a/" />
-                  </MotionItem>
+          <div className="flex flex-col items-center gap-20">
+            {/* Founders */}
+            <div className="w-full">
+              <h3 className="text-3xl text-center text-secondary mb-7">Founders</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-5xl mx-auto justify-items-center">
+                <MotionItem>
+                  <Card image="/team/CEO.jpg" name="Justin Luzano" role="CEO" link="https://www.linkedin.com/in/justinluzano23/" />
+                </MotionItem>
 
-                  <MotionItem>
-                      <Card image="/team/CTO.jpg" name="Louigie Caminoy" role="Co-Founder & CTO" link="https://www.linkedin.com/in/louie1221" />  
-                  </MotionItem>
+                <MotionItem>
+                  <Card image="/team/CTO.jpg" name="Louigie Caminoy" role="CTO" link="https://www.linkedin.com/in/louie1221" />  
+                </MotionItem>
+                
+                <MotionItem>
+                  <Card image="/team/COO.jpg" name="Adam Ruadilla" role="COO" link="https://www.linkedin.com/in/adam-r-35946332a/" />
+                </MotionItem>
 
-                  <MotionItem>
-                      <Card image="/team/CFO.jpg" name="Jeselle Francisco" role="CFO" link="https://www.linkedin.com/in/maria-jeselle-francisco-736491369/" />  
-                  </MotionItem>
+                <MotionItem>
+                  <Card image="/team/CFO.jpg" name="Jeselle Francisco" role="CFO" link="https://www.linkedin.com/in/maria-jeselle-francisco-736491369/" />  
+                </MotionItem>
               </div>
+            </div>
+
+            {/* Team Members */}
+            <div className="w-full">
+              <div className="flex flex-wrap justify-center gap-8 w-full max-w-5xl mx-auto">
+                <MotionItem>
+                  <Card image="/team/Research-Lead.jpg" name="Cristian Obida" role="Research Lead" link="https://www.linkedin.com/in/cristian-r-obida-96a36b28a/" />  
+                </MotionItem>
+
+                <MotionItem>
+                  <Card image="/team/Tech-Lead.jpg" name="Giordan Nuez" role="Tech Lead" link="https://www.linkedin.com/in/giordan-nuez-b8924838b/" />  
+                </MotionItem>
+
+                <MotionItem>
+                  <Card image="/team/Community-Manager.jpg" name="Juliet Tariman" role="Community Manager" link="https://www.linkedin.com/in/juliet-daphne-e-tariman-2022b1236/" />  
+                </MotionItem>
+
+                <MotionItem>
+                  <Card image="/team/Cybersecurity-Lead.jpg" name="Emmanuel Mutas" role="Cybersecurity Lead" link="https://www.linkedin.com/in/manel04/" />  
+                </MotionItem>
+
+                <MotionItem>
+                  <Card image="/team/Design-Lead.jpg" name="Arah Mejidana" role="Design Lead" link="https://www.linkedin.com/" />  
+                </MotionItem>
+              </div>
+            </div>
           </div>
         </div>
       </MotionContainer>
-    </div>
+    </section>
   )
 }
