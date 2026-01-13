@@ -1,8 +1,18 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { getDefaultPathOfRole } from "@/lib/api";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 export const Route = createFileRoute("/_onboarding")({
   component: OnboardingLayout,
+  beforeLoad: async ({context}) => {
+		const session = await context.auth.getSession();
+		if (!session) {
+			return;
+		}
+
+        const path = getDefaultPathOfRole(session.user)
+        throw redirect({to: path})
+  }
 });
 
 function OnboardingLayout(): JSX.Element {
