@@ -2,6 +2,8 @@ import { AppError, deriveResponseError, handleError, safeParseJSON } from '@/lib
 import { logger } from '@/lib/logger';
 import { fetchWithTimeout } from '@/utils/fetchWithTimeout.utils';
 
+// NOTE: No longer used. Remove after finishing updated auth and profile implementation
+// New implementations are on `/lib/user` folder 
 const API_URL = import.meta.env.VITE_API_URL;
 const DEFAULT_TIMEOUT = 10000; // 10 seconds
 
