@@ -25,7 +25,7 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { handleError } from "@/lib/errorHandler";
 import { logger } from "@/lib/logger";
-import { BACKEND_URL, type ApiResponse } from "@/lib/api";
+import { BACKEND_URL, getDefaultPathOfRole, type ApiResponse } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { ContactType } from "@/lib/user/model";
 import { useAuth } from "@/auth";
@@ -348,8 +348,14 @@ function ProfileSetup() {
 				"Your profile has been set up successfully!",
 				1250,
 			);
-			setLoading(false);
-			await navigate({ to: "/home" });
+
+			const session = await auth.getSession();
+			if (session) {
+				const path = getDefaultPathOfRole(session?.user);
+				console.log(path);
+				await navigate({ to: path });
+			}
+			console.log("Revalidated session after profile creation.");
 		},
 	});
 
@@ -361,8 +367,14 @@ function ProfileSetup() {
 				"Your profile has been set up successfully!",
 				1250,
 			);
-			setLoading(false);
-			await navigate({ to: "/scholarships" });
+
+			const session = await auth.getSession();
+			if (session) {
+				const path = getDefaultPathOfRole(session?.user);
+				console.log(path);
+				await navigate({ to: path });
+			}
+			console.log("Revalidated session after profile creation.");
 		},
 	});
 
@@ -374,8 +386,14 @@ function ProfileSetup() {
 				"Your profile has been set up successfully!",
 				1250,
 			);
-			setLoading(false);
-			await navigate({ to: "/scholarships" });
+
+			const session = await auth.getSession();
+			if (session) {
+				const path = getDefaultPathOfRole(session?.user);
+				console.log(path);
+				await navigate({ to: path });
+			}
+			console.log("Revalidated session after profile creation.");
 		},
 	});
 
@@ -387,8 +405,14 @@ function ProfileSetup() {
 				"Your profile has been set up successfully!",
 				1250,
 			);
-			setLoading(false);
-			await navigate({ to: "/scholarships" });
+
+			const session = await auth.getSession();
+			if (session) {
+				const path = getDefaultPathOfRole(session?.user);
+				console.log(path);
+				await navigate({ to: path });
+			}
+			console.log("Revalidated session after profile creation.");
 		},
 	});
 
@@ -475,7 +499,8 @@ function ProfileSetup() {
 		}
 	};
 
-	const handlePreloaderComplete = () => {
+	const handlePreloaderComplete = async () => {
+		await auth.getSession();
 		// After preloader completes, navigate to appropriate page based on role
 		// TODO: Uncomment when backend is ready
 		// if (selectedRole === 'student') {

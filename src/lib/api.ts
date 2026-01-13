@@ -1,5 +1,6 @@
 import z from "zod";
 import type { EnumLike } from "zod/v3";
+import { UserRole, type User } from "./user/model";
 
 export type ApiResponse<T = any> = T extends undefined
 	? { message: string }
@@ -36,4 +37,15 @@ export async function uploadFile(
 
 	const result: ApiResponse<FileDataResponse> = await response.json();
 	return result;
+}
+
+export function getDefaultPathOfRole(user: User): string {
+	switch (user.role?.code) {
+		case UserRole.Student:
+			return "/home";
+		case UserRole.Sponsor:
+			return "/scholarships";
+		default:
+			return "/role-selection";
+	}
 }

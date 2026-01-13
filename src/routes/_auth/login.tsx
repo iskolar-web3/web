@@ -16,6 +16,7 @@ import { useMutation } from "@tanstack/react-query";
 import { setCookie } from "@/lib/cookie";
 import { UserRole, type AuthSession } from "@/lib/user/model";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/lib/user/auth";
+import { useAuth } from "@/auth";
 
 export const Route = createFileRoute("/_auth/login")({
   component: LoginPage,
@@ -58,6 +59,7 @@ function LoginPage(): JSX.Element {
   const [showPassword, setShowPassword] = useState(false);
   const [showPreloader, setShowPreloader] = useState(false);
   const { toast, showSuccess, showError } = useToast();
+  const auth = useAuth()
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -70,10 +72,13 @@ function LoginPage(): JSX.Element {
   const mutation = useMutation({
       mutationFn: login,
       onSuccess: async (res) => {
-          console.log(res)
         showSuccess(`Success`, 'Login successful', 1250);
         setCookie(ACCESS_TOKEN_KEY, res.token);
         setCookie(REFRESH_TOKEN_KEY, res.refreshToken);
+
+        // Validate the user session, account, and profile
+        await auth.getSession()
+        console.log("Session revalidated after login")
 
         if(!res.user.role) {
             await navigate({ to: "/welcome" });
