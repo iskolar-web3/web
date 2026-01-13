@@ -11,6 +11,7 @@ import { routeTree } from "./routeTree.gen";
 import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
 import { AuthProvider, useAuth } from "./auth.tsx";
+import { Skeleton } from "./components/ui/skeleton.tsx";
 
 // Create a new router instance
 
@@ -53,6 +54,10 @@ if (rootElement && !rootElement.innerHTML) {
 
 function App() {
 	const auth = useAuth();
+	if (auth.isLoading) {
+		return <Skeleton />;
+	}
+
 	return <RouterProvider router={router} context={{ auth }} />;
 }
 

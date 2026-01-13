@@ -23,6 +23,7 @@ export type AuthContextValue<T = any> = {
 	sessionToken: string;
 	getSession: () => Promise<AuthSession | null>;
 	logout: () => Promise<void>;
+	isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -35,40 +36,45 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 	const [user, setUser] = useState<User | null>(null);
 	const [sessionToken, setSessionToken] = useState<string>("");
 	const [profile, setProfile] = useState<any | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
 
 	async function getSession(): Promise<AuthSession | null> {
-		const token = getCookie(ACCESS_TOKEN_KEY);
-		if (!token) {
-			return null;
+		try {
+			const token = getCookie(ACCESS_TOKEN_KEY);
+			if (!token) {
+				return null;
+			}
+
+			const session = await validateSession(token);
+			if (session === null) {
+				setUser(null);
+				return null;
+			}
+
+			setUser(session.user);
+			setSessionToken(token);
+			setCookie(ACCESS_TOKEN_KEY, session.token);
+			setCookie(REFRESH_TOKEN_KEY, session.refreshToken);
+
+			switch (session.user.role?.code) {
+				case UserRole.Student:
+					const student = await getMyStudentProfile(token);
+					setProfile(student);
+					break;
+
+				case UserRole.Sponsor:
+					const sponsor = await getMySponsorProfile(token);
+					setProfile(sponsor);
+					break;
+
+				default:
+					setProfile(null);
+			}
+
+			return session;
+		} finally {
+			setIsLoading(false);
 		}
-
-		const session = await validateSession(token);
-		if (session === null) {
-			setUser(null);
-			return null;
-		}
-
-		setUser(session.user);
-		setSessionToken(token);
-		setCookie(ACCESS_TOKEN_KEY, session.token);
-		setCookie(REFRESH_TOKEN_KEY, session.refreshToken);
-
-		switch (session.user.role?.code) {
-			case UserRole.Student:
-				const student = await getMyStudentProfile(token);
-				setProfile(student);
-				break;
-
-			case UserRole.Sponsor:
-				const sponsor = await getMySponsorProfile(token);
-				setProfile(sponsor);
-				break;
-
-			default:
-				setProfile(null);
-		}
-
-		return session;
 	}
 
 	async function logout(): Promise<void> {
@@ -90,7 +96,15 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 
 	return (
 		<AuthContext
-			value={{ user, setUser, profile, getSession, logout, sessionToken }}
+			value={{
+				user,
+				setUser,
+				profile,
+				getSession,
+				logout,
+				sessionToken,
+				isLoading,
+			}}
 		>
 			{props.children}
 		</AuthContext>
