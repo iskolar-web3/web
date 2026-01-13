@@ -1,5 +1,5 @@
-import type { Student } from "@/types/student";
 import { BACKEND_URL, type ApiResponse } from "../api";
+import type { Student } from "./model";
 
 export async function getMyStudentProfile(
 	token: string,
