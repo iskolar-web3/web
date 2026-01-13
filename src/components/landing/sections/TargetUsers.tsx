@@ -17,11 +17,6 @@ const userTypes = [
     color: "bg-secondary",
     description:
       "Discover scholarships, apply with ease, and track your applications in real-time.",
-    features: [
-      "Browse curated scholarships",
-      "One-click applications",
-      "Real-time tracking",
-    ],
     subTypes: [
       { icon: BookOpen, label: "Pre-College" },    
       { icon: UserRound, label: "Undergraduates" }, 
@@ -32,8 +27,7 @@ const userTypes = [
     title: "Sponsors",
     subtitle: "Scholarship Providers",
     color: "bg-secondary",
-    description: "Create programs, evaluate applicants, and track disbursements transparently.",
-    features: ["Create scholarship programs", "Evaluate efficiently", "Fund tracking"],
+    description: "Create scholarships, evaluate applicants, and track disbursements transparently.",
     subTypes: [
       { icon: Heart, label: "Individuals" },
       { icon: Building2, label: "Organizations" },
@@ -46,12 +40,7 @@ const userTypes = [
     subtitle: "Educational Institutions",
     color: "bg-secondary",
     description:
-      "Monitor programs, ensure compliance, and collaborate with sponsors.",
-    features: [
-      "Student monitoring",
-      "Monitor tuition payments",
-      "Dashboard for compliance",
-    ],
+      "Monitor scholarships, ensure compliance, and support transparency.",
     subTypes: [
       { icon: Landmark, label: "Public" },
       { icon: Building2, label: "Private" },
@@ -61,82 +50,86 @@ const userTypes = [
 
 export function TargetUsers() {
   return (
-    <section id="about" className="py-20 lg:py-32 px-6 md:px-26 bg-background to-blue-50 relative overflow-hidden">
-      {/* Decorative Elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
-      
-      <MotionContainer className="relative z-26">
+    <section
+      id="about"
+      className="py-20 lg:py-32 px-6 md:px-16 relative overflow-hidden"
+    >
+      {/* Decorative Background */}
+      <div className="pointer-events-none absolute inset-0" />
+
+      <MotionContainer className="relative z-26 max-w-6xl mx-auto">
         {/* Section Header */}
-        <MotionItem className="text-center mb-20">
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full mb-2">
-            <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
-            <span className="text-sm text-secondary uppercase tracking-wider">Who It's For</span>
+        <MotionItem className="text-center mb-22">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5">
+            <div className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
+            <span className="text-sm text-secondary uppercase tracking-wider">
+              Who it's for
+            </span>
           </div>
-          <h2 className="text-4xl sm:text-4xl lg:text-5xl text-secondary mt-4 mb-6 text-balance">
-            Built for the Entire Ecosystem
+          <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight text-secondary mt-5 mb-3 text-balance">
+            Built for the scholarship ecosystem
           </h2>
-          <p className="text-lg text-secondary/80 max-w-2xl mx-auto text-pretty">
-            iSkolar serves every stakeholder in the scholarship journey
+          <p className="text-sm sm:text-base text-secondary/70 max-w-xl mx-auto text-pretty">
+            Three perspectives, one streamlined experience.
           </p>
         </MotionItem>
 
         {/* User Type Cards */}
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-3 gap-5 lg:gap-6">
           {userTypes.map((user, index) => (
             <MotionItem
               key={user.title}
-              className="group relative h-full"
+              className="group relative h-full px-8"
               variants={{
                 hidden: { opacity: 0, y: 30 },
-                visible: { 
-                    opacity: 1, 
-                    y: 0,
-                    transition: { delay: index * 0.15, duration: 0.5 }
-                }
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { delay: index * 0.15, duration: 0.5 },
+                },
               }}
-              whileHover={{ y: -2, transition: { duration: 0.15 } }}
             >
-              <div className="relative bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-500 border border-secondary/15 overflow-hidden h-full flex flex-col">
+              <div className="relative h-full flex flex-col rounded-3xl bg-background overflow-hidden">
+                {/* Icon */}
+                <div className="relative flex justify-center pt-8 pb-5">
+                  <div className="text-secondary">
+                    <user.icon className="w-21 h-21" />
+                  </div>
+                </div>
+
                 {/* Title and Subtitle */}
-                <div className="pt-6 px-8 pb-3">
-                  <h3 className="text-2xl text-secondary">{user.title}</h3>
-                  <p className="text-secondary/90 text-sm mt-1">{user.subtitle}</p>
+                <div className="relative text-center pb-6">
+                  <h3 className="text-2xl sm:text-[2rem] text-secondary">
+                    {user.title}
+                  </h3>
+                  <p className="text-[13px] uppercase tracking-[0.15em] text-secondary/60 mt-1">
+                    {user.subtitle}
+                  </p>
                 </div>
 
                 {/* Description */}
-                <div className="px-8 py-2 flex-grow">
-                  <p className="text-secondary/80 text-sm leading-relaxed">{user.description}</p>
+                <div className="relative pb-4 flex-grow">
+                  <p className="md:text-base text-secondary/80 leading-relaxed">
+                    {user.description}
+                  </p>
                 </div>
 
                 {user.subTypes && (
-                  <div className="px-8 py-4 flex flex-wrap gap-2">
+                  <div className="relative pt-2 pb-5 flex flex-wrap gap-2">
                     {user.subTypes.map((subType) => (
                       <div
                         key={subType.label}
-                        className="flex items-center gap-1.5 bg-secondary/5 text-secondary px-2 py-1.5 rounded-sm text-xs hover:bg-secondary/10 transition-colors"
+                        className="flex items-center gap-1 text-secondary/80 text-[13px] tracking-tight"
                       >
-                        <subType.icon className="w-3.5 h-3.5" />
-                        {subType.label}
+                        <subType.icon className="w-4 h-4 text-secondary/75" />
+                        <span>{subType.label}</span>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Features List */}
-                <div className="px-8 py-6 border-t border-secondarty/10">
-                  <ul className="space-y-2">
-                    {user.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5 text-sm text-secondary">
-                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Top accent line */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                {/* Animated underline accent */}
+                <div className="absolute inset-x-6 bottom-0 h-px bg-gradient-to-r from-transparent via-blue-500/60 to-transparent scale-x-0 origin-center group-hover:scale-x-100 transition-transform duration-500" />
               </div>
             </MotionItem>
           ))}
