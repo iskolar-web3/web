@@ -1,5 +1,7 @@
 import { BACKEND_URL, type ApiResponse } from "../api";
-import type { Student } from "./model";
+import { getCookie } from "../cookie";
+import { ACCESS_TOKEN_KEY } from "../user/auth";
+import type { Student, UpdateStudentRequest } from "./model";
 
 export async function getMyStudentProfile(
 	token: string,
@@ -14,6 +16,26 @@ export async function getMyStudentProfile(
 	}
 
 	const result: ApiResponse<Student | null> = await response.json();
-    console.log(result)
+	console.log(result);
 	return result.data;
+}
+
+export async function updateStudent(
+	value: UpdateStudentRequest,
+): Promise<ApiResponse<Student>> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	const response = await fetch(`${BACKEND_URL}/students`, {
+		method: "PATCH",
+		body: JSON.stringify(value),
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+	});
+	const result: ApiResponse<Student> = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message || "Failed to create profile.");
+	}
+
+	return result;
 }

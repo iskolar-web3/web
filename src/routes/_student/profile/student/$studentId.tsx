@@ -17,6 +17,17 @@ import DateField from "@/components/profile/DateField";
 import CredentialUploadModal from "@/components/student/CredentialUploadModal";
 import CredentialsList from "@/components/student/CredentialsList";
 import type { StudentProfile } from "@/types/profile.types";
+import { useAuth } from "@/auth";
+import {
+	updateStudentRequestSchema,
+	type Student,
+	type UpdateStudentRequest,
+} from "@/lib/student/model";
+import { UserRole } from "@/lib/user/model";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { updateStudent } from "@/lib/student/api";
+import { useMutation } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_student/profile/student/$studentId")({
 	component: StudentProfilePage,
@@ -38,6 +49,8 @@ function StudentProfilePage() {
 	);
 	const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false);
 	const { toast, showSuccess, showError } = useToast();
+
+	const auth = useAuth<Student>();
 
 	const {
 		isEditing,
@@ -76,6 +89,40 @@ function StudentProfilePage() {
 		showSuccess("Success", "Your credential has been saved.", 2500);
 	};
 
+	// TODO: Integrate react hook forms with the editable profile
+	const form = useForm<UpdateStudentRequest>({
+		resolver: zodResolver(updateStudentRequestSchema),
+		mode: "onBlur",
+		defaultValues: {
+			id: auth.profile.id,
+			userId: auth.profile.userId,
+			contact: auth.profile.contact,
+			avatarUrl: auth.profile.avatarUrl || "",
+			birthDate: auth.profile.birthDate,
+			firstName: auth.profile.firstName,
+			middleName: auth.profile.middleName || "",
+			lastName: auth.profile.lastName,
+			gender: auth.profile.gender.code,
+		},
+	});
+
+	const mutation = useMutation({
+		mutationFn: updateStudent,
+		onSuccess: async (res) => {
+			console.log(res.data);
+			showSuccess(`Success`, res.message, 1250);
+		},
+		onError: (err) => {
+			showError("Error", err.message);
+			console.error(err);
+		},
+	});
+
+    // TODO: Use this for the form's onSubmit function
+	async function onSubmit(value: UpdateStudentRequest): Promise<void> {
+		mutation.mutate(value);
+	}
+
 	return (
 		<div className="min-h-screen">
 			{toast && <Toast {...toast} />}
@@ -99,10 +146,10 @@ function StudentProfilePage() {
 						<div className="flex flex-col md:flex-row items-center md:items-start gap-6 mt-6">
 							<ProfileAvatar />
 							<ProfileHeader
-								name={localProfile.full_name}
-								role={localProfile.role}
-								email={localProfile.email}
-								contactNumber={localProfile.contact_number}
+								name={`${auth.profile.firstName} ${auth.profile.lastName}`}
+								role={UserRole.Student}
+								email={auth.profile.email}
+								contactNumber={auth.profile.contact.value}
 							/>
 						</div>
 					</div>

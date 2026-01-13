@@ -19,7 +19,7 @@ interface ToastMethods {
  * @param toastMethods - Toast notification methods from useToast hook
  * @returns Object containing edit state and handlers
  */
-export function useProfileForm<T extends UserProfile>(
+export function useProfileForm<T = any>(
   profile: T | null,
   setProfile: (profile: T | null) => void,
   toastMethods: ToastMethods

@@ -44,4 +44,11 @@ export const contactDetailSchema = z.object({
 });
 export type ContactDetail = z.infer<typeof contactDetailSchema>;
 
-export type UserProfile = Student;
+export const createContactRequestSchema = z.object({
+	value: z
+		.string()
+		.nonempty({ error: "Contact number is required" })
+		.regex(/^\d+$/, "Contact number must contain only numbers")
+		.min(11, "Contact number must be at least 11 digits"),
+	contactType: z.enum(ContactType),
+});
