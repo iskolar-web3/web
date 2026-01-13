@@ -51,9 +51,9 @@ import {
 } from "@/lib/scholarship/api";
 import { useAuth } from "@/auth";
 import { getSponsorName } from "@/lib/sponsor/api";
-import type { Student } from "@/types/student";
 import { getValidatedApplicationSchema } from "@/lib/scholarship/helper";
 import { uploadFile } from "@/lib/api";
+import type { Student } from "@/lib/student/model";
 
 export const Route = createFileRoute("/_student/scholarship/$id/apply")({
 	component: ApplyScholarshipPage,
