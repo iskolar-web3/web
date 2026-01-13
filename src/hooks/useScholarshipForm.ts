@@ -7,8 +7,8 @@ import {
 	ScholarshipStatus,
 	type ScholarshipFormData,
 } from "@/lib/scholarship/model";
-import { useAuth } from "@/auth";
-import type { AnySponsor } from "@/lib/sponsor/model";
+// import { useAuth } from "@/auth";
+// import type { AnySponsor } from "@/lib/sponsor/model";
 import { uploadFile } from "@/lib/api";
 import { ACCESS_TOKEN_KEY } from "@/lib/user/auth";
 import { getCookie } from "@/lib/cookie";
@@ -91,7 +91,9 @@ export function useScholarshipForm(sponsorId: string) {
 	const addCriterion = useCallback(() => {
 		const normalized = normalizeText(criteriaInput);
 		if (normalized && !criteria.includes(normalized)) {
-			form.setValue("criterias", [...criteria, normalized]);
+			form.setValue("criterias", [...criteria, normalized], {
+				shouldValidate: true,
+			});
 			setCriteriaInput("");
 		}
 	}, [criteria, criteriaInput, form]);
@@ -109,7 +111,9 @@ export function useScholarshipForm(sponsorId: string) {
 	const addDocument = useCallback(() => {
 		const normalized = normalizeText(documentsInput);
 		if (normalized && !requirements.includes(normalized)) {
-			form.setValue("requirements", [...requirements, normalized]);
+			form.setValue("requirements", [...requirements, normalized], {
+				shouldValidate: true,
+			});
 			setDocumentsInput("");
 		}
 	}, [documentsInput, requirements, form]);

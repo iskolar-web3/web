@@ -150,11 +150,13 @@ function CreateScholarship() {
 				res.message,
 				1250,
 			);
+      resetForm();
 			setLoading(false);
 		},
       onError: (err) => {
           showError("Error", err.message)
           console.error(err)
+          setLoading(false);
       }
 	});
 

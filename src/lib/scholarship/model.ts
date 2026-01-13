@@ -66,11 +66,11 @@ export const scholarshipSchema = <T extends z.ZodType>(sponsor: T) =>
 		applicationDeadline: z.coerce.date(),
 		imageUrl: z.string().nullable(),
 		purpose: enumDetailSchema(ScholarshipPurpose),
-		criterias: z.string().array(),
-		requirements: z.string().array(),
+		criterias: z.string().array().default([]),
+		requirements: z.string().array().default([]),
 		sponsor: sponsor,
 		formFields: formFieldSchema.array().default([]),
-		applicationCount: z.number().nonnegative(),
+		applicationCount: z.number().nonnegative().default(0),
 	});
 
 export type Scholarship<T extends AnySponsor = AnySponsor> = Omit<
@@ -117,10 +117,18 @@ export const createScholarshipRequestSchema = z.object({
 	applicationDeadline: z.date(),
 	imageUrl: z.string().nonempty("Please upload a scholarship image"),
 	purpose: z.enum(ScholarshipPurpose, { message: "Please select a purpose" }),
-	criterias: z.string().array(),
-	requirements: z.string().array(),
+	criterias: z
+		.string()
+		.array()
+		.min(1, "Add at least one eligibility criterion"),
+	requirements: z
+		.string()
+		.array()
+		.min(1, "Add at least one required document"),
 	sponsorId: z.uuidv4(),
-	formFields: createFormFieldRequestSchema.array(),
+	formFields: createFormFieldRequestSchema
+		.array()
+		.min(1, "Add at least one application form field"),
 });
 /**
  * Scholarship form data type inferred from Zod schema

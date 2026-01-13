@@ -36,7 +36,7 @@ async function getMyScholarships(
 	});
 	const result: ApiResponse<Scholarship[]> = await response.json();
 
-	return scholarshipSchema(anySponsorSchema).array().parse(result.data);
+	return scholarshipSchema(anySponsorSchema).array().default([]).parse(result.data);
 }
 
 export const getMyScholarshipsQuery = (
