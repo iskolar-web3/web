@@ -11,6 +11,11 @@ import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { mockStudentUser } from '@/mocks/userProfile.mock';
 import { useAuth } from '@/auth';
+import { UserRole, type User } from '@/lib/user/model';
+import type { Student } from '@/lib/student/model';
+import type { Sponsor } from '@/types/scholarship.types';
+import { getSponsorName } from '@/lib/sponsor/api';
+import type { AnySponsor } from '@/lib/sponsor/model';
 
 const USE_MOCK_DATA = true;
 
@@ -24,18 +29,17 @@ interface ProfileDropdownProps {
 
 /**
  * Gets the display name based on user profile type using type guards
- * @param profile - User profile
+ * @param user - User profile
  * @returns Display name
  */
-function getDisplayName(profile: UserProfile): string {
-  switch (profile.role) {
-    case 'student':
-    case 'individual_sponsor':
-      return profile.full_name;
-    case 'organization_sponsor':
-    case 'government_sponsor':
-    case 'school':
-      return profile.name;
+function getDisplayName(user: User, profile: any): string {
+  switch (user.role?.code) {
+    case UserRole.Student:
+        const student = profile as Student
+      return `${student.firstName} ${student.lastName}`;
+    case UserRole.Sponsor:
+        const sponsor = profile as AnySponsor
+          return getSponsorName(sponsor)
     default:
       // Exhaustiveness check
       return '';
@@ -52,60 +56,56 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
   const { toast, showError } = useToast();
 
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  // const [isLoading, setIsLoading] = useState(true);
 
-  const auth = useAuth()
+  const auth = useAuth<any>()
 
   /**
    * Fetch user profile on component mount
    */
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const result = await profileService.getUserProfile(userProfile?.user_id || '');
-        if (result.success && result.profile) {
-          setUserProfile(result.profile);
-        } else {
-          // Mock data fallback for development
-          if (USE_MOCK_DATA) {
-            logger.info('Using mock data for development');
-            setUserProfile(mockStudentUser);
-          } else {
-            showError(`Error`, result.message || 'Failed to load profile', 2500);
-          }
-        }
-      } catch (err) {
-        const handled = handleError(err, 'Failed to fetch user profile');
-        logger.error('Fetch user profile error:', handled.raw);
-        showError(`Error ${handled.code}`, handled.message, 2500);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
+  // useEffect(() => {
+  //   const fetchUserProfile = async () => {
+  //     try {
+  //       const result = await profileService.getUserProfile(userProfile?.user_id || '');
+  //       if (result.success && result.profile) {
+  //         setUserProfile(result.profile);
+  //       } else {
+  //         // Mock data fallback for development
+  //         if (USE_MOCK_DATA) {
+  //           logger.info('Using mock data for development');
+  //           setUserProfile(mockStudentUser);
+  //         } else {
+  //           showError(`Error`, result.message || 'Failed to load profile', 2500);
+  //         }
+  //       }
+  //     } catch (err) {
+  //       const handled = handleError(err, 'Failed to fetch user profile');
+  //       logger.error('Fetch user profile error:', handled.raw);
+  //       showError(`Error ${handled.code}`, handled.message, 2500);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //
+  //   fetchUserProfile();
+  // }, []);
 
   /**
    * Determines the profile route based on user role
    */
   const getProfileRoute = () => {
-    if (!userProfile) return null;
+    if (!auth.user) return null;
 
-    const userId = userProfile.user_id;
-    
-    switch (userProfile.role) {
-      case 'student':
-        return { to: '/profile/student/$studentId' as const, params: { studentId: userId } };
-      case 'individual_sponsor':
-      case 'organization_sponsor':
-      case 'government_sponsor':
-        return { to: '/profile/sponsor/$sponsorId' as const, params: { sponsorId: userId } };
-      case 'school':
+    switch (auth.user.role?.code) {
+      case UserRole.Student:
+        return { to: '/profile/student/$studentId' as const, params: { studentId: auth.profile.id } };
+      case UserRole.Sponsor:
+        return { to: '/profile/sponsor/$sponsorId' as const, params: { sponsorId: auth.profile.id } };
+      // case 'school':
         // Uncomment when school route is ready
         // return { to: '/profile/school/$schoolId' as const, params: { schoolId: userId } };
-        return null;
+        // return null;
       default:
         return null;
     }
@@ -158,15 +158,15 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
         <button
           type="button"
           onClick={handleProfileClick}
-          disabled={!userProfile}
+          disabled={!auth.user}
           className="w-full px-3 md:px-4 py-2 md:py-3 border-b border-border hover:bg-[#F9FAFB] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
         >
           <div className="flex items-center gap-3">
             <div className="w-8 md:w-10 h-8 md:h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-              {userProfile && 'profileImage' in userProfile && (userProfile as any).profileImage ? (
+              {auth.user?.avatarUrl ? (
                 <img
-                  src={(userProfile as any).profileImage}
-                  alt={getDisplayName(userProfile)}
+                  src={auth.user.avatarUrl}
+                  alt={getDisplayName(auth.user, auth.profile)}
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
@@ -174,11 +174,9 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
               )}
             </div>
             <div className="min-w-0 flex-1">
-              {isLoading ? (
-                <p className="text-xs md:text-sm text-[#6B7280]">Loading...</p>
-              ) : userProfile ? (
+              { auth.user ? (
                 <p className="text-xs md:text-sm text-primary truncate">
-                  {getDisplayName(userProfile)}
+                  {getDisplayName(auth.user, auth.profile)}
                 </p>
               ) : null}
             </div>
@@ -189,7 +187,7 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
         <button
           type="button"
           onClick={handleAccountClick}
-          disabled={!userProfile}
+          disabled={!auth.user}
           className="w-full px-3 cursor-pointer md:px-4 py-2 md:py-3 text-left text-xs md:text-sm text-[#6B7280] hover:bg-[#F9FAFB] transition-colors border-b border-border disabled:cursor-not-allowed disabled:opacity-60"
         >
           Account
