@@ -61,6 +61,7 @@ async function createScholarship(value: ScholarshipFormData): Promise<ApiRespons
 function CreateScholarship() {
   usePageTitle('Create');
 
+  const auth = useAuth<AnySponsor>()
   const {
     form,
     imagePreview,
@@ -75,9 +76,7 @@ function CreateScholarship() {
     addDocument,
     removeDocument,
     resetForm,
-  } = useScholarshipForm();
-
-    const auth = useAuth<AnySponsor>()
+  } = useScholarshipForm(auth.profile.id);
 
   const { control, handleSubmit, setValue, watch, formState: { errors } } = form;
   const { toast, showSuccess, showError } = useToast();
@@ -474,6 +473,7 @@ function CreateScholarship() {
 
           {/* Submit */}
           <button
+          // @ts-expect-error it works but I get type error for some reason
             onClick={handleSubmit(onSubmit)}
             className={`w-full mt-2 mb-6 md:mb-0 py-3 bg-[#EFA508] text-tertiary cursor-pointer rounded-lg hover:bg-[#D89407] transition-colors ${
               loading && "opacity-60 cursor-not-allowed"

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { normalizeText } from "@/utils/normalize.utils";
 import {
-    createScholarshipRequestSchema,
+	createScholarshipRequestSchema,
 	ScholarshipStatus,
 	type ScholarshipFormData,
 } from "@/lib/scholarship/model";
@@ -36,8 +36,7 @@ import { getCookie } from "@/lib/cookie";
  *   - removeDocument: Function to remove a document by index
  *   - resetForm: Function to reset entire form state
  */
-export function useScholarshipForm() {
-	const auth = useAuth<AnySponsor>();
+export function useScholarshipForm(sponsorId: string) {
 	const form = useForm<ScholarshipFormData>({
 		// @ts-expect-error This works fine but it has TS error for some reason
 		resolver: zodResolver(createScholarshipRequestSchema),
@@ -49,7 +48,7 @@ export function useScholarshipForm() {
 			description: "",
 			name: "",
 			requirements: [],
-			sponsorId: auth.profile.id,
+			sponsorId,
 			status: ScholarshipStatus.Draft,
 		},
 	});
