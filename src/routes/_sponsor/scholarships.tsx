@@ -1,564 +1,673 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { useSponsorScholarships } from '@/hooks/queries/useSponsorScholarships';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Filter, AlertCircle, Loader2, X, GraduationCap, Plus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import FilterSelect from '@/components/sponsor/Filters';
-import ScholarshipCard from '@/components/sponsor/ScholarshipCard';
-import ScholarshipCardSkeleton from '@/components/ScholarshipCardSkeleton';
-import ScholarshipDetailsModal from '@/components/sponsor/ScholarshipDetailsDrawer';
-import type { Scholarship } from '@/types/scholarship.types';
-import { usePageTitle } from "@/hooks/usePageTitle"
-import Toast from '@/components/Toast';
-import { useToast } from '@/hooks/useToast';
-import { handleError } from '@/lib/errorHandler';
-import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
+import { useState, useMemo, useEffect } from "react";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+	createFileRoute,
+	useNavigate,
+	useSearch,
+} from "@tanstack/react-router";
+import {
+	Filter,
+	AlertCircle,
+	Loader2,
+	X,
+	GraduationCap,
+	Plus,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import FilterSelect from "@/components/sponsor/Filters";
+import ScholarshipCard from "@/components/sponsor/ScholarshipCard";
+import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
+import ScholarshipDetailsModal from "@/components/sponsor/ScholarshipDetailsDrawer";
+import { usePageTitle } from "@/hooks/usePageTitle";
+import Toast from "@/components/Toast";
+import { useToast } from "@/hooks/useToast";
+import { handleError } from "@/lib/errorHandler";
+import { scholarshipManagementService } from "@/services/scholarshipManagement.service";
 import { logger } from "@/lib/logger";
-import { mockApiDelay } from '@/mocks/scholarships.mock';
+import { mockApiDelay } from "@/mocks/scholarships.mock";
+import { getMyScholarshipsQuery } from "@/lib/scholarship/api";
+import { useAuth } from "@/auth";
+import type { AnySponsor } from "@/lib/sponsor/model";
+import {
+	getScholarshipQueryParamSchema,
+	type Scholarship,
+} from "@/lib/scholarship/model";
 
 const USE_MOCK_DATA = true;
 
-export const Route = createFileRoute('/_sponsor/scholarships')({
-  component: Scholarships,
+export const Route = createFileRoute("/_sponsor/scholarships")({
+	component: Scholarships,
+	validateSearch: getScholarshipQueryParamSchema,
 });
 
 function Scholarships() {
-  usePageTitle("Scholarships")
+	usePageTitle("Scholarships");
 
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
-  const [sortBy, setSortBy] = useState('Newest');
-  const [scholarshipType, setScholarshipType] = useState('All');
-  const [purpose, setPurpose] = useState('All');
-  const [applicationsRange, setApplicationsRange] = useState({ min: '', max: '' });
-  const [amountRange, setAmountRange] = useState({ min: '', max: '' });
-  const [slotRange, setSlotRange] = useState({ min: '', max: '' });
-  const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null);
-  const [showFiltersModal, setShowFiltersModal] = useState(false);
+	const [sortBy, setSortBy] = useState("Newest");
+	const [scholarshipType, setScholarshipType] = useState("All");
+	const [purpose, setPurpose] = useState("All");
+	const [applicationsRange, setApplicationsRange] = useState({
+		min: "",
+		max: "",
+	});
+	const [amountRange, setAmountRange] = useState({ min: "", max: "" });
+	const [slotRange, setSlotRange] = useState({ min: "", max: "" });
+	const [selectedScholarship, setSelectedScholarship] =
+		useState<Scholarship | null>(null);
+	const [showFiltersModal, setShowFiltersModal] = useState(false);
 
-  const { data: scholarships = [], isLoading: loading, error, isError } = useSponsorScholarships();
+	// const { data: scholarships = [], isLoading: loading, error, isError } = useSponsorScholarships();
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [scholarshipToDelete, setScholarshipToDelete] = useState<Scholarship | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+	const search = useSearch({ from: "/_sponsor/scholarships" });
 
-  const { toast, showSuccess, showError } = useToast();
+	const auth = useAuth<AnySponsor>();
+	const scholarships = useSuspenseQuery(
+		getMyScholarshipsQuery(auth.sessionToken, search),
+	);
 
-  const handleViewApplicants = (scholarship: Scholarship) => {
-    navigate({ 
-      to: "/scholarship/$id/applicants",
-      params: { id: scholarship.scholarship_id }
-    });
-  };
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [scholarshipToDelete, setScholarshipToDelete] =
+		useState<Scholarship | null>(null);
+	const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleEdit = (scholarship: Scholarship) => {
-    navigate({ 
-      to: "/scholarship/$id/edit",
-      params: { id: scholarship.scholarship_id }
-    });
-  };
+	const { toast, showSuccess, showError } = useToast();
 
-  const handleDelete = (scholarship: Scholarship) => {
-    setScholarshipToDelete(scholarship);
-    setShowDeleteModal(true);
-  };
+	const handleViewApplicants = (scholarship: Scholarship) => {
+		navigate({
+			to: "/scholarship/$id/applicants",
+			params: { id: scholarship.id },
+		});
+	};
 
-  const handleDrawerDelete = async (scholarship: Scholarship) => {
-    try {
-      if (USE_MOCK_DATA) {
-        // Mock delete
-        await mockApiDelay(1000);
-        showSuccess('Success', 'Scholarship deleted successfully', 2000);
+	const handleEdit = (scholarship: Scholarship) => {
+		navigate({
+			to: "/scholarship/$id/edit",
+			params: { id: scholarship.id },
+		});
+	};
 
-        queryClient.invalidateQueries({ queryKey: ['my-scholarships'] });
+	const handleDelete = (scholarship: Scholarship) => {
+		setScholarshipToDelete(scholarship);
+		setShowDeleteModal(true);
+	};
 
-      } else {
-        const response = await scholarshipManagementService.deleteScholarship(scholarship.scholarship_id);
-        
-        if(response.success) {
-          showSuccess('Success', response.message, 2000);
+	const handleDrawerDelete = async (scholarship: Scholarship) => {
+		try {
+			if (USE_MOCK_DATA) {
+				// Mock delete
+				await mockApiDelay(1000);
+				showSuccess("Success", "Scholarship deleted successfully", 2000);
 
-          queryClient.invalidateQueries({ queryKey: ['my-scholarships'] });
-        }
+				queryClient.invalidateQueries({ queryKey: ["my-scholarships"] });
+			} else {
+				const response = await scholarshipManagementService.deleteScholarship(
+					scholarship.id,
+				);
 
-      }
-    } catch (error) {
-      const handled = handleError(error, 'Failed to delete scholarship.');
-      logger.error('Delete scholarship error:', handled.raw);
-      showError(`Error ${handled.code}`, handled.message, 2500);
-    }
-  };
+				if (response.success) {
+					showSuccess("Success", response.message, 2000);
 
-  const confirmDelete = async () => {
-    if (!scholarshipToDelete) return;
+					queryClient.invalidateQueries({ queryKey: ["my-scholarships"] });
+				}
+			}
+		} catch (error) {
+			const handled = handleError(error, "Failed to delete scholarship.");
+			logger.error("Delete scholarship error:", handled.raw);
+			showError(`Error ${handled.code}`, handled.message, 2500);
+		}
+	};
 
-    try {
-      setIsDeleting(true);
-      await handleDrawerDelete(scholarshipToDelete);
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteModal(false);
-      setScholarshipToDelete(null);
-    }
-  };
+	const confirmDelete = async () => {
+		if (!scholarshipToDelete) return;
 
-  useEffect(() => {
-    if (isError && error) {
-      showError('Error', error.message, 2500);
-    }
-  }, [isError, error, showError]);
+		try {
+			setIsDeleting(true);
+			await handleDrawerDelete(scholarshipToDelete);
+		} finally {
+			setIsDeleting(false);
+			setShowDeleteModal(false);
+			setScholarshipToDelete(null);
+		}
+	};
 
+	useEffect(() => {
+		if (scholarships.isError) {
+			showError("Error", scholarships.error.message, 2500);
+		}
+	}, [scholarships.isError, scholarships.error, showError]);
 
-  const filteredScholarships = useMemo(() => {
-    return scholarships.filter((scholarship) => {
-      const matchesType =
-        scholarshipType === 'All' ||
-        scholarship.type.toLowerCase() === scholarshipType.toLowerCase();
+	const filteredScholarships = useMemo(() => {
+		return scholarships.data.filter((scholarship) => {
+			const matchesType =
+				scholarshipType === "All" ||
+				scholarship.scholarshipType.code === scholarshipType.toLowerCase();
 
-      const matchesPurpose =
-        purpose === 'All' || scholarship.purpose.toLowerCase() === purpose.toLowerCase();
+			const matchesPurpose =
+				purpose === "All" ||
+				scholarship.purpose.code.toLowerCase() === purpose.toLowerCase();
 
-      const amountPerScholar =
-        scholarship.total_amount && scholarship.total_slot
-          ? scholarship.total_amount / scholarship.total_slot
-          : 0;
+			const amountPerScholar =
+				scholarship.totalAmount && scholarship.totalSlots
+					? scholarship.totalAmount / scholarship.totalSlots
+					: 0;
 
-      const matchesApplications =
-        (!applicationsRange.min || (scholarship.applications_count !== undefined && scholarship.applications_count >= Number(applicationsRange.min))) &&
-        (!applicationsRange.max || (scholarship.applications_count !== undefined && scholarship.applications_count <= Number(applicationsRange.max)));
+			const matchesApplications =
+				(!applicationsRange.min ||
+					(scholarship.applicationCount !== undefined &&
+						scholarship.applicationCount >= Number(applicationsRange.min))) &&
+				(!applicationsRange.max ||
+					(scholarship.applicationCount !== undefined &&
+						scholarship.applicationCount <= Number(applicationsRange.max)));
 
-      const matchesAmount =
-        (!amountRange.min || amountPerScholar >= Number(amountRange.min)) &&
-        (!amountRange.max || amountPerScholar <= Number(amountRange.max));
+			const matchesAmount =
+				(!amountRange.min || amountPerScholar >= Number(amountRange.min)) &&
+				(!amountRange.max || amountPerScholar <= Number(amountRange.max));
 
-      const matchesSlots =
-        (!slotRange.min || scholarship.total_slot >= Number(slotRange.min)) &&
-        (!slotRange.max || scholarship.total_slot <= Number(slotRange.max));
+			const matchesSlots =
+				(!slotRange.min || scholarship.totalSlots >= Number(slotRange.min)) &&
+				(!slotRange.max || scholarship.totalSlots <= Number(slotRange.max));
 
-      return matchesType && matchesPurpose && matchesApplications && matchesAmount && matchesSlots;
-    });
-  }, [scholarships, scholarshipType, purpose, applicationsRange, amountRange, slotRange]);
+			return (
+				matchesType &&
+				matchesPurpose &&
+				matchesApplications &&
+				matchesAmount &&
+				matchesSlots
+			);
+		});
+	}, [
+		scholarships,
+		scholarshipType,
+		purpose,
+		applicationsRange,
+		amountRange,
+		slotRange,
+	]);
 
-  return (
-    <div className="min-h-screen">
-      {toast && <Toast {...toast} />}
+	return (
+		<div className="min-h-screen">
+			{toast && <Toast {...toast} />}
 
-      {/* Mobile/Tablet Layout */}
-      <div className="lg:hidden space-y-2">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="bg-card rounded-md text-center p-2 border border-[#D3DCF6] shadow-sm"
-        >
-          <p className="text-base text-primary tracking-wide">My Scholarships</p>
-        </motion.div>
+			{/* Mobile/Tablet Layout */}
+			<div className="lg:hidden space-y-2">
+				<motion.div
+					initial={{ opacity: 0, y: -20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.4 }}
+					className="bg-card rounded-md text-center p-2 border border-[#D3DCF6] shadow-sm"
+				>
+					<p className="text-base text-primary tracking-wide">
+						My Scholarships
+					</p>
+				</motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="bg-white rounded-md p-2 shadow-sm"
-        >
-          <button
-            onClick={() => setShowFiltersModal(true)}
-            className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[#3A52A6] text-tertiary rounded-md hover:bg-[#2f4389] transition-colors"
-          >
-            <Filter size={16} />
-            <span className="text-xs md:text-md">Filters</span>
-          </button>
-        </motion.div>
-      </div>
+				<motion.div
+					initial={{ opacity: 0, y: -20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.4, delay: 0.1 }}
+					className="bg-white rounded-md p-2 shadow-sm"
+				>
+					<button
+						onClick={() => setShowFiltersModal(true)}
+						className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[#3A52A6] text-tertiary rounded-md hover:bg-[#2f4389] transition-colors"
+					>
+						<Filter size={16} />
+						<span className="text-xs md:text-md">Filters</span>
+					</button>
+				</motion.div>
+			</div>
 
-      {/* Mobile Filters */}
-      <AnimatePresence>
-        {showFiltersModal && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowFiltersModal(false)}
-              className="lg:hidden fixed inset-0 bg-black/50 z-40"
-            />
-            
-            {/* Bottom Sheet */}
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="lg:hidden fixed bottom-0 left-0 right-0 bg-card rounded-t-2xl shadow-2xl z-50 max-h-[85vh] overflow-hidden"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-white">
-                <div className="flex items-center gap-2">
-                  <Filter size={18} className="text-primary"/>
-                  <h2 className="text-base text-primary">Filters</h2>
-                </div>
-                <button
-                  onClick={() => setShowFiltersModal(false)}
-                  className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors"
-                >
-                  <X size={18} className="text-[#6B7280]" />
-                </button>
-              </div>
+			{/* Mobile Filters */}
+			<AnimatePresence>
+				{showFiltersModal && (
+					<>
+						{/* Backdrop */}
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							onClick={() => setShowFiltersModal(false)}
+							className="lg:hidden fixed inset-0 bg-black/50 z-40"
+						/>
 
-              {/* Filters Content */}
-              <div className="overflow-y-auto p-4 pb-6 max-h-[calc(85vh-72px)]">
-                <FilterSelect
-                  title="Sort By"
-                  options={[
-                    'Newest',
-                    'Oldest',
-                    'Deadline: Nearest',
-                    'Deadline: Farthest',
-                    'Amount: High to Low',
-                    'Amount: Low to High',
-                    'Slots: Most to Least',
-                    'Slots: Least to Most',
-                    'A → Z',
-                    'Z → A',
-                  ]}
-                  value={sortBy}
-                  onChange={setSortBy}
-                />
+						{/* Bottom Sheet */}
+						<motion.div
+							initial={{ y: "100%" }}
+							animate={{ y: 0 }}
+							exit={{ y: "100%" }}
+							transition={{ type: "spring", damping: 30, stiffness: 300 }}
+							className="lg:hidden fixed bottom-0 left-0 right-0 bg-card rounded-t-2xl shadow-2xl z-50 max-h-[85vh] overflow-hidden"
+						>
+							{/* Header */}
+							<div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-white">
+								<div className="flex items-center gap-2">
+									<Filter size={18} className="text-primary" />
+									<h2 className="text-base text-primary">Filters</h2>
+								</div>
+								<button
+									onClick={() => setShowFiltersModal(false)}
+									className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors"
+								>
+									<X size={18} className="text-[#6B7280]" />
+								</button>
+							</div>
 
-                <FilterSelect
-                  title="Scholarship Type"
-                  options={['All', 'Merit-Based', 'Skill-Based']}
-                  value={scholarshipType}
-                  onChange={setScholarshipType}
-                />
+							{/* Filters Content */}
+							<div className="overflow-y-auto p-4 pb-6 max-h-[calc(85vh-72px)]">
+								<FilterSelect
+									title="Sort By"
+									options={[
+										"Newest",
+										"Oldest",
+										"Deadline: Nearest",
+										"Deadline: Farthest",
+										"Amount: High to Low",
+										"Amount: Low to High",
+										"Slots: Most to Least",
+										"Slots: Least to Most",
+										"A → Z",
+										"Z → A",
+									]}
+									value={sortBy}
+									onChange={setSortBy}
+								/>
 
-                <FilterSelect
-                  title="Scholarship Purpose"
-                  options={['All', 'Allowance', 'Tuition']}
-                  value={purpose}
-                  onChange={setPurpose}
-                />
+								<FilterSelect
+									title="Scholarship Type"
+									options={["All", "Merit-Based", "Skill-Based"]}
+									value={scholarshipType}
+									onChange={setScholarshipType}
+								/>
 
-                <div className="mb-4">
-                  <label className="block text-xs text-primary mb-2">Applications</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={applicationsRange.min}
-                      onChange={(event) =>
-                        setApplicationsRange((prev) => ({ ...prev, min: event.target.value }))
-                      }
-                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                    />
-                    <span className="flex items-center text-[#6B7280]">to</span>
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={applicationsRange.max}
-                      onChange={(event) =>
-                        setApplicationsRange((prev) => ({ ...prev, max: event.target.value }))
-                      }
-                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                    />
-                  </div>
-                </div>
+								<FilterSelect
+									title="Scholarship Purpose"
+									options={["All", "Allowance", "Tuition"]}
+									value={purpose}
+									onChange={setPurpose}
+								/>
 
-                <div className="mb-4">
-                  <label className="block text-xs text-primary mb-2">Amount per Scholar</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={amountRange.min}
-                      onChange={(event) =>
-                        setAmountRange((prev) => ({ ...prev, min: event.target.value }))
-                      }
-                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                    />
-                    <span className="flex items-center text-[#6B7280]">to</span>
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={amountRange.max}
-                      onChange={(event) =>
-                        setAmountRange((prev) => ({ ...prev, max: event.target.value }))
-                      }
-                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                    />
-                  </div>
-                </div>
+								<div className="mb-4">
+									<label className="block text-xs text-primary mb-2">
+										Applications
+									</label>
+									<div className="flex gap-2">
+										<input
+											type="number"
+											placeholder="Min"
+											value={applicationsRange.min}
+											onChange={(event) =>
+												setApplicationsRange((prev) => ({
+													...prev,
+													min: event.target.value,
+												}))
+											}
+											className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+										/>
+										<span className="flex items-center text-[#6B7280]">to</span>
+										<input
+											type="number"
+											placeholder="Max"
+											value={applicationsRange.max}
+											onChange={(event) =>
+												setApplicationsRange((prev) => ({
+													...prev,
+													max: event.target.value,
+												}))
+											}
+											className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+										/>
+									</div>
+								</div>
 
-                <div className="mb-2">
-                  <label className="block text-xs text-primary mb-2">Slots</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={slotRange.min}
-                      onChange={(event) =>
-                        setSlotRange((prev) => ({ ...prev, min: event.target.value }))
-                      }
-                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                    />
-                    <span className="flex items-center text-[#6B7280]">to</span>
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={slotRange.max}
-                      onChange={(event) =>
-                        setSlotRange((prev) => ({ ...prev, max: event.target.value }))
-                      }
-                      className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+								<div className="mb-4">
+									<label className="block text-xs text-primary mb-2">
+										Amount per Scholar
+									</label>
+									<div className="flex gap-2">
+										<input
+											type="number"
+											placeholder="Min"
+											value={amountRange.min}
+											onChange={(event) =>
+												setAmountRange((prev) => ({
+													...prev,
+													min: event.target.value,
+												}))
+											}
+											className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+										/>
+										<span className="flex items-center text-[#6B7280]">to</span>
+										<input
+											type="number"
+											placeholder="Max"
+											value={amountRange.max}
+											onChange={(event) =>
+												setAmountRange((prev) => ({
+													...prev,
+													max: event.target.value,
+												}))
+											}
+											className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+										/>
+									</div>
+								</div>
 
-      <div className="space-y-4 mt-4 lg:mt-0">
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
-          <motion.aside
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4 }}
-            className="hidden lg:block"
-          >
-            <div className='h-fit sticky top-4'>
-              <div className="bg-card rounded-md text-center p-4 border border-[#D3DCF6] shadow-sm mb-2">
-                <p className="text-xl text-primary tracking-wide">My Scholarships</p>
-              </div>
+								<div className="mb-2">
+									<label className="block text-xs text-primary mb-2">
+										Slots
+									</label>
+									<div className="flex gap-2">
+										<input
+											type="number"
+											placeholder="Min"
+											value={slotRange.min}
+											onChange={(event) =>
+												setSlotRange((prev) => ({
+													...prev,
+													min: event.target.value,
+												}))
+											}
+											className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+										/>
+										<span className="flex items-center text-[#6B7280]">to</span>
+										<input
+											type="number"
+											placeholder="Max"
+											value={slotRange.max}
+											onChange={(event) =>
+												setSlotRange((prev) => ({
+													...prev,
+													max: event.target.value,
+												}))
+											}
+											className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+										/>
+									</div>
+								</div>
+							</div>
+						</motion.div>
+					</>
+				)}
+			</AnimatePresence>
 
-              <div
-                className="bg-card rounded-md border border-[#D3DCF6] shadow-[0_20px_40px_rgba(17,24,39,0.04)]"
-              >
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-6">
-                    <Filter size={20} className="text-primary" />
-                    <h2 className="text-md text-primary">Filters</h2>
-                  </div>
+			<div className="space-y-4 mt-4 lg:mt-0">
+				<div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
+					<motion.aside
+						initial={{ opacity: 0, x: -20 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.4 }}
+						className="hidden lg:block"
+					>
+						<div className="h-fit sticky top-4">
+							<div className="bg-card rounded-md text-center p-4 border border-[#D3DCF6] shadow-sm mb-2">
+								<p className="text-xl text-primary tracking-wide">
+									My Scholarships
+								</p>
+							</div>
 
-                  <FilterSelect
-                    title="Sort By"
-                    options={[
-                      'Newest',
-                      'Oldest',
-                      'Deadline: Nearest',
-                      'Deadline: Farthest',
-                      'Amount: High to Low',
-                      'Amount: Low to High',
-                      'Slots: Most to Least',
-                      'Slots: Least to Most',
-                      'A → Z',
-                      'Z → A',
-                    ]}
-                    value={sortBy}
-                    onChange={setSortBy}
-                  />
+							<div className="bg-card rounded-md border border-[#D3DCF6] shadow-[0_20px_40px_rgba(17,24,39,0.04)]">
+								<div className="p-6">
+									<div className="flex items-center gap-2 mb-6">
+										<Filter size={20} className="text-primary" />
+										<h2 className="text-md text-primary">Filters</h2>
+									</div>
 
-                  <FilterSelect
-                    title="Scholarship Type"
-                    options={['All', 'Merit-Based', 'Skill-Based']}
-                    value={scholarshipType}
-                    onChange={setScholarshipType}
-                  />
+									<FilterSelect
+										title="Sort By"
+										options={[
+											"Newest",
+											"Oldest",
+											"Deadline: Nearest",
+											"Deadline: Farthest",
+											"Amount: High to Low",
+											"Amount: Low to High",
+											"Slots: Most to Least",
+											"Slots: Least to Most",
+											"A → Z",
+											"Z → A",
+										]}
+										value={sortBy}
+										onChange={setSortBy}
+									/>
 
-                  <FilterSelect
-                    title="Scholarship Purpose"
-                    options={['All', 'Allowance', 'Tuition']}
-                    value={purpose}
-                    onChange={setPurpose}
-                  />
+									<FilterSelect
+										title="Scholarship Type"
+										options={["All", "Merit-Based", "Skill-Based"]}
+										value={scholarshipType}
+										onChange={setScholarshipType}
+									/>
 
-                  <div className="mb-6">
-                    <label className="block text-sm text-primary mb-2">Applications</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        value={applicationsRange.min}
-                        onChange={(event) =>
-                          setApplicationsRange((prev) => ({ ...prev, min: event.target.value }))
-                        }
-                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                      />
-                      <span className="flex items-center text-[#6B7280]">to</span>
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        value={applicationsRange.max}
-                        onChange={(event) =>
-                          setApplicationsRange((prev) => ({ ...prev, max: event.target.value }))
-                        }
-                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
+									<FilterSelect
+										title="Scholarship Purpose"
+										options={["All", "Allowance", "Tuition"]}
+										value={purpose}
+										onChange={setPurpose}
+									/>
 
-                  <div className="mb-6">
-                    <label className="block text-sm text-primary mb-2">Amount per Scholar</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        value={amountRange.min}
-                        onChange={(event) =>
-                          setAmountRange((prev) => ({ ...prev, min: event.target.value }))
-                        }
-                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                      />
-                      <span className="flex items-center text-[#6B7280]">to</span>
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        value={amountRange.max}
-                        onChange={(event) =>
-                          setAmountRange((prev) => ({ ...prev, max: event.target.value }))
-                        }
-                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
+									<div className="mb-6">
+										<label className="block text-sm text-primary mb-2">
+											Applications
+										</label>
+										<div className="flex gap-2">
+											<input
+												type="number"
+												placeholder="Min"
+												value={applicationsRange.min}
+												onChange={(event) =>
+													setApplicationsRange((prev) => ({
+														...prev,
+														min: event.target.value,
+													}))
+												}
+												className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+											/>
+											<span className="flex items-center text-[#6B7280]">
+												to
+											</span>
+											<input
+												type="number"
+												placeholder="Max"
+												value={applicationsRange.max}
+												onChange={(event) =>
+													setApplicationsRange((prev) => ({
+														...prev,
+														max: event.target.value,
+													}))
+												}
+												className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+											/>
+										</div>
+									</div>
 
-                  <div>
-                    <label className="block text-sm text-primary mb-2">Slots</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        value={slotRange.min}
-                        onChange={(event) =>
-                          setSlotRange((prev) => ({ ...prev, min: event.target.value }))
-                        }
-                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                      />
-                      <span className="flex items-center text-[#6B7280]">to</span>
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        value={slotRange.max}
-                        onChange={(event) =>
-                          setSlotRange((prev) => ({ ...prev, max: event.target.value }))
-                        }
-                        className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.aside>
-                        
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="space-y-5"
-          >
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
-              {loading ? (
-                Array.from({ length: 6 }).map((_, index) => (
-                  <ScholarshipCardSkeleton key={`skeleton-${index}`} index={index} />
-                ))
-              ) : filteredScholarships.length === 0 ? (
-                <div className="xl:col-span-2 flex flex-col items-center justify-center pt-24 md:pt-32">
-                  <GraduationCap className="w-24 md:w-30 h-24 md:h-30 text-[#D1D5DB]" />
-                  <p className="mt-5 text-lg md:text-xl text-[#9CA3AF]">No scholarships yet</p>
-                  <p className="max-w-xl text-sm md:text-base text-[#9CA3AF] mt-2 mb-4 md:mb-6">
-                    Create scholarship programs to help students succeed.
-                  </p>
-                  <button
-                    onClick={() => navigate({ to: '/create' })}
-                    className="inline-flex items-center cursor-pointer gap-2 px-4 py-2.5 bg-[#9CA3AF] text-tertiary text-sm md:text-base rounded-md hover:bg-muted-foreground hover:text-tertiary transition-colors"
-                  >
-                    <Plus size={18} />
-                    Create Scholarship
-                  </button>
-                </div>
-              ) : (
-                filteredScholarships.map((scholarship, index) => (
-                  <ScholarshipCard
-                    key={`${scholarship.scholarship_id}-${index}`}
-                    scholarship={scholarship}
-                    index={index}
-                    onClick={() => setSelectedScholarship(scholarship)}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onViewApplicants={handleViewApplicants}
-                  />
-                ))
-              )}
-            </div>
-          </motion.section>
-        </div>
-      </div>
+									<div className="mb-6">
+										<label className="block text-sm text-primary mb-2">
+											Amount per Scholar
+										</label>
+										<div className="flex gap-2">
+											<input
+												type="number"
+												placeholder="Min"
+												value={amountRange.min}
+												onChange={(event) =>
+													setAmountRange((prev) => ({
+														...prev,
+														min: event.target.value,
+													}))
+												}
+												className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+											/>
+											<span className="flex items-center text-[#6B7280]">
+												to
+											</span>
+											<input
+												type="number"
+												placeholder="Max"
+												value={amountRange.max}
+												onChange={(event) =>
+													setAmountRange((prev) => ({
+														...prev,
+														max: event.target.value,
+													}))
+												}
+												className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+											/>
+										</div>
+									</div>
 
-      {selectedScholarship && (
-        <ScholarshipDetailsModal
-          scholarship={selectedScholarship}
-          onClose={() => setSelectedScholarship(null)}
-          onEdit={handleEdit}
-          onDelete={handleDrawerDelete}
-          onViewApplicants={handleViewApplicants}
-        />
-      )}
-      
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && scholarshipToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="bg-[#F0F7FF] rounded-xl shadow-2xl max-w-sm w-full p-5"
-          >
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full text-[#EF4444] mb-1">
-                <AlertCircle size={36}/>
-              </div>
-              <h3 className="text-lg text-primary mb-2">Delete Scholarship</h3>
-              <p className="text-sm text-[#6B7280] mb-6">
-                Are you sure you want to delete "<strong>{scholarshipToDelete.title}</strong>"? This action cannot be undone.
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setScholarshipToDelete(null);
-                }}
-                disabled={isDeleting}
-                className={`flex-1 px-4 py-2 cursor-pointer text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 ${
-                  isDeleting && "opacity-60 cursor-not-allowed"
-                }`}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={isDeleting}
-                className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-tertiary rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
-                  isDeleting && "opacity-60 cursor-not-allowed"
-                }`}
-              >
-                {isDeleting ? (
-                  <span className="flex items-center justify-center">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  </span>
-                ) : (
-                  'Delete'
-                )}
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </div>
-  );
+									<div>
+										<label className="block text-sm text-primary mb-2">
+											Slots
+										</label>
+										<div className="flex gap-2">
+											<input
+												type="number"
+												placeholder="Min"
+												value={slotRange.min}
+												onChange={(event) =>
+													setSlotRange((prev) => ({
+														...prev,
+														min: event.target.value,
+													}))
+												}
+												className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+											/>
+											<span className="flex items-center text-[#6B7280]">
+												to
+											</span>
+											<input
+												type="number"
+												placeholder="Max"
+												value={slotRange.max}
+												onChange={(event) =>
+													setSlotRange((prev) => ({
+														...prev,
+														max: event.target.value,
+													}))
+												}
+												className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#3A52A6] focus:border-transparent"
+											/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</motion.aside>
+
+					<motion.section
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.4 }}
+						className="space-y-5"
+					>
+						<div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
+							{scholarships.isLoading ? (
+								Array.from({ length: 6 }).map((_, index) => (
+									<ScholarshipCardSkeleton
+										key={`skeleton-${index}`}
+										index={index}
+									/>
+								))
+							) : filteredScholarships.length === 0 ? (
+								<div className="xl:col-span-2 flex flex-col items-center justify-center pt-24 md:pt-32">
+									<GraduationCap className="w-24 md:w-30 h-24 md:h-30 text-[#D1D5DB]" />
+									<p className="mt-5 text-lg md:text-xl text-[#9CA3AF]">
+										No scholarships yet
+									</p>
+									<p className="max-w-xl text-sm md:text-base text-[#9CA3AF] mt-2 mb-4 md:mb-6">
+										Create scholarship programs to help students succeed.
+									</p>
+									<button
+										onClick={() => navigate({ to: "/create" })}
+										className="inline-flex items-center cursor-pointer gap-2 px-4 py-2.5 bg-[#9CA3AF] text-tertiary text-sm md:text-base rounded-md hover:bg-muted-foreground hover:text-tertiary transition-colors"
+									>
+										<Plus size={18} />
+										Create Scholarship
+									</button>
+								</div>
+							) : (
+								filteredScholarships.map((scholarship, index) => (
+									<ScholarshipCard
+										key={scholarship.id}
+										scholarship={scholarship}
+										index={index}
+										onClick={() => setSelectedScholarship(scholarship)}
+										onEdit={handleEdit}
+										onDelete={handleDelete}
+										onViewApplicants={handleViewApplicants}
+									/>
+								))
+							)}
+						</div>
+					</motion.section>
+				</div>
+			</div>
+
+			{selectedScholarship && (
+				<ScholarshipDetailsModal
+					scholarship={selectedScholarship}
+					onClose={() => setSelectedScholarship(null)}
+					onEdit={handleEdit}
+					onDelete={handleDrawerDelete}
+					onViewApplicants={handleViewApplicants}
+				/>
+			)}
+
+			{/* Delete Confirmation Modal */}
+			{showDeleteModal && scholarshipToDelete && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]">
+					<motion.div
+						initial={{ opacity: 0, scale: 0.95 }}
+						animate={{ opacity: 1, scale: 1 }}
+						exit={{ opacity: 0, scale: 0.95 }}
+						transition={{ duration: 0.2 }}
+						className="bg-[#F0F7FF] rounded-xl shadow-2xl max-w-sm w-full p-5"
+					>
+						<div className="text-center">
+							<div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full text-[#EF4444] mb-1">
+								<AlertCircle size={36} />
+							</div>
+							<h3 className="text-lg text-primary mb-2">Delete Scholarship</h3>
+							<p className="text-sm text-[#6B7280] mb-6">
+								Are you sure you want to delete "
+								<strong>{scholarshipToDelete.name}</strong>"? This action cannot
+								be undone.
+							</p>
+						</div>
+						<div className="flex gap-3">
+							<button
+								onClick={() => {
+									setShowDeleteModal(false);
+									setScholarshipToDelete(null);
+								}}
+								disabled={isDeleting}
+								className={`flex-1 px-4 py-2 cursor-pointer text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 ${
+									isDeleting && "opacity-60 cursor-not-allowed"
+								}`}
+							>
+								Cancel
+							</button>
+							<button
+								onClick={confirmDelete}
+								disabled={isDeleting}
+								className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-tertiary rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+									isDeleting && "opacity-60 cursor-not-allowed"
+								}`}
+							>
+								{isDeleting ? (
+									<span className="flex items-center justify-center">
+										<Loader2 className="w-4 h-4 animate-spin" />
+									</span>
+								) : (
+									"Delete"
+								)}
+							</button>
+						</div>
+					</motion.div>
+				</div>
+			)}
+		</div>
+	);
 }

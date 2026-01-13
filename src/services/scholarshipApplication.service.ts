@@ -1,7 +1,7 @@
 import { authService } from './auth.service';
 import { handleError, safeParseJSON } from '@/lib/errorHandler';
 import { logger } from '@/lib/logger';
-import type { Scholarship } from '@/types/scholarship.types';
+import type { ScholarshipOld } from '@/types/scholarship.types';
 import type { FormFieldResponse } from '@/types/form.types';
 import { fetchWithTimeout } from '@/utils/fetchWithTimeout.utils';
 
@@ -70,7 +70,7 @@ export interface ScholarshipApplication {
     };
   };
   /** Scholarship information */
-  scholarship: Scholarship;
+  scholarship: ScholarshipOld;
 }
 
 interface ApplicationResponse {

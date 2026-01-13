@@ -1,4 +1,4 @@
-import type { Scholarship } from '@/types/scholarship.types';
+import type { ScholarshipOld } from '@/types/scholarship.types';
 
 /**
  * Mock delay to simulate API latency
@@ -9,7 +9,7 @@ export const mockApiDelay = (ms: number = 2000) =>
 /**
  * Mock scholarship data for application form
  */
-export const mockScholarshipDetails: Partial<Scholarship> = {
+export const mockScholarshipDetails: Partial<ScholarshipOld> = {
   scholarship_id: '1',
   title: 'CHED Merit Scholarship Program 2024',
   description: 'This scholarship program aims to support outstanding students who demonstrate academic excellence and financial need.',

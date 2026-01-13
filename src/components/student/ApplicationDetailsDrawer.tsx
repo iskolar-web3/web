@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronsRight, Calendar, Coins, Users, Info, Check, Clock } from 'lucide-react';
-import type { Application, ApplicationStatus } from '@/types/application.types';
+import type { ApplicationOld, ApplicationStatusOld } from '@/types/application.types';
 import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting.utils';
+import type { Application, ScholarshipApplicationStatus } from '@/lib/scholarship/model';
+import { getSponsorName } from '@/lib/sponsor/api';
 
 /**
  * Props for the ApplicationDetailsModal component
@@ -19,7 +21,7 @@ interface ApplicationDetailsModalProps {
  * Maps each status to its display label and Tailwind CSS classes
  */
 export const statusStyles: Record<
-  ApplicationStatus,
+  ScholarshipApplicationStatus,
   { label: string; bg: string; text: string; border: string }
 > = {
   pending: {
@@ -63,11 +65,11 @@ export const statusStyles: Record<
 export default function ApplicationDetailsModal({ application, onClose }: ApplicationDetailsModalProps) {
   const [isExiting, setIsExiting] = useState(false);
 
-  const statusStyle = statusStyles[application.status];
+  const statusStyle = statusStyles[application.application.status.code];
 
   const amountPerScholar = calculateAmountPerScholar(
-    application.scholarship.total_amount,
-    application.scholarship.total_slot
+    application.scholarship.totalAmount,
+    application.scholarship.totalSlots
   ) ?? 0;
 
   /**
@@ -131,29 +133,29 @@ export default function ApplicationDetailsModal({ application, onClose }: Applic
                 </p>
               </div>
             </div>
-            {application.remarks && (
-              <p className="mt-2 text-xs italic text-[#4B5563]">{application.remarks}</p>
+            {application.application.remarks && (
+              <p className="mt-2 text-xs italic text-[#4B5563]">{application.application.remarks}</p>
             )}
           </div>
 
           {/* Scholarship Image */}
           <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-[0_0_20px_2px_rgba(0,0,0,0.2)]">
             <img
-              src={application.scholarship.image_url}
-              alt={application.scholarship.title}
+              src={application.scholarship.imageUrl || ""}
+              alt={application.scholarship.name}
               className="w-full h-full object-cover"
             />
           </div>
 
           {/* Title and Badges */}
           <div>
-            <h1 className="text-[26px] text-[#111827] mb-2">{application.scholarship.title}</h1>
+            <h1 className="text-[26px] text-[#111827] mb-2">{application.scholarship.name}</h1>
             <div className="flex gap-2 mb-4">
               <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
-                {application.scholarship.type}
+                {application.scholarship.scholarshipType.name}
               </span>
               <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
-                {application.scholarship.purpose}
+                {application.scholarship.purpose.name}
               </span>
             </div>
 
@@ -161,16 +163,16 @@ export default function ApplicationDetailsModal({ application, onClose }: Applic
             <div className="space-y-3 text-[#6B7280]">
               <div className="flex items-center gap-2">
                 <img
-                  src={application.scholarship.sponsor.profile_url}
+                  src={application.scholarship.sponsor.avatarUrl || ""}
                   alt="Sponsor Profile"
                   className="w-5.5 h-5.5 bg-white/20 rounded-full flex-shrink-0 object-cover"
                 />
-                <span className="text-sm">{application.scholarship.sponsor.name}</span>
+                <span className="text-sm">{getSponsorName(application.scholarship.sponsor)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar size={22} />
                 <span className="text-sm">
-                  Deadline: {formatDate(application.scholarship.application_deadline)}
+                  Deadline: {formatDate(application.scholarship.applicationDeadline)}
                 </span>
               </div>
             </div>
@@ -199,7 +201,7 @@ export default function ApplicationDetailsModal({ application, onClose }: Applic
                 <span className="text-xs">Slots</span>
               </div>
               <p className="text-base text-[#111827] mb-0.5">
-                {application.scholarship.total_slot}
+                {application.scholarship.totalSlots}
               </p>
               <p className="text-xs text-[#6B7280]">scholars</p>
             </div>
@@ -219,7 +221,7 @@ export default function ApplicationDetailsModal({ application, onClose }: Applic
           <div>
             <h3 className="text-sm text-[#111827] mb-2">Eligibility Criteria</h3>
             <div className="flex flex-wrap gap-2">
-              {application.scholarship.criteria?.map((criterion: string, i: number) => (
+              {application.scholarship.criterias?.map((criterion: string, i: number) => (
                 <span
                   key={i}
                   className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border"
@@ -234,7 +236,7 @@ export default function ApplicationDetailsModal({ application, onClose }: Applic
           <div>
             <h3 className="text-sm text-[#111827] mb-2">Required Documents</h3>
             <div className="grid grid-cols-2 gap-2">
-              {application.scholarship.required_documents?.map((doc: string, i: number) => (
+              {application.scholarship.requirements?.map((doc: string, i: number) => (
                 <div
                   key={i}
                   className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border text-center"
@@ -259,7 +261,7 @@ export default function ApplicationDetailsModal({ application, onClose }: Applic
                 <div>
                   <p className="text-xs text-[#4B5563]">Applied</p>
                   <p className="text-[11px] text-[#9CA3AF]">
-                    {formatDateTime(application.applied_at)}
+                    {formatDateTime(application.application.createdAt)}
                   </p>
                 </div>
               </div>
@@ -271,7 +273,7 @@ export default function ApplicationDetailsModal({ application, onClose }: Applic
                 <div>
                   <p className="text-xs text-[#4B5563]">Last Updated</p>
                   <p className="text-[11px] text-[#9CA3AF]">
-                    {formatDateTime(application.updated_at)}
+                    {formatDateTime(application.application.updatedAt)}
                   </p>
                 </div>
               </div>

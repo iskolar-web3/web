@@ -1,5 +1,4 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Scholarship } from '@/types/scholarship.types';
 import { 
   Calendar, 
   Users, 
@@ -28,6 +27,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting.utils';
+import { ScholarshipStatus, type Scholarship } from '@/lib/scholarship/model';
+import { getSponsorName } from '@/lib/sponsor/api';
 
 /**
  * Props for the ScholarshipDetailsModal component (sponsor view)
@@ -63,7 +64,7 @@ export default function ScholarshipDetailsModal({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
+  const amountPerScholar = calculateAmountPerScholar(scholarship.totalAmount, scholarship.totalSlots);
 
   /**
    * Gets the human-readable label for a field type
@@ -124,7 +125,7 @@ export default function ScholarshipDetailsModal({
    * @returns True if scholarship status is 'closed'
    */
   const isClosed = useCallback(() => {
-    return scholarship.status === 'closed';
+    return scholarship.status.code === ScholarshipStatus.Closed;
   }, [scholarship?.status]);
 
   /**
@@ -216,24 +217,24 @@ export default function ScholarshipDetailsModal({
             <div className="flex items-center gap-2 mb-4">
               <div
                 className={`w-2 h-2 rounded-full ${
-                  scholarship.status === 'closed' ? 'bg-[#EF4444]' : 'bg-[#31D0AA]'
+                  scholarship.status.code === ScholarshipStatus.Closed ? 'bg-[#EF4444]' : 'bg-[#31D0AA]'
                 }`}
               />
               <span
                 className={`text-sm font-medium capitalize ${
-                  scholarship.status === 'closed' ? 'text-[#EF4444]' : 'text-[#31D0AA]'
+                  scholarship.status.code === ScholarshipStatus.Closed ? 'text-[#EF4444]' : 'text-[#31D0AA]'
                 }`}
               >
-                {scholarship.status}
+                {scholarship.status.name}
               </span>
             </div>
 
             {/* Image Banner */}
             <div className="relative w-full aspect-square mb-5 rounded-lg overflow-hidden shadow-[0_0_20px_2px_rgba(0,0,0,0.2)]">
-              {scholarship.image_url ? (
+              {scholarship.imageUrl ? (
                 <img
-                  src={scholarship.image_url}
-                  alt={scholarship.title || 'Scholarship'}
+                  src={scholarship.imageUrl}
+                  alt={scholarship.name || 'Scholarship'}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -245,17 +246,17 @@ export default function ScholarshipDetailsModal({
 
             {/* Title and Badges */}
             <h1 className="text-[26px] text-primary mb-2">
-              {scholarship.title || 'Scholarship Title'}
+              {scholarship.name || 'Scholarship Title'}
             </h1>
             <div className="flex gap-2 mb-4">
-              {scholarship.type && (
+              {scholarship.scholarshipType.code && (
                 <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
-                  {scholarship.type === 'merit_based' ? 'Merit-Based' : 'Skill-Based'}
+                {scholarship.scholarshipType.name}
                 </span>
               )}
-              {scholarship.purpose && (
+              {scholarship.purpose.code && (
                 <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
-                  {scholarship.purpose === 'allowance' ? 'Allowance' : 'Tuition'}
+                  {scholarship.purpose.name}
                 </span>
               )}
             </div>
@@ -264,22 +265,22 @@ export default function ScholarshipDetailsModal({
             <div className="space-y-3 mb-4 text-[#6B7280]">
               <div className="flex items-center gap-2">
                 <div className="w-5.5 h-5.5 rounded-full flex items-center justify-center flex-shrink-0">
-                  {scholarship?.sponsor?.profile_url ? (
+                  {scholarship?.sponsor?.avatarUrl ? (
                     <img
-                      src={scholarship?.sponsor?.profile_url}
-                      alt={scholarship.sponsor.name}
+                      src={scholarship?.sponsor?.avatarUrl}
+                      alt={scholarship.sponsor.email}
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
                     <UserIcon className="w-full h-full" />
                   )}
                 </div>
-                <span className="text-sm">{scholarship.sponsor?.name || 'iSkolar'}</span>
+                <span className="text-sm">{getSponsorName(scholarship.sponsor)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar size={22} />
                 <span className="text-sm">
-                  {formatDeadline(scholarship.application_deadline)}
+                  {formatDeadline(scholarship.applicationDeadline)}
                 </span>
               </div>
             </div>
@@ -291,7 +292,7 @@ export default function ScholarshipDetailsModal({
                   <Users size={16} />
                   <span className="text-xs">Applications</span>
                 </div>
-                <p className="text-base text-primary">{scholarship.applications_count || 0}</p>
+                <p className="text-base text-primary">{scholarship.applicationCount || 0}</p>
                 <p className="text-xs text-[#6B7280]">applicants</p>
               </div>
 
@@ -316,7 +317,7 @@ export default function ScholarshipDetailsModal({
                   <Users size={16} />
                   <span className="text-xs">Slots</span>
                 </div>
-                <p className="text-base text-primary mb-0.5">{scholarship.total_slot || 0}</p>
+                <p className="text-base text-primary mb-0.5">{scholarship.totalSlots || 0}</p>
                 <p className="text-xs text-[#6B7280]">scholars</p>
               </div>
             </div>
@@ -332,11 +333,11 @@ export default function ScholarshipDetailsModal({
             )}
 
             {/* Eligibility Criteria */}
-            {scholarship.criteria && scholarship.criteria.length > 0 && (
+            {scholarship.criterias.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm text-primary mb-2">Eligibility Criteria</h3>
                 <div className="flex flex-wrap gap-2">
-                  {scholarship.criteria.map((criterion: string, i: number) => (
+                  {scholarship.criterias.map((criterion: string, i: number) => (
                     <span
                       key={i}
                       className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border"
@@ -349,11 +350,11 @@ export default function ScholarshipDetailsModal({
             )}
 
             {/* Required Documents */}
-            {scholarship.required_documents && scholarship.required_documents.length > 0 && (
+            {scholarship.requirements && scholarship.requirements.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm text-primary mb-2">Required Documents</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {scholarship.required_documents.map((doc: string, i: number) => (
+                  {scholarship.requirements.map((doc: string, i: number) => (
                     <div
                       key={i}
                       className="px-3 py-2 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border text-center"
@@ -366,11 +367,11 @@ export default function ScholarshipDetailsModal({
             )}
 
             {/* Custom Form Fields */}
-            {scholarship.custom_form_fields && scholarship.custom_form_fields.length > 0 && (
+            {scholarship.formFields.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm text-primary mb-3">Application Form Fields</h3>
                 <div className="space-y-2.5">
-                  {scholarship.custom_form_fields.map((field: any, i: number) => (
+                  {scholarship.formFields.map((field: any, i: number) => (
                     <div key={i} className="flex items-start gap-3 p-3 bg-[#F9FAFB] border border-[#E0ECFF] rounded-lg">
                       <div className="w-9 h-9 bg-[#E0ECFF] rounded-lg flex items-center justify-center flex-shrink-0">
                         {renderFieldTypeIcon(field.type)}
@@ -458,8 +459,8 @@ export default function ScholarshipDetailsModal({
                 </h3>
                 <p className="text-sm text-[#6B7280] mb-6">
                   {isClosed() 
-                    ? `Are you sure you want to archive "${scholarship.title}"? This will move it to your archived scholarships.`
-                    : `Are you sure you want to delete "${scholarship.title}"? This action cannot be undone.`
+                    ? `Are you sure you want to archive "${scholarship.name}"? This will move it to your archived scholarships.`
+                    : `Are you sure you want to delete "${scholarship.name}"? This action cannot be undone.`
                   }
                 </p>
               </div>

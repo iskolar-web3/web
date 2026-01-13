@@ -1,5 +1,5 @@
 import { Edit2, Trash2 } from 'lucide-react';
-import type { CustomFieldType } from '@/hooks/useScholarshipForm';
+import type { CreateFormFieldRequest } from '@/hooks/useScholarshipForm';
 import {
   Type as TypeIcon,
   AlignLeft,
@@ -11,27 +11,28 @@ import {
   Paperclip,
   CalendarIcon,
 } from 'lucide-react';
+import { FormFieldType } from '@/lib/scholarship/model';
 
 /**
  * Custom form field structure
  */
-interface CustomFormField {
-  /** Field type */
-  type: CustomFieldType;
-  /** Field label */
-  label: string;
-  /** Whether the field is required */
-  required: boolean;
-  /** Options for dropdown/checkbox/multiple choice fields */
-  options?: string[];
-}
+// interface CustomFormField {
+//   /** Field type */
+//   type: CustomFieldType;
+//   /** Field label */
+//   label: string;
+//   /** Whether the field is required */
+//   required: boolean;
+//   /** Options for dropdown/checkbox/multiple choice fields */
+//   options?: string[];
+// }
 
 /**
  * Props for the CustomFormFieldsList component
  */
 interface CustomFormFieldsListProps {
   /** Array of custom form fields */
-  fields: CustomFormField[];
+  fields: CreateFormFieldRequest[];
   /** Callback when edit button is clicked */
   onEdit: (index: number) => void;
   /** Callback when remove button is clicked */
@@ -45,21 +46,31 @@ interface CustomFormFieldsListProps {
  * @param fieldType - The custom field type
  * @returns Icon component for the field type
  */
-const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
+export const renderFieldTypeIcon = (fieldType: FormFieldType) => {
   const iconProps = { size: 18, className: "text-secondary" };
-  const icons = {
-    text: <TypeIcon {...iconProps} />,
-    textarea: <AlignLeft {...iconProps} />,
-    dropdown: <ListChecks {...iconProps} />,
-    multiple_choice: <ListChecks {...iconProps} />,
-    checkbox: <CheckSquare {...iconProps} />,
-    number: <Hash {...iconProps} />,
-    date: <CalendarIcon {...iconProps} />,
-    email: <Mail {...iconProps} />,
-    phone: <Phone {...iconProps} />,
-    file: <Paperclip {...iconProps} />,
-  };
-  return icons[fieldType] || icons.text;
+
+  switch(fieldType) {
+      case FormFieldType.ShortAnswer:
+        return <TypeIcon {...iconProps} />
+      case FormFieldType.Paragraph:
+        return <AlignLeft {...iconProps} />
+      case FormFieldType.Dropdown:
+        return <ListChecks {...iconProps} />
+      case FormFieldType.MultipleChoice:
+        return <ListChecks {...iconProps} />
+      case FormFieldType.Checkbox:
+        return <CheckSquare {...iconProps} />
+      case FormFieldType.Number:
+        return <Hash {...iconProps} />
+      case FormFieldType.Date:
+        return <CalendarIcon {...iconProps} />
+      case FormFieldType.Email:
+        return <Mail {...iconProps} />
+      case FormFieldType.Phone:
+        return <Phone {...iconProps} />
+      case FormFieldType.File:
+        return <Paperclip {...iconProps} />
+  }
 };
 
 /**
@@ -67,20 +78,31 @@ const renderFieldTypeIcon = (fieldType: CustomFieldType) => {
  * @param fieldType - The custom field type
  * @returns Display label for the field type
  */
-const getFieldTypeLabel = (fieldType: CustomFieldType) => {
-  const labels = {
-    text: 'Short answer',
-    textarea: 'Long answer',
-    multiple_choice: 'Multiple choice',
-    dropdown: 'Dropdown',
-    checkbox: 'Checkbox',
-    number: 'Number',
-    date: 'Date',
-    email: 'Email',
-    phone: 'Phone number',
-    file: 'File upload',
-  };
-  return labels[fieldType] || fieldType;
+export const getFieldTypeLabel = (fieldType: FormFieldType) => {
+  switch(fieldType) {
+      case FormFieldType.ShortAnswer:
+        return "Short answer"
+      case FormFieldType.Paragraph:
+        return "Long answer"
+      case FormFieldType.MultipleChoice:
+        return "Multiple choice"
+      case FormFieldType.Dropdown:
+        return "Dropdown"
+      case FormFieldType.Checkbox:
+        return "Checkbox"
+      case FormFieldType.Number:
+        return "Number"
+      case FormFieldType.Date:
+        return "Date"
+      case FormFieldType.Email:
+        return "Email"
+      case FormFieldType.Phone:
+        return "Phone number"
+      case FormFieldType.File:
+        return "File upload"
+      default:
+          return "IDK"
+  }
 };
 
 /**
@@ -102,16 +124,16 @@ export default function CustomFormFieldsList({
       {fields.map((field, index) => (
         <div key={index} className="flex items-center gap-3 p-3 bg-white border border-[#E0ECFF] rounded-lg">
           <div className="w-9 h-9 bg-[#E0ECFF] rounded-lg flex items-center justify-center">
-            {renderFieldTypeIcon(field.type)}
+            {renderFieldTypeIcon(field.fieldType)}
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <span className="text-sm text-primary">{field.label}</span>
-              {field.required && (
+              {field.isRequired && (
                 <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded">Required</span>
               )}
             </div>
-            <p className="text-xs text-[#6B7280]">{getFieldTypeLabel(field.type)}</p>
+            <p className="text-xs text-[#6B7280]">{getFieldTypeLabel(field.fieldType)}</p>
           </div>
           <button
             disabled={disabled}

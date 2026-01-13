@@ -1,4 +1,4 @@
-import type { Scholarship } from '@/types/scholarship.types';
+import type { ScholarshipOld } from '@/types/scholarship.types';
 import type { ScholarshipApplication } from '@/services/scholarshipApplication.service';
 
 /**
@@ -11,7 +11,7 @@ export const mockApiDelay = (ms: number = 1500): Promise<void> => {
 /**
  * Mock scholarship data for applicants list
  */
-export const mockScholarshipForApplicants: Scholarship = {
+export const mockScholarshipForApplicants: ScholarshipOld = {
   scholarship_id: '1',
   sponsor_id: '1',
   status: 'active',

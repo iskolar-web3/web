@@ -13,7 +13,7 @@ const USE_MOCK_DATA = true;
  */
 export const useSponsorScholarships = () => {
   return useQuery({
-    queryKey: ['my-scholarships'],
+    queryKey: [],
     queryFn: async () => {
       if (USE_MOCK_DATA) {
         await mockApiDelay(2000);

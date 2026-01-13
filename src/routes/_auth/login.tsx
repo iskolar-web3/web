@@ -11,10 +11,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-// import { handleError } from '@/lib/errorHandler';
-// import { logger } from "@/lib/logger";
-// import { authService } from '@/services/auth.service';
-// import { profileService } from '@/services/profile.service';
+import { BACKEND_URL, type ApiResponse } from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
+import { setCookie } from "@/lib/cookie";
+import { UserRole, type AuthSession } from "@/lib/user/model";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/lib/user/auth";
+import { useAuth } from "@/auth";
 
 export const Route = createFileRoute("/_auth/login")({
   component: LoginPage,
@@ -35,44 +37,31 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+async function login(value: LoginFormData): Promise<AuthSession> {
+	const response = await fetch(`${BACKEND_URL}/login`, {
+		method: "POST",
+		body: JSON.stringify(value),
+		headers: { "Content-Type": "application/json" },
+	});
+	const result: ApiResponse<AuthSession> = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message || "Login failed");
+	}
+
+	return result.data;
+}
+
 function LoginPage(): JSX.Element {
   usePageTitle("Log In");
   
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPreloader, setShowPreloader] = useState(false);
   const { toast, showSuccess, showError } = useToast();
+  const auth = useAuth()
 
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const hasToken = await authService.hasValidToken();
-  //       if (hasToken) {
-  //         const result = await profileService.getProfileStatus();
-
-  //         if (result.user?.role === 'student') {
-  //           navigate({ to: '/home', replace: true });
-  //         } else if (result.user?.role === 'individual_sponsor' || result.user?.role === 'organization_sponsor' || result.user?.role === 'government_sponsor') {
-  //           navigate({ to: '/my-scholarships', replace: true });
-  //         }
-  //       }
-  //     } catch (e) {
-  //       // Ignore
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   checkAuth();
-  // }, []);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     mode: "onBlur", 
     defaultValues: {
@@ -80,40 +69,43 @@ function LoginPage(): JSX.Element {
     },
   });
   
-  const onSubmit = async (_data: LoginFormData) => {
-    // try {
-    //   setLoading(true);
+  const mutation = useMutation({
+      mutationFn: login,
+      onSuccess: async (res) => {
+        showSuccess(`Success`, 'Login successful', 1250);
+        setCookie(ACCESS_TOKEN_KEY, res.token);
+        setCookie(REFRESH_TOKEN_KEY, res.refreshToken);
 
-    //   const result = await authService.login({
-    //     email: data.email,
-    //     password: data.password,
-    //     remember_me: data.rememberMe
-    //   }
+        // Validate the user session, account, and profile
+        await auth.getSession()
+        console.log("Session revalidated after login")
 
-    //   if(result.success) {
-    //      showSuccess(`Success`, result.message, 1250);
-    //     setTimeout(() => {
-    //       setShowPreloader(true);
-    //     }, 1300);
-    //   } else {
-    //     showError(`Error`, result.error, 2500);
-    //   }
-    // } catch(error) {
-    //    const handled = handleError(error, 'Unable to load scholarship details.');
-    //    logger.error('Failed to load scholarship:', handled.raw);
-    //    showError(`Error`, error.message, 2500);
-    // } finally {
-    //   setLoading(false);
-    // }
-    
-    // Simulate
-    setLoading(true);
+        if(!res.user.role) {
+            await navigate({ to: "/welcome" });
+            return
+        }
 
-    showSuccess(`Success`, 'Login successful', 1250);
-    setTimeout(() => {
-      setLoading(false);
-      setShowPreloader(true);
-    }, 1300);
+        switch (res.user.role.code) {
+            case UserRole.Student:
+                await navigate({ to: "/home" });
+                break;
+
+            case UserRole.Sponsor:
+                await navigate({ to: "/scholarships" });
+                break;
+        
+            default:
+                break;
+        }
+      },
+      onError: (err) => {
+          showError("Error", err.message)
+          console.error(err)
+      }
+  })
+  
+  const onSubmit = async (value: LoginFormData) => {
+    mutation.mutate(value)
   };
 
   const handlePreloaderComplete = () => {
@@ -176,7 +168,7 @@ function LoginPage(): JSX.Element {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-3">
             <div>
               <label htmlFor="email" className="block text-xs sm:text-[11px] text-primary mb-1.5">
                 Email
@@ -185,17 +177,17 @@ function LoginPage(): JSX.Element {
                 id="email"
                 type="email"
                 placeholder="Enter Email"
-                {...register("email")}
-                disabled={loading}
+                {...form.register("email")}
+                disabled={mutation.isPending}
                 className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
-                  errors.email
+                  form.formState.errors.email
                     ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                     : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
                 }`}
               />
-              {errors.email && (
+              {form.formState.errors.email && (
                 <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                  {errors.email.message}
+                  {form.formState.errors.email.message}
                 </p>
               )}
             </div>
@@ -209,10 +201,10 @@ function LoginPage(): JSX.Element {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter Password"
-                  {...register("password")}
-                  disabled={loading}
+                  {...form.register("password")}
+                  disabled={mutation.isPending}
                   className={`w-full px-4 py-3 sm:px-3 sm:py-2.5 pr-10 rounded-lg text-xs sm:text-[11px] focus:outline-none focus:ring-1 transition-all bg-transparent border text-primary placeholder:text-[#C4CBD5] ${
-                    errors.password
+                    form.formState.errors.password
                       ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]"
                       : "border-[#C4CBD5] focus:border-[#3A52A6] focus:ring-[#3A52A6]"
                   }`}
@@ -230,9 +222,9 @@ function LoginPage(): JSX.Element {
                   )}
                 </button>
               </div>
-              {errors.password && (
+              {form.formState.errors.password && (
                 <p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
-                  {errors.password.message}
+                  {form.formState.errors.password.message}
                 </p>
               )}
             </div>
@@ -242,7 +234,7 @@ function LoginPage(): JSX.Element {
               <label className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  {...register("rememberMe")}
+                  {...form.register("rememberMe")}
                   className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded border-[#C4CBD5] text-secondary focus:ring-[#3A52A6] cursor-pointer"
                 />
                 <span className="ml-1 text-[#8C8C8C] text-xs sm:text-[11px]">Remember Me</span>
@@ -266,11 +258,11 @@ function LoginPage(): JSX.Element {
             <button
               type="submit"
               className={`w-full py-3 sm:py-3 mt-6 sm:mt-5 rounded-lg text-[#F0F7FF] text-xs sm:text-[11px] cursor-pointer hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] active:shadow-md transition-all bg-[#3A52A6] ${
-                loading && "opacity-60 cursor-not-allowed"
+                mutation.isPending && "opacity-60 cursor-not-allowed"
               }`}
-              disabled={loading}
+              disabled={mutation.isPending}
             >
-              {loading ? (
+              {mutation.isPending ? (
                 <span className="flex items-center justify-center">
                   <Loader2 className="w-4 h-4 animate-spin" />
                 </span>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useRouterState, useNavigate } from '@tanstack/react-router';
+import { Link, useRouterState, useNavigate, useSearch } from '@tanstack/react-router';
 import { Search, Home, Compass, WalletCards, Plus, Repeat, Bell, User, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ProfileDropdown from './ProfileDropdown';
@@ -55,7 +55,7 @@ const sponsorNavItems: NavItem[] = [
  */
 export default function HeaderNav({ role }: HeaderNavProps) {
   const router = useRouterState();
-  const navigate = useNavigate();
+  const navigate = useNavigate({from: "/scholarships"});
   const currentPath = router.location.pathname;
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,10 +113,18 @@ export default function HeaderNav({ role }: HeaderNavProps) {
    * Handles search form submission
    * @param e - Form event
    */
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement search functionality
     console.log('Search query:', searchQuery);
+
+
+		await navigate({
+			search: (prev) => ({
+				...prev,
+				search: searchQuery,
+			}),
+		});
   };
 
   /**

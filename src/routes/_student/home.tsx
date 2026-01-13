@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { Calendar, Users, Coins, Files, ArrowRight, UserIcon, Clock, CheckCircle, XCircle, Award, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -9,12 +9,17 @@ import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/useToast';
 import Toast from '@/components/Toast';
-import type { Application } from '@/types/application.types';
 import { formatDate, formatTime, formatAmountPerScholar } from '@/utils/formatting.utils';
 import { useMyApplications } from '@/hooks/queries/useMyApplications';
+import { useAuth } from '@/auth';
+import type { Student } from '@/lib/student/model';
+import { getApplicationsQueryParam, type Application } from '@/lib/scholarship/model';
+import { getSponsorName } from '@/lib/sponsor/api';
+import { format } from 'date-fns';
 
 export const Route = createFileRoute('/_student/home')({
   component: Home,
+  validateSearch: getApplicationsQueryParam
 });
 
 type FilterType = 'applied' | 'past' | 'granted';
@@ -25,7 +30,12 @@ function Home() {
   const navigate = useNavigate();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const { toast, showError } = useToast();
-  const { data: fetchedApplications, isLoading: loading, error, isError } = useMyApplications();
+  const search = useSearch({from: "/_student/home"})
+  const auth = useAuth<Student>()
+  const { data: fetchedApplications, isLoading: loading, error, isError } = useMyApplications({
+      studentId: auth.profile.id,
+    status: search.status
+  });
 
 
   const {
@@ -155,17 +165,17 @@ function Home() {
             </div>
           ) : (
             <div>
-              {filteredApplications.map((application, index) => (
-                <div key={application.scholarship_application_id} className="flex gap-4 md:gap-6">
+              {filteredApplications.map((item, index) => (
+                <div key={item.application.id} className="flex gap-4 md:gap-6">
                   {/* Desktop: Date/Time */}
                   <div className="hidden md:flex gap-4">
                     <div className="flex flex-col items-start w-30 flex-shrink-0 pt-1">
                       <div className="text-left">
                         <div className="text-sm text-primary">
-                          {formatDate(application.applied_at)}
+                          {formatDate(item.application.createdAt)}
                         </div>
                         <div className="text-xs text-[#6B7280]">
-                          {formatTime(application.applied_at)}
+                          {formatDate(item.application.createdAt)}
                         </div>
                       </div>
                     </div>
@@ -196,16 +206,16 @@ function Home() {
                     {/* Mobile/Tablet: Date/Time */}
                     <div className="md:hidden mb-2 text-left">
                       <div className="text-xs text-primary">
-                        {formatDate(application.applied_at)}
+                        {formatDate(item.application.createdAt)}
                       </div>
                       <div className="text-[11px] text-[#6B7280]">
-                        {formatTime(application.applied_at)}
+                        {formatTime(item.application.createdAt)}
                       </div>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => setSelectedApplication(application)}
+                      onClick={() => setSelectedApplication(item)}
                       className="w-full text-left"
                     >
                       <motion.div
@@ -222,8 +232,8 @@ function Home() {
                         <div className="flex bg-[#3A52A6]">
                           <div className="relative w-32 h-32 flex-shrink-0 bg-[#1D2A5B]">
                             <img
-                              src={application.scholarship.image_url}
-                              alt={application.scholarship.title}
+                              src={item.scholarship.imageUrl || ""}
+                              alt={item.scholarship.name}
                               className="h-full w-full object-cover"
                             />
                           </div>
@@ -232,36 +242,36 @@ function Home() {
                             <div className="flex items-start justify-between gap-2">
                               <div className="space-y-1 flex-1 min-w-0">
                                 <h3 className="text-lg md:text-xl line-clamp-1 pr-2">
-                                  {application.scholarship.title}
+                                  {item.scholarship.name}
                                 </h3>
 
                                 <div className="flex gap-1 mb-3">
                                   <span className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded whitespace-nowrap">
-                                    {application.scholarship.type}
+                                    {item.scholarship.scholarshipType.name}
                                   </span>
                                   <span className="px-2 py-0.5 bg-white/90 text-secondary text-[10px] md:text-[11px] rounded whitespace-nowrap">
-                                    {application.scholarship.purpose}
+                                    {item.scholarship.purpose.name}
                                   </span>
                                 </div>
 
                                 <div className="space-y-1.5 text-xs">
                                   <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 rounded-full bg-card flex items-center justify-center flex-shrink-0">
-                                      {application.scholarship?.sponsor?.profile_url ? (
+                                      {item.scholarship?.sponsor?.avatarUrl ? (
                                         <img
-                                          src={application.scholarship?.sponsor?.profile_url}
-                                          alt={application.scholarship.sponsor.name}
+                                          src={item.scholarship?.sponsor?.avatarUrl}
+                                          alt={getSponsorName(item.scholarship.sponsor)}
                                           className="w-full h-full rounded-full object-cover"
                                         />
                                       ) : (
                                         <UserIcon className="w-full h-full text-secondary" />
                                       )}
                                     </div>
-                                    <span className="truncate">{application.scholarship.sponsor.name}</span>
+                                    <span className="truncate">{getSponsorName(item.scholarship.sponsor)}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <Calendar size={16} className="flex-shrink-0" />
-                                    <span className="truncate">{application.scholarship.application_deadline}</span>
+                                    <span className="truncate">{format(item.scholarship.applicationDeadline, "MMM. d, yyyy")}</span>
                                   </div>
                                 </div>
                               </div>
@@ -275,9 +285,9 @@ function Home() {
                                       approved: 'text-[#6EE7B7]',
                                       denied: 'text-[#EF4444]',
                                       granted: 'text-[#C7D2FE]',
-                                    }[application.status]
+                                    }[item.application.status.code]
                                   }`}
-                                  title={statusStyles[application.status].label}
+                                  title={statusStyles[item.application.status.code].label}
                                 > 
                                   {(() => {
                                     const statusIcons = {
@@ -287,7 +297,7 @@ function Home() {
                                       denied: XCircle,
                                       granted: Award,
                                     };
-                                    const Icon = statusIcons[application.status];
+                                    const Icon = statusIcons[item.application.status.code];
                                     return <Icon size={20} />;
                                   })()}
                                 </div>
@@ -306,8 +316,8 @@ function Home() {
                               </div>
                               <p className="text-sm text-primary">
                                 {formatAmountPerScholar(
-                                  application.scholarship.total_amount,
-                                  application.scholarship.total_slot,
+                                  item.scholarship.totalAmount,
+                                  item.scholarship.totalSlots,
                                   { locale: 'en-PH' }
                                 )}
                               </p>
@@ -320,7 +330,7 @@ function Home() {
                                 <span>Slots</span>
                               </div>
                               <p className="text-sm text-primary">
-                                {application.scholarship.total_slot}
+                                {item.scholarship.totalSlots}
                               </p>
                               <p className="text-[11px] text-[#6B7280]">scholars</p>
                             </div>
@@ -332,7 +342,7 @@ function Home() {
                                 Criteria
                               </h4>
                               <div className="flex flex-wrap gap-1.5">
-                                {application.scholarship.criteria.slice(0, 2).map((item, i) => (
+                                {item.scholarship.criterias.slice(0, 2).map((item, i) => (
                                   <span
                                     key={i}
                                     className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border"
@@ -340,9 +350,9 @@ function Home() {
                                     {item}
                                   </span>
                                 ))}
-                                {application.scholarship.criteria.length > 2 && (
+                                {item.scholarship.criterias.length > 2 && (
                                   <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border">
-                                    + {application.scholarship.criteria.length - 2} more
+                                    + {item.scholarship.criterias.length - 2} more
                                   </span>
                                 )}
                               </div>
@@ -353,7 +363,7 @@ function Home() {
                                 Required Documents
                               </h4>
                               <div className="flex flex-wrap gap-1.5">
-                                {application.scholarship.required_documents
+                                {item.scholarship.requirements
                                   .slice(0, 2)
                                   .map((item, i) => (
                                     <span
@@ -363,9 +373,9 @@ function Home() {
                                       {item}
                                     </span>
                                   ))}
-                                {application.scholarship.required_documents.length > 2 && (
+                                {item.scholarship.requirements.length > 2 && (
                                   <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[10px] md:text-[11px] rounded border border-border">
-                                    + {application.scholarship.required_documents.length - 2} more
+                                    + {item.scholarship.requirements.length - 2} more
                                   </span>
                                 )}
                               </div>

@@ -1,0 +1,51 @@
+import z from "zod";
+import type { EnumLike } from "zod/v3";
+import { UserRole, type User } from "./user/model";
+
+export type ApiResponse<T = any> = T extends undefined
+	? { message: string }
+	: { message: string; data: T };
+
+type FileDataResponse = {
+	url: string;
+};
+
+export const BACKEND_URL =
+	import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
+export function enumDetailSchema<T extends EnumLike>(code: T) {
+	return z.object({
+		id: z.number().positive(),
+		name: z.string().nonempty(),
+		code: z.enum(code),
+	});
+}
+
+export async function uploadFile(
+	file: File,
+	token: string,
+): Promise<ApiResponse<FileDataResponse>> {
+	const formData = new FormData();
+	formData.append("file", file);
+
+	const response = await fetch(`${BACKEND_URL}/upload`, {
+		method: "POST",
+		body: formData,
+		headers: { Authorization: `Bearer ${token}` },
+		credentials: "include",
+	});
+
+	const result: ApiResponse<FileDataResponse> = await response.json();
+	return result;
+}
+
+export function getDefaultPathOfRole(user: User): string {
+	switch (user.role?.code) {
+		case UserRole.Student:
+			return "/home";
+		case UserRole.Sponsor:
+			return "/scholarships";
+		default:
+			return "/role-selection";
+	}
+}

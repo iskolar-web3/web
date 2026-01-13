@@ -23,21 +23,45 @@ import ScholarshipFullPreviewModal from '@/components/sponsor/ScholarshipFullPre
 import CustomFormFieldModal from '@/components/sponsor/CustomFormFieldModal';
 import CustomFormFieldsList from '@/components/sponsor/CustomFormFieldsList';
 import DescriptionModal from '@/components/sponsor/DescriptionModal';
-import { useScholarshipForm, type ScholarshipFormData, type CustomFieldType } from '@/hooks/useScholarshipForm';
+import { useScholarshipForm } from '@/hooks/useScholarshipForm';
 import { useScholarshipPreview } from '@/hooks/useScholarshipPreview';
 import { useToast } from '@/hooks/useToast';
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { handleError } from '@/lib/errorHandler';
-import { logger } from '@/lib/logger';
-import { scholarshipManagementService } from '@/services/scholarshipManagement.service';
+import { useAuth } from '@/auth';
+import type { AnySponsor } from '@/lib/sponsor/model';
+import { ScholarshipPurpose, ScholarshipStatus, ScholarshipType, type CreateFormFieldRequest, type Scholarship, type ScholarshipFormData } from '@/lib/scholarship/model';
+import { BACKEND_URL, type ApiResponse } from '@/lib/api';
+import { ACCESS_TOKEN_KEY } from '@/lib/user/auth';
+import { getCookie } from '@/lib/cookie';
+import { useMutation } from '@tanstack/react-query';
 
 export const Route = createFileRoute('/_sponsor/create')({
   component: CreateScholarship,
 });
 
+async function createScholarship(value: ScholarshipFormData): Promise<ApiResponse<Scholarship>> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	const response = await fetch(`${BACKEND_URL}/scholarships`, {
+		method: "POST",
+		body: JSON.stringify(value),
+		headers: { 
+            "Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+        },
+	});
+	const result: ApiResponse<Scholarship> = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message);
+	}
+
+    return result
+}
+
+
 function CreateScholarship() {
   usePageTitle('Create');
 
+  const auth = useAuth<AnySponsor>()
   const {
     form,
     imagePreview,
@@ -52,7 +76,7 @@ function CreateScholarship() {
     addDocument,
     removeDocument,
     resetForm,
-  } = useScholarshipForm();
+  } = useScholarshipForm(auth.profile.id);
 
   const { control, handleSubmit, setValue, watch, formState: { errors } } = form;
   const { toast, showSuccess, showError } = useToast();
@@ -63,29 +87,32 @@ function CreateScholarship() {
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const criteria = watch('criteria');
-  const requiredDocuments = watch('requiredDocuments');
-  const customFormFields = watch('customFormFields') || [];
+  const criteria = watch('criterias');
+  const requiredDocuments = watch('requirements');
+  const customFormFields = watch('formFields') || [];
   const description = watch('description');
-  const title = watch('title');
+  const title = watch('name');
   const totalAmount = watch('totalAmount');
-  const totalSlot = watch('totalSlot');
+  const totalSlot = watch('totalSlots');
   const applicationDeadline = watch('applicationDeadline');
-  const type = watch('type');
+  const scholarshipType = watch('scholarshipType');
   const purpose = watch('purpose');
   const imageUrl = watch('imageUrl');
 
   const { previewScholarship } = useScholarshipPreview({
-    type,
+    scholarshipType,
     purpose,
-    title,
+    name: title,
     description,
     imageUrl,
     totalAmount,
-    totalSlot,
+    totalSlots: totalSlot,
     applicationDeadline,
-    criteria,
-    requiredDocuments,
+    criterias: criteria,
+    requirements: requiredDocuments,
+    formFields: customFormFields,
+    sponsorId: auth.profile.id,
+    status: ScholarshipStatus.Draft,
   });
 
   const openCustomFormModal = (index?: number) => {
@@ -93,63 +120,49 @@ function CreateScholarship() {
     setShowCustomFieldModal(true);
   };
 
-  const handleSaveCustomField = (field: {
-    type: CustomFieldType;
-    label: string;
-    required: boolean;
-    options?: string[];
-  }) => {
+  const handleSaveCustomField = (field: CreateFormFieldRequest) => {
+      console.log(form.formState.errors)
     if (editingFieldIndex !== null) {
       const updatedFields = customFormFields.map((f, i) => 
         i === editingFieldIndex ? field : f
       );
-      setValue('customFormFields', updatedFields);
+      setValue('formFields', updatedFields);
     } else {
-      setValue('customFormFields', [...customFormFields, field]);
+      setValue('formFields', [...customFormFields, field]);
     }
     setEditingFieldIndex(null);
   };
 
   const removeCustomFormField = (index: number) => {
-    setValue('customFormFields', customFormFields.filter((_, i) => i !== index));
+    setValue('formFields', customFormFields.filter((_, i) => i !== index));
   };
 
   const handleSaveDescription = (desc: string) => {
     setValue('description', desc);
   };
 
+	const mutation = useMutation({
+		mutationFn: createScholarship,
+		onSuccess: async (res) => {
+            console.log(res.data)
+			showSuccess(
+				`Success`,
+				res.message,
+				1250,
+			);
+      resetForm();
+			setLoading(false);
+		},
+      onError: (err) => {
+          showError("Error", err.message)
+          console.error(err)
+          setLoading(false);
+      }
+	});
+
   const onSubmit = async (data: ScholarshipFormData) => {
     setLoading(true);
-    
-    try {
-      const scholarshipData = {
-        type: data.type,
-        purpose: data.purpose,
-        title: data.title.trim(),
-        description: data.description?.trim(),
-        total_amount: parseFloat(data.totalAmount),
-        total_slot: parseInt(data.totalSlot),
-        application_deadline: data.applicationDeadline.toISOString(),
-        criteria: data.criteria,
-        required_documents: data.requiredDocuments,
-        custom_form_fields: data.customFormFields || [],
-      };
-
-      const response = await scholarshipManagementService.createScholarship(scholarshipData);
-
-      if (response.success && response.scholarship) {
-        showSuccess('Success', response.message, 2000);
-        resetForm();
-      } else {
-        showError('Error', response.message);
-      }
-    } catch(error) {
-      const handled = handleError(error, 'Failed to connect to server.');
-      logger.error('Connection Error', handled.raw);
-      showError(`Error ${handled.code}`, handled.message, 2500);
-    } finally{
-      setLoading(false);
-    }
+    mutation.mutate(data)
   };
 
   return (
@@ -163,28 +176,28 @@ function CreateScholarship() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Select 
-                value={type} 
-                onValueChange={(value) => setValue('type', value as 'merit_based' | 'skill_based', { shouldValidate: true })}
+                value={scholarshipType} 
+                onValueChange={(value) => setValue('scholarshipType', value as ScholarshipType, { shouldValidate: true })}
               >
                 <SelectTrigger disabled={loading} className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
-                  errors.type
+                  errors.scholarshipType
                     ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444] text-primary'
                     : 'border-gray-300 focus:border-[#3A52A6] focus:ring-[#3A52A6]/20 text-primary'
                 }`}>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="merit_based">Merit-Based</SelectItem>
-                  <SelectItem value="skill_based">Skill-Based</SelectItem>
+                  <SelectItem value={ScholarshipType.MeritBased}>Merit-Based</SelectItem>
+                  <SelectItem value={ScholarshipType.SkillBased}>Skill-Based</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.type && <p className="text-xs text-[#EF4444] mt-1">{errors.type.message}</p>}
+              {errors.scholarshipType && <p className="text-xs text-[#EF4444] mt-1">{errors.scholarshipType.message}</p>}
             </div>
 
             <div>
               <Select 
                 value={purpose} 
-                onValueChange={(value) => setValue('purpose', value as 'allowance' | 'tuition', { shouldValidate: true })}
+                onValueChange={(value) => setValue('purpose', value as ScholarshipPurpose, { shouldValidate: true })}
               >
                 <SelectTrigger disabled={loading} className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all data-[placeholder]:text-gray-400 ${
                   errors.purpose
@@ -194,8 +207,8 @@ function CreateScholarship() {
                   <SelectValue placeholder="Select purpose" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="allowance">Allowance</SelectItem>
-                  <SelectItem value="tuition">Tuition</SelectItem>
+                  <SelectItem value={ScholarshipPurpose.Allowance}>Allowance</SelectItem>
+                  <SelectItem value={ScholarshipPurpose.Tuition}>Tuition</SelectItem>
                 </SelectContent>
               </Select>
               {errors.purpose && <p className="text-xs text-[#EF4444] mt-1">{errors.purpose.message}</p>}
@@ -242,19 +255,19 @@ function CreateScholarship() {
                 <div>
                   <Controller
                     control={control}
-                    name="title"
+                    name="name"
                     render={({ field }) => (
                       <input
                         {...field}
                         placeholder="Scholarship Title"
                         disabled={loading}
                         className={`w-full text-2xl border-b-2 ${
-                          errors.title ? 'border-[#EF4444]' : 'border-transparent'
+                          errors.name ? 'border-[#EF4444]' : 'border-transparent'
                         } bg-transparent pb-2 focus:outline-none focus:border-[#3A52A6] text-primary`}
                       />
                     )}
                   />
-                  {errors.title && <p className="text-xs text-[#EF4444] mt-1">{errors.title.message}</p>}
+                  {errors.name && <p className="text-xs text-[#EF4444] mt-1">{errors.name.message}</p>}
                 </div>
 
                 {/* Description */}
@@ -292,7 +305,7 @@ function CreateScholarship() {
                   <div>
                     <Controller
                       control={control}
-                      name="totalSlot"
+                      name="totalSlots"
                       render={({ field }) => (
                         <input
                           {...field}
@@ -300,12 +313,12 @@ function CreateScholarship() {
                           disabled={loading}
                           placeholder="Total slots"
                           className={`w-full px-4 py-3 rounded-lg border ${
-                            errors.totalSlot ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                            errors.totalSlots ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
                           } bg-[#F8F9FC] text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
                         />
                       )}
                     />
-                    {errors.totalSlot && <p className="text-xs text-[#EF4444] mt-1">{errors.totalSlot.message}</p>}
+                    {errors.totalSlots && <p className="text-xs text-[#EF4444] mt-1">{errors.totalSlots.message}</p>}
                   </div>
                 </div>
 
@@ -368,7 +381,7 @@ function CreateScholarship() {
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCriterion())}
                 placeholder="Enter eligibility criterion"
                 className={`flex-1 px-4 py-3 rounded-lg border ${
-                  errors.criteria ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                  errors.criterias ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
                 } bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
               />
               <button
@@ -380,7 +393,7 @@ function CreateScholarship() {
                 <Plus size={20} />
               </button>
             </div>
-            {errors.criteria && <p className="text-xs text-[#EF4444] mt-1">{errors.criteria.message}</p>}
+            {errors.criterias && <p className="text-xs text-[#EF4444] mt-1">{errors.criterias.message}</p>}
             {criteria.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {criteria.map((criterion, index) => (
@@ -405,7 +418,7 @@ function CreateScholarship() {
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addDocument())}
                 placeholder="Enter required document"
                 className={`flex-1 px-4 py-3 rounded-lg border ${
-                  errors.requiredDocuments ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
+                  errors.requirements ? 'border-[#EF4444]' : 'border-[#C4CBD5]'
                 } bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[#3A52A6]`}
               />
               <button
@@ -417,7 +430,7 @@ function CreateScholarship() {
                 <Plus size={20} />
               </button>
             </div>
-            {errors.requiredDocuments && <p className="text-xs text-[#EF4444] mt-1">{errors.requiredDocuments.message}</p>}
+            {errors.requirements && <p className="text-xs text-[#EF4444] mt-1">{errors.requirements.message}</p>}
             {requiredDocuments.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {requiredDocuments.map((doc, index) => (
@@ -451,17 +464,18 @@ function CreateScholarship() {
               disabled={loading}
               onClick={() => openCustomFormModal()}
               className={`w-full flex cursor-pointer items-center justify-center gap-2 px-4 py-3.5 border-2 border-dashed ${
-                errors.customFormFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
+                errors.formFields ? 'border-[#EF4444]' : 'border-[#3A52A6]'
               } bg-[#E0ECFF] text-secondary text-sm rounded-lg hover:bg-[#D0DCFF] transition-colors`}
             >
               <Plus size={20} />
               {customFormFields.length === 0 ? 'Add Form Field' : 'Add Another Field'}
             </button>
-            {errors.customFormFields && <p className="text-xs text-[#EF4444] mt-1">{errors.customFormFields.message}</p>}
+            {errors.formFields && <p className="text-xs text-[#EF4444] mt-1">{errors.formFields.message}</p>}
           </div>
 
           {/* Submit */}
           <button
+          // @ts-expect-error it works but I get type error for some reason
             onClick={handleSubmit(onSubmit)}
             className={`w-full mt-2 mb-6 md:mb-0 py-3 bg-[#EFA508] text-tertiary cursor-pointer rounded-lg hover:bg-[#D89407] transition-colors ${
               loading && "opacity-60 cursor-not-allowed"

@@ -1,5 +1,5 @@
 import { Calendar, Users, Coins, Images, UserIcon } from 'lucide-react';
-import type { Scholarship } from '@/types/scholarship.types';
+import type { ScholarshipOld } from '@/types/scholarship.types';
 import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting.utils';
 
 /**
@@ -7,7 +7,7 @@ import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/uti
  */
 interface ScholarshipPreviewCardProps {
   /** Partial scholarship data to display in preview */
-  scholarship: Partial<Scholarship>;
+  scholarship: Partial<ScholarshipOld>;
   /** Optional callback when card is clicked */
   onClick?: () => void;
 }

@@ -2,11 +2,12 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from "@tanstack/react-router";
 import { Calendar, Users, Coins, ChevronsRight, LockKeyhole, UserIcon } from 'lucide-react';
-import type { Scholarship } from '@/types/scholarship.types';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
-import { calculateAmountPerScholar, formatCurrency } from '@/utils/formatting.utils';
+import { calculateAmountPerScholar, formatCurrency, formatDate } from '@/utils/formatting.utils';
 import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
+import { ScholarshipStatus, type Scholarship } from '@/lib/scholarship/model';
+import { getSponsorName } from '@/lib/sponsor/api';
 
 /**
  * Scholarship details modal component for students
@@ -22,14 +23,14 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
   const [isExiting, setIsExiting] = useState(false);
   const { toast, showError } = useToast();
 
-  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
+  const amountPerScholar = calculateAmountPerScholar(scholarship.totalAmount, scholarship.totalSlots);
 
   /**
    * Checks if the scholarship is closed
    * @returns True if scholarship status is 'closed'
    */
   const isClosed = useCallback(() => {
-    return scholarship.status === 'closed';
+    return scholarship.status.code === ScholarshipStatus.Closed;
   }, [scholarship?.status]);
 
   /**
@@ -45,7 +46,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
    * Checks if user has already applied and navigates to application form
    */
   const handleApply = useCallback(async () => {
-    const response = await scholarshipApplicationService.checkApplicationExists(String(scholarship.scholarship_id));
+    const response = await scholarshipApplicationService.checkApplicationExists(scholarship.id);
 
     if (response.success) {
       showError('Already Applied', response.message, 2500);
@@ -59,7 +60,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
 
     navigate({ 
       to: '/scholarship/$id/apply', 
-      params: { id: scholarship.scholarship_id }
+      params: { id: scholarship.id }
     });
   }, [scholarship, isClosed, navigate]);
 
@@ -106,35 +107,35 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             <div className="flex items-center gap-2 mb-4">
               <div
                 className={`w-2 h-2 rounded-full ${
-                  scholarship.status === 'closed' ? 'bg-[#EF4444]' : 'bg-[#31D0AA]'
+                  scholarship.status.code === ScholarshipStatus.Closed ? 'bg-[#EF4444]' : 'bg-[#31D0AA]'
                 }`}
               />
               <span
                 className={`text-sm font-medium capitalize ${
-                  scholarship.status === 'closed' ? 'text-[#EF4444]' : 'text-[#31D0AA]'
+                  scholarship.status.code === ScholarshipStatus.Closed ? 'text-[#EF4444]' : 'text-[#31D0AA]'
                 }`}
               >
-                {scholarship.status}
+                {scholarship.status.name}
               </span>
             </div>
 
             {/* Image Banner */}
             <div className="relative w-full aspect-square mb-5 rounded-lg overflow-hidden shadow-[0_0_20px_2px_rgba(0,0,0,0.2)]">
               <img
-                src={scholarship.image_url || "/logo.jpg"}
-                alt={scholarship.title}
+                src={scholarship.imageUrl || "/logo.jpg"}
+                alt={scholarship.name}
                 className="w-full h-full object-cover"
               />
             </div>
 
             {/* Title and Badges */}
-            <h1 className="text-[26px] text-primary mb-2">{scholarship.title}</h1>
+            <h1 className="text-[26px] text-primary mb-2">{scholarship.name}</h1>
             <div className="flex gap-2 mb-4">
               <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
-                {scholarship.type}
+                {scholarship.scholarshipType.name}
               </span>
               <span className="px-2.5 py-1 bg-[#F3F4F6] text-[#374151] text-xs rounded border border-border">
-                {scholarship.purpose}
+                {scholarship.purpose.name}
               </span>
             </div>
 
@@ -142,21 +143,21 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             <div className="space-y-3 mb-4 text-[#6B7280]">
               <div className="flex items-center gap-2">
                 <div className="w-5.5 h-5.5 rounded-full flex items-center justify-center flex-shrink-0">
-                  {scholarship?.sponsor?.profile_url ? (
+                  {scholarship?.sponsor?.avatarUrl ? (
                     <img
-                      src={scholarship?.sponsor?.profile_url}
-                      alt={scholarship.sponsor.name}
+                      src={scholarship?.sponsor?.avatarUrl}
+                      alt={getSponsorName(scholarship.sponsor)}
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
                     <UserIcon className="w-full h-full" />
                   )}
                 </div>
-                <span className="text-sm">{scholarship.sponsor?.name || 'Sponsor'}</span>
+                <span className="text-sm">{getSponsorName(scholarship.sponsor) || 'Sponsor'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar size={22} />
-                <span className="text-sm">{scholarship.application_deadline}</span>
+                <span className="text-sm">{formatDate(scholarship.applicationDeadline)}</span>
               </div>
             </div>
 
@@ -180,7 +181,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
                   <Users size={16} />
                   <span className="text-xs ">Slots</span>
                 </div>
-                <p className="text-base text-primary mb-0.5">{scholarship.total_slot}</p>
+                <p className="text-base text-primary mb-0.5">{scholarship.totalSlots}</p>
                 <p className="text-xs text-[#6B7280]">scholars</p>
               </div>
             </div>
@@ -197,7 +198,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             <div className="mb-6">
               <h3 className="text-sm text-primary mb-2">Eligibility Criteria</h3>
               <div className="flex flex-wrap gap-2">
-                {scholarship.criteria?.map((criterion: string, i: number) => (
+                {scholarship.criterias?.map((criterion: string, i: number) => (
                   <span
                     key={i}
                     className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border"
@@ -212,7 +213,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
             <div className="mb-6">
               <h3 className="text-sm text-primary mb-2">Required Documents</h3>
               <div className="grid grid-cols-2 gap-2">
-                {scholarship.required_documents?.map((doc: string, i: number) => (
+                {scholarship.requirements?.map((doc: string, i: number) => (
                   <div
                     key={i}
                     className="px-3 py-1.5 bg-[#F9FAFB] text-[#374151] text-xs rounded border border-border text-center"
