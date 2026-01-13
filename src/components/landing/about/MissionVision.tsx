@@ -3,7 +3,7 @@ import { Target, Lightbulb, Globe } from "lucide-react"
 
 export default function MissionVisionSection() {
   return (
-    <div id="mission-vision" className="bg-background py-36 text-secondary w-full overflow-hidden">
+    <section id="mission-vision" className="py-36 text-secondary w-full overflow-hidden">
       <MotionContainer>
         <div className="px-4 sm:px-12 lg:px-26 max-w-7xl mx-auto relative z-26">
           <h2 className="text-4xl md:text-5xl mb-12 text-center text-secondary">
@@ -12,7 +12,7 @@ export default function MissionVisionSection() {
           
           <div className="grid md:grid-cols-2 gap-8">
             {/* Mission */}
-            <div className="bg-card/75 backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-xl flex flex-col items-center text-center">
+            <div className="bg-background backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-md flex flex-col items-center text-center">
               <div className="w-16 h-16 flex items-center justify-center mb-6">
                 <Target className="w-12 h-12 text-secondary" />
               </div>
@@ -23,7 +23,7 @@ export default function MissionVisionSection() {
             </div>
 
             {/* Vision */}
-            <div className="bg-card/75 backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-xl flex flex-col items-center text-center">
+            <div className="bg-background backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-md flex flex-col items-center text-center">
               <div className="w-16 h-16 flex items-center justify-center mb-6">
                 <Lightbulb className="w-12 h-12 text-secondary" />
               </div>
@@ -35,7 +35,7 @@ export default function MissionVisionSection() {
           </div>
 
           {/* SDG Alignment */}
-          <div className="mt-12 bg-card/75 backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-xl">
+          <div className="mt-12 bg-background backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-md">
             <div className="flex flex-col items-center text-center mb-8">
               <div className="w-16 h-16 flex items-center justify-center mb-6">
                 <Globe className="w-12 h-12 text-secondary" />
@@ -79,6 +79,6 @@ export default function MissionVisionSection() {
 
         </div>
       </MotionContainer>
-    </div>
+    </section>
   )
 }

@@ -20,9 +20,14 @@ const faqs = [
       "Yes! iSkolar is completely free for students. You can browse scholarships, submit applications, and track your application status without any fees. Our goal is to make scholarship opportunities accessible to all deserving students.",
   },
   {
-    question: "How are scholarships verified?",
+    question: "How do I apply for a scholarship?",
     answer:
-      "All scholarship programs on iSkolar undergo a verification process. Sponsors must complete identity verification before they can create scholarship programs. We also implement identity verification for students to ensure the authenticity of applications and prevent fraud.",
+      "Simply browse available scholarships, review the criteria and requirements, and tap “Apply Now.” You’ll fill out the application form and upload any required documents directly in the app.",
+  },
+  {
+    question: "How are users and scholarships verified?",
+    answer:
+      "All scholarship programs undergo a verification process. Sponsors must complete identity verification before they can create scholarship programs. We also implement identity verification for students to ensure the authenticity of applications and prevent fraud.",
   },
   {
     question: "When will full features be available?",
@@ -33,6 +38,11 @@ const faqs = [
     question: "How do I get started as a sponsor?",
     answer:
       "Sponsors can register on the platform by clicking 'Get Started' and selecting the Sponsor role option. You'll need to provide your organization/personal details, verify your identity, and then you can start creating scholarship programs.",
+  },
+  {
+    question: "What role do schools play on iSkolar?",
+    answer:
+      "Schools can monitor student scholarships, receive tuition payments either in fiat or crypto, verify enrollment, and support transparency between students and sponsors.",
   },
 ]
 
@@ -87,7 +97,7 @@ export function FAQ() {
   }
 
   return (
-    <section id="faqs" className="py-20 lg:py-32 bg-gray-50/50">
+    <section id="faqs" className="py-20 lg:py-32">
       <MotionContainer className="max-w-3xl mx-auto relative z-26">
         {/* Section Header */}
         <MotionItem className="text-center mb-12">

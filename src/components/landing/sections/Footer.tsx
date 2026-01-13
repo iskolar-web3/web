@@ -11,8 +11,8 @@ const quickLinks = [
 ]
 
 const legalLinks = [
-  { name: "Privacy Policy", href: "/#home" },
-  { name: "Terms & Conditions", href: "/#home" },
+  { name: "Privacy Policy", href: "/" },
+  { name: "Terms & Conditions", href: "/" },
 ]
 
 const socialLinks = [
@@ -23,17 +23,6 @@ const socialLinks = [
 ]
 
 export function Footer() {
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith('#')) {
-      e.preventDefault()
-      const element = document.querySelector(href)
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
-      }
-// setIsMobileMenuOpen(false) // Removed unused call
-    }
-  }
-
   return (
     <footer className="bg-background text-tertiary">
       {/* Horizontal line at top */}
@@ -46,7 +35,7 @@ export function Footer() {
             {/* Brand */}
             <div className="sm:col-span-2 lg:col-span-1">
               {/* Logo */}
-              <a href="#home" onClick={(e) => handleNavClick(e, '#home')}>
+              <a href="/">
                 <div className="w-25 h-10 md:w-34 md:h-14 flex items-center mb-2 justify-center">
                   <img
                     src={"/logo2.png"}
@@ -118,7 +107,10 @@ export function Footer() {
 
           <div className="mt-12 pt-8 border-t border-secondary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-secondary text-sm">&copy; {new Date().getFullYear()} iSkolar. All rights reserved.</p>
-            <p className="text-secondary text-sm">Made For Students, Made By Students.</p>
+            <div className="text-end">
+              <p className="text-secondary text-sm">Built For Students, Built By Students.</p>
+              {/* <p className="text-secondary text-sm">Powered by Lumen.</p> */}
+            </div>
           </div>
         </div>
       </div>

@@ -2,14 +2,14 @@ import { MotionContainer } from "@/components/landing/MotionContainer"
 
 export default function CompanyOverviewSection() {
   return (
-    <div id="company-overview" className="bg-background py-36 text-secondary w-full overflow-hidden">
+    <section id="company-overview" className="py-36 text-secondary w-full overflow-hidden">
       <MotionContainer>
         <div className="px-4 sm:px-12 lg:px-26 max-w-5xl mx-auto relative z-26">
           <h2 className="text-4xl md:text-5xl mb-12 text-center text-secondary">
             Company Overview
           </h2>
           
-          <div className="bg-card/75 backdrop-blur-sm border border-secondary/10 rounded-2xl px-8 py-8 md:px-12 shadow-xl">
+          <div className="bg-background backdrop-blur-sm border border-secondary/10 rounded-2xl px-8 py-8 md:px-12 shadow-md">
             <div className="w-full flex items-center justify-center mb-2">
               <img src="/logo.png" alt="" className="w-38 h-38 object-cover" />
             </div>
@@ -32,6 +32,6 @@ export default function CompanyOverviewSection() {
           </div>
         </div>
       </MotionContainer>
-    </div>
+    </section>
   )
 }

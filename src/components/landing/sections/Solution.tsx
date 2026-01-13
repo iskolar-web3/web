@@ -18,7 +18,7 @@ const solutions = [
   {
     icon: Eye,
     title: "Full Transparency",
-    description: "Track application status and scholarships disbursement in real-time.",
+    description: "Track application status and scholarships disbursement in real-time. No more \"ghost students\".",
     gradient: "from-yellow-400 to-[#6073F2]"
   },
   {

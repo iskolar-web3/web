@@ -7,7 +7,7 @@ const milestones = [
     title: "Pilot Launch",
     icon: Rocket,
     description:
-      "Initial release with core features including user registration, scholarship creation, discovery, application submission, and scholar selection.",
+      "MVP release with core features including user registration, scholarship creation, discovery, application submission, scholar selection, and application tracking.",
     status: "upcoming",
   },
   {
@@ -15,7 +15,7 @@ const milestones = [
     title: "AI & Blockchain Integration",
     icon: Sparkles,
     description:
-      "Full platform launch with AI-powered scholarship processes, blockchain-based fund disbursements, and identity verification systems.",
+      "Full platform launch with AI-powered scholarship processes, blockchain-based fund disbursements, identity verification systems, and integrated school features.",
     status: "planned",
   },
   {
@@ -23,7 +23,7 @@ const milestones = [
     title: "Institutional Integrations",
     icon: Building,
     description:
-      "Onboarding of schools and government institutions with dedicated dashboards, compliance tools, and reporting features.",
+      "Onboarding and partnerships with schools, organizations, and government institutions, offering dedicated dashboards and tools.",
     status: "planned",
   },
   {
@@ -31,20 +31,20 @@ const milestones = [
     title: "Nationwide Rollout",
     icon: Globe,
     description:
-      "Platform scaling to serve all regions of the Philippines with mobile app launch and expanded sponsor partnerships.",
+      "Platform scaling to serve all regions of the Philippines with mobile app launch and expanded partnerships.",
     status: "planned",
   },
 ]
 
 export function Roadmap() {
   return (
-    <section id="roadmap" className="py-20 lg:py-32 px-5 bg-background">
+    <section id="roadmap" className="py-20 lg:py-32 px-5">
       <MotionContainer className="max-w-5xl mx-auto relative z-26">
         {/* Section Header */}
         <MotionItem className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-2">
             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-secondary uppercase tracking-wider">Roadmap</span>
+            <span className="text-sm text-secondary uppercase tracking-wider">Roadmap</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-secondary mt-4 mb-6 text-balance">
             Our Journey to <span className="text-[#6073F2]">2026</span>
@@ -57,7 +57,7 @@ export function Roadmap() {
         {/* Timeline */}
         <div className="relative">
           {/* Vertical Line */}
-          <div className="absolute left-4 lg:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-secondary via-[#6073F2] to-[#6073F2]/10  lg:-translate-x-1/2" />
+          <div className="absolute left-4 lg:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-secondary/50 via-secondary via-[#6073F2] to-[#6073F2]/10  lg:-translate-x-1/2" />
 
           {/* Milestone Items */}
           <div className="space-y-12 lg:space-y-16">
@@ -78,14 +78,14 @@ export function Roadmap() {
                   className={`lg:flex items-center gap-8 ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"}`}
                 >
                   {/* Timeline Dot */}
-                  <div className="absolute left-0 lg:left-1/2 lg:-translate-x-1/2 w-8 h-8 bg-card border-4 border-secondary rounded-full flex items-center justify-center z-10">
+                  <div className="absolute left-0 lg:left-1/2 lg:-translate-x-1/2 w-8 h-8 bg-background border-4 border-secondary rounded-full flex items-center justify-center z-10">
                     <milestone.icon className="w-4 h-4 text-secondary" />
                   </div>
 
                   {/* Content Card */}
                   <div className={`lg:w-[calc(50%-2rem)] ${index % 2 === 0 ? "lg:text-right lg:pr-8" : "lg:pl-8"}`}>
-                    <div className="bg-card rounded-2xl p-6 border border-border shadow-sm hover:shadow-lg transition-shadow">
-                      <span className="inline-block text-secondary py-1 text-base font-semibold mb-3">
+                    <div className="bg-background rounded-lg px-6 py-4 border border-secondary/20 shadow-sm hover:shadow-sm transition-shadow">
+                      <span className="inline-block text-secondary text-base font-semibold mb-3">
                         {milestone.quarter}
                       </span>
                       <h3 className="text-lg md:text-xl text-secondary mb-2">{milestone.title}</h3>

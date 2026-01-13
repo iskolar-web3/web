@@ -26,7 +26,7 @@ const problems = [
 
 export function Problem() {
   return (
-    <section id="problem" className="py-16 lg:py-28 px-6 md:px-26 bg-background relative z-20">
+    <section id="problem" className="py-16 lg:py-28 px-6 md:px-26 relative z-26">
       <MotionContainer className="max-w-8xl mx-auto">
         {/* Section Header */}
         <MotionItem className="relative z-26 text-center mb-30">
