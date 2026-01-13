@@ -3,7 +3,7 @@ import { Menu, X, ChevronDown } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 const navLinks = [
-  { name: "Home", href: "/#home" },
+  { name: "Home", href: "/" },
   { name: "Features", href: "#features" },
   { name: "Roadmap", href: "#roadmap" },
   { name: "FAQs", href: "#faqs" },
@@ -14,7 +14,6 @@ const navLinks = [
       { name: "Company Overview", href: "/about#company-overview" },
       { name: "Mission & Vision", href: "/about#mission-vision" },
       { name: "Our Team", href: "/about#team" },
-      { name: "Partnerships", href: "/about#partnerships", comingSoon: true },
     ],
   },
 ]
@@ -66,7 +65,7 @@ export default function Navbar() {
         <div className="px-4 sm:px-12 lg:px-26">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
-            <a href="/#home" onClick={(e) => handleNavClick(e, '/#home')}>
+            <a href="/#home">
               <div className="w-25 h-10 md:w-34 md:h-14 flex items-center justify-center">
                 <img
                   src={"/logo2.png"}
@@ -115,7 +114,7 @@ export default function Navbar() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-full left-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-gray-200 py-2"
+                        className="absolute top-full left-0 mt-2 w-56 bg-card rounded-md shadow-lg border border-gray-200 py-2"
                       >
                         {link.dropdown.map((item) => (
                           <a
@@ -131,11 +130,6 @@ export default function Navbar() {
                             className="flex items-center justify-between px-4 py-2 text-sm text-secondary transition-colors"
                           >
                             {item.name}
-                            {item.comingSoon && (
-                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                Soon
-                              </span>
-                            )}
                           </a>
                         ))}
                       </motion.div>
@@ -193,11 +187,6 @@ export default function Navbar() {
                           className="flex items-center gap-2 py-1.5 text-sm text-secondary/75 hover:text-secondary/80"
                         >
                           {item.name}
-                          {item.comingSoon && (
-                            <span className="text-[10px] bg-secondary text-tertiary px-2 py-1 rounded-full">
-                              Soon
-                            </span>
-                          )}
                         </a>
                       ))}
                     </div>
