@@ -14,10 +14,10 @@ import {
 	Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import FilterSelect from "@/components/sponsor/Filters";
-import ScholarshipCard from "@/components/sponsor/ScholarshipCard";
+import FilterSelect from "@/components/sponsor/scholarships/Filters";
+import ScholarshipCard from "@/components/sponsor/scholarships/ScholarshipCard";
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton";
-import ScholarshipDetailsModal from "@/components/sponsor/ScholarshipDetailsDrawer";
+import ScholarshipDetailsModal from "@/components/sponsor/scholarships/ScholarshipDetailsDrawer";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Toast from "@/components/Toast";
 import { useToast } from "@/hooks/useToast";

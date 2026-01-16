@@ -13,13 +13,13 @@ import ProfileHeader from '@/components/profile/ProfileHeader';
 import EditHeader from '@/components/profile/EditHeader';
 import IndividualSponsorProfileForm, {
   type IndividualSponsorProfileFormData,
-} from '@/components/sponsor/IndividualSponsorProfileForm';
+} from '@/components/sponsor/profile/IndividualSponsorProfileForm';
 import OrganizationSponsorProfileForm, {
   type OrganizationSponsorProfileFormData,
-} from '@/components/sponsor/OrganizationSponsorProfileForm';
+} from '@/components/sponsor/profile/OrganizationSponsorProfileForm';
 import GovernmentSponsorProfileForm, {
   type GovernmentSponsorProfileFormData,
-} from '@/components/sponsor/GovernmentSponsorProfileForm';
+} from '@/components/sponsor/profile/GovernmentSponsorProfileForm';
 import type { 
   IndividualSponsorProfile, 
   OrganizationSponsorProfile, 

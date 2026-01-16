@@ -34,8 +34,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import Toast from "@/components/Toast";
-import DescriptionModal from "@/components/sponsor/DescriptionModal";
-import CustomFormFieldModal from "@/components/sponsor/CustomFormFieldModal";
+import DescriptionModal from "@/components/sponsor/create-scholarship/DescriptionModal";
+import CustomFormFieldModal from "@/components/sponsor/create-scholarship/CustomFormFieldModal";
 import { useToast } from "@/hooks/useToast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { handleError } from "@/lib/errorHandler";
@@ -54,7 +54,7 @@ import {
 import {
 	getFieldTypeLabel,
 	renderFieldTypeIcon,
-} from "@/components/sponsor/CustomFormFieldsList";
+} from "@/components/sponsor/create-scholarship/CustomFormFieldsList";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import {
 	getScholarshipByIdQuery,
