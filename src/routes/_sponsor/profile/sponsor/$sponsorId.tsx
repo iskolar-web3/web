@@ -1,39 +1,33 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { User, Building2, Phone, Briefcase, Edit } from 'lucide-react';
+import { User, Building2, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useToast } from '@/hooks/useToast';
-import { useProfileForm } from '@/hooks/useProfileForm';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
+import { useMutation } from '@tanstack/react-query';
 import Toast from '@/components/Toast';
-import InfoField from '@/components/profile/InfoField';
-import SelectField from '@/components/profile/SelectField';
-import DateField from '@/components/profile/DateField';
 import ProfileSkeleton from '@/components/profile/ProfileSkeleton';
 import ProfileError from '@/components/profile/ProfileError';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import EditHeader from '@/components/profile/EditHeader';
+import IndividualSponsorProfileForm, {
+  type IndividualSponsorProfileFormData,
+} from '@/components/sponsor/IndividualSponsorProfileForm';
+import OrganizationSponsorProfileForm, {
+  type OrganizationSponsorProfileFormData,
+} from '@/components/sponsor/OrganizationSponsorProfileForm';
+import GovernmentSponsorProfileForm, {
+  type GovernmentSponsorProfileFormData,
+} from '@/components/sponsor/GovernmentSponsorProfileForm';
 import type { 
   IndividualSponsorProfile, 
   OrganizationSponsorProfile, 
   GovernmentSponsorProfile, 
 } from '@/types/profile.types';
 import { getDisplayName } from '@/utils/profile.utils';
-// import { z } from 'zod';
 
 export const Route = createFileRoute('/_sponsor/profile/sponsor/$sponsorId')({
-  // params: {
-  //   parse: (params) => {
-  //     const schema = z.object({
-  //       sponsorId: z.string().uuid('Invalid ID format'),
-  //     });
-  //     return schema.parse(params);
-  //   },
-  //   stringify: (params) => ({
-  //     sponsorId: params.sponsorId,
-  //   }),
-  // },
   component: SponsorProfile,
 });
 
@@ -50,23 +44,36 @@ function SponsorProfile() {
       ? (profile as SponsorProfile)
       : null
   );
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
   const { toast, showSuccess, showError } = useToast();
 
-  const {
-    isEditing,
-    isSaving,
-    editedProfile,
-    handleEditClick,
-    handleCancelEdit,
-    handleSaveEdit,
-    handleFieldChange,
-    handleDateChange,
-  } = useProfileForm(localProfile, setLocalProfile, { showSuccess, showError });
+  const mutation = useMutation({
+    mutationFn: async (data: any) => {
+      // TODO: Implement update sponsor API call
+      console.log('Update sponsor:', data);
+      return { success: true };
+    },
+    onSuccess: async () => {
+      showSuccess(`Success`, 'Profile updated successfully', 1250);
+      setIsEditing(false);
+      setIsSaving(false);
+    },
+    onError: (err: any) => {
+      showError('Error', err.message || 'Failed to update profile');
+      console.error(err);
+      setIsSaving(false);
+    },
+  });
 
   // Update local profile when fetched profile changes
-  if (profile && (profile.role === 'individual_sponsor' || profile.role === 'organization_sponsor' || profile.role === 'government_sponsor') && localProfile?.user_id !== profile.user_id) {
-    setLocalProfile(profile as SponsorProfile);
-  }
+	useEffect(() => {
+		if (profile && (profile.role === 'individual_sponsor' || profile.role === 'organization_sponsor' || profile.role === 'government_sponsor') && localProfile?.user_id !== profile.user_id) {
+			setLocalProfile(profile as SponsorProfile);
+		}
+	}, [profile, localProfile?.user_id]);
 
   if (isLoading) {
     return <ProfileSkeleton />;
@@ -79,6 +86,67 @@ function SponsorProfile() {
   const isIndividual = profile.role === 'individual_sponsor';
   const isOrganization = profile.role === 'organization_sponsor';
   const isGovernment = profile.role === 'government_sponsor';
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (formRef.current) {
+      formRef.current.dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true })
+      );
+    }
+  };
+
+  const handleIndividualSponsorSubmit = async (data: IndividualSponsorProfileFormData) => {
+    setIsSaving(true);
+    try {
+      setLocalProfile({
+        ...localProfile,
+        ...data,
+      });
+      mutation.mutate(data);
+    } catch (err) {
+      showError('Error', 'Failed to save profile');
+      console.error(err);
+      setIsSaving(false);
+    }
+  };
+
+  const handleOrganizationSponsorSubmit = async (data: OrganizationSponsorProfileFormData) => {
+    setIsSaving(true);
+    try {
+      setLocalProfile({
+        ...localProfile,
+        ...data,
+      });
+      mutation.mutate(data);
+    } catch (err) {
+      showError('Error', 'Failed to save profile');
+      console.error(err);
+      setIsSaving(false);
+    }
+  };
+
+  const handleGovernmentSponsorSubmit = async (data: GovernmentSponsorProfileFormData) => {
+    setIsSaving(true);
+    try {
+      setLocalProfile({
+        ...localProfile,
+        ...data,
+      });
+      mutation.mutate(data);
+    } catch (err) {
+      showError('Error', 'Failed to save profile');
+      console.error(err);
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -125,30 +193,32 @@ function SponsorProfile() {
           />
           
           {isIndividual && (
-            <IndividualSponsorFields
-              profile={profile as IndividualSponsorProfile}
-              editedProfile={editedProfile as IndividualSponsorProfile}
+            <IndividualSponsorProfileForm
+              ref={formRef}
+              profile={localProfile as IndividualSponsorProfile}
               isEditing={isEditing}
-              onFieldChange={handleFieldChange}
-              onDateChange={handleDateChange}
+              isSaving={isSaving}
+              onSubmit={handleIndividualSponsorSubmit}
             />
           )}
 
           {isOrganization && (
-            <OrganizationSponsorFields
-              profile={profile as OrganizationSponsorProfile}
-              editedProfile={editedProfile as OrganizationSponsorProfile}
+            <OrganizationSponsorProfileForm
+              ref={formRef}
+              profile={localProfile as OrganizationSponsorProfile}
               isEditing={isEditing}
-              onFieldChange={handleFieldChange}
+              isSaving={isSaving}
+              onSubmit={handleOrganizationSponsorSubmit}
             />
           )}
 
           {isGovernment && (
-            <GovernmentSponsorFields
-              profile={profile as GovernmentSponsorProfile}
-              editedProfile={editedProfile as GovernmentSponsorProfile}
+            <GovernmentSponsorProfileForm
+              ref={formRef}
+              profile={localProfile as GovernmentSponsorProfile}
               isEditing={isEditing}
-              onFieldChange={handleFieldChange}
+              isSaving={isSaving}
+              onSubmit={handleGovernmentSponsorSubmit}
             />
           )}
         </motion.div>
@@ -176,121 +246,6 @@ function ProfileAvatar({ isIndividual }: { isIndividual: boolean }) {
       >
         <Edit className="w-4 h-4 text-tertiary" />
       </button>
-    </div>
-  );
-}
-
-function IndividualSponsorFields({ profile, editedProfile, isEditing, onFieldChange, onDateChange }: {
-  profile: IndividualSponsorProfile;
-  editedProfile: IndividualSponsorProfile | null;
-  isEditing: boolean;
-  onFieldChange: (field: string, value: string) => void;
-  onDateChange: (date: Date | undefined) => void;
-}) {
-  const current = isEditing && editedProfile ? editedProfile : profile;
-  
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-      <InfoField label="Name" value={current.full_name} isEditing={isEditing} onChange={(v) => onFieldChange('full_name', v)} />
-      <SelectField 
-        label="Employment Type" 
-        value={current.employment_type}
-        options={[
-          { value: 'employed', label: 'Employed' },
-          { value: 'self_employed', label: 'Self Employed' },
-          { value: 'freelancer', label: 'Freelancer' },
-          { value: 'overseas_filipino_worker', label: 'Overseas Filipino Worker' },
-          { value: 'student', label: 'Student' },
-        ]}
-        icon={<Briefcase className="w-4 h-4 text-[#6B7280]" />}
-        isEditing={isEditing}
-        onChange={(v) => onFieldChange('employment_type', v)}
-      />
-      {current.date_of_birth && (
-        <DateField label="Date of Birth" value={current.date_of_birth} isEditing={isEditing} onChange={onDateChange} />
-      )}
-      <InfoField 
-        label="Contact Number" 
-        value={current.contact_number}
-        icon={<Phone className="w-4 h-4 text-[#6B7280]" />}
-        isEditing={isEditing}
-        onChange={(v) => onFieldChange('contact_number', v)}
-        type="tel"
-      />
-    </div>
-  );
-}
-
-function OrganizationSponsorFields({ profile, editedProfile, isEditing, onFieldChange }: {
-  profile: OrganizationSponsorProfile;
-  editedProfile: OrganizationSponsorProfile | null;
-  isEditing: boolean;
-  onFieldChange: (field: string, value: string) => void;
-}) {
-  const current = isEditing && editedProfile ? editedProfile : profile;
-  
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-      <div className="md:col-span-2">
-        <InfoField label="Organization Name" value={current.name} isEditing={isEditing} onChange={(v) => onFieldChange('name', v)} />
-      </div>
-      <SelectField 
-        label="Organization Type" 
-        value={current.organization_type}
-        options={[
-          { value: 'private_company', label: 'Private Company' },
-          { value: 'non_governmental_organization', label: 'Non-Governmental Organization' },
-          { value: 'educational_institution', label: 'Educational Institution' },
-        ]}
-        icon={<Building2 className="w-4 h-4 text-[#6B7280]" />}
-        isEditing={isEditing}
-        onChange={(v) => onFieldChange('organization_type', v)}
-      />
-      <InfoField 
-        label="Contact Number" 
-        value={current.contact_number}
-        icon={<Phone className="w-4 h-4 text-[#6B7280]" />}
-        isEditing={isEditing}
-        onChange={(v) => onFieldChange('contact_number', v)}
-        type="tel"
-      />
-    </div>
-  );
-}
-
-function GovernmentSponsorFields({ profile, editedProfile, isEditing, onFieldChange }: {
-  profile: GovernmentSponsorProfile;
-  editedProfile: GovernmentSponsorProfile | null;
-  isEditing: boolean;
-  onFieldChange: (field: string, value: string) => void;
-}) {
-  const current = isEditing && editedProfile ? editedProfile : profile;
-  
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-      <div className="md:col-span-2">
-        <InfoField label="Agency Name" value={current.name} isEditing={isEditing} onChange={(v) => onFieldChange('name', v)} />
-      </div>
-      <SelectField 
-        label="Agency Type" 
-        value={current.agency_type}
-        options={[
-          { value: 'national_government_agency', label: 'National Government Agency' },
-          { value: 'local_government_unit', label: 'Local Government Unit' },
-          { value: 'government_owned_and_controlled_corporation', label: 'Government Owned and Controlled Corporation' },
-        ]}
-        icon={<Building2 className="w-4 h-4 text-[#6B7280]" />}
-        isEditing={isEditing}
-        onChange={(v) => onFieldChange('agency_type', v)}
-      />
-      <InfoField 
-        label="Contact Number" 
-        value={current.contact_number}
-        icon={<Phone className="w-4 h-4 text-[#6B7280]" />}
-        isEditing={isEditing}
-        onChange={(v) => onFieldChange('contact_number', v)}
-        type="tel"
-      />
     </div>
   );
 }
