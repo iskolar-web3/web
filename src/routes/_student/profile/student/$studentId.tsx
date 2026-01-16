@@ -12,9 +12,9 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import EditHeader from "@/components/profile/EditHeader";
 import StudentProfileForm, {
 	type StudentProfileFormData,
-} from "@/components/student/StudentProfileForm";
-import CredentialUploadModal from "@/components/student/CredentialUploadModal";
-import CredentialsList from "@/components/student/CredentialsList";
+} from "@/components/student/profile/StudentProfileForm";
+import CredentialUploadModal from "@/components/student/profile/credentials/CredentialUploadModal";
+import CredentialsList from "@/components/student/profile/credentials/CredentialsList";
 import type { StudentProfile } from "@/types/profile.types";
 import { useAuth } from "@/auth";
 import type { Student } from "@/lib/student/model";
