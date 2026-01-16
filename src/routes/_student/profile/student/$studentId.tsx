@@ -2,25 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 import { User, Edit, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { useToast } from "@/hooks/useToast";
-import { useUserProfile } from "@/hooks/queries/useUserProfile";
 import Toast from "@/components/Toast";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import ProfileError from "@/components/profile/ProfileError";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import EditHeader from "@/components/profile/EditHeader";
-import StudentProfileForm, {
-	type StudentProfileFormData,
-} from "@/components/student/profile/ProfileForm";
 import CredentialUploadModal from "@/components/student/profile/credentials/CredentialUploadModal";
 import CredentialsList from "@/components/student/profile/credentials/CredentialsList";
-import type { StudentProfile } from "@/types/profile.types";
 import { useAuth } from "@/auth";
-import type { Student } from "@/lib/student/model";
+import type { Student, UpdateStudentRequest } from "@/lib/student/model";
 import { UserRole } from "@/lib/user/model";
 import { updateStudent } from "@/lib/student/api";
 import { useMutation } from "@tanstack/react-query";
+import StudentProfileForm from "@/components/student/profile/ProfileForm";
 
 export const Route = createFileRoute("/_student/profile/student/$studentId")({
 	component: StudentProfilePage,
@@ -29,18 +25,7 @@ export const Route = createFileRoute("/_student/profile/student/$studentId")({
 function StudentProfilePage() {
 	usePageTitle("Profile");
 
-	const { studentId } = Route.useParams();
 	const auth = useAuth<Student>();
-	const {
-		data: profile,
-		isLoading,
-		error,
-		isError,
-	} = useUserProfile(studentId);
-
-	const [localProfile, setLocalProfile] = useState<StudentProfile | null>(
-		profile && profile.role === "student" ? (profile as StudentProfile) : null,
-	);
 	const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
@@ -51,10 +36,10 @@ function StudentProfilePage() {
 	const mutation = useMutation({
 		mutationFn: updateStudent,
 		onSuccess: async (res) => {
-			console.log(res.data);
-			showSuccess(`Success`, res.message, 1250);
+            auth.setProfile(res.data)
 			setIsEditing(false);
 			setIsSaving(false);
+			showSuccess(`Success`, res.message, 1250);
 		},
 		onError: (err) => {
 			showError("Error", err.message);
@@ -63,23 +48,12 @@ function StudentProfilePage() {
 		},
 	});
 
-	// Update local profile when fetched profile changes
-	useEffect(() => {
-		if (
-			profile &&
-			profile.role === "student" &&
-			localProfile?.user_id !== profile.user_id
-		) {
-			setLocalProfile(profile as StudentProfile);
-		}
-	}, [profile, localProfile?.user_id]);
-
-	if (isLoading) {
+	if (auth.isLoading) {
 		return <ProfileSkeleton />;
 	}
 
-	if (isError || !localProfile || !profile) {
-		return <ProfileError error={error?.message || "Failed to load profile"} />;
+	if (auth.error) {
+		return <ProfileError error={auth.error.message || "Failed to load profile"} />;
 	}
 
 	const handleEditClick = () => {
@@ -98,41 +72,9 @@ function StudentProfilePage() {
 		}
 	};
 
-	const handleFormSubmit = async (data: StudentProfileFormData) => {
+	const handleFormSubmit = async (data: UpdateStudentRequest) => {
 		setIsSaving(true);
-		try {
-			// Map StudentProfileFormData to UpdateStudentRequest format
-			const updateData = {
-				id: auth.profile.id,
-				userId: auth.profile.userId,
-				firstName: data.full_name.split(" ")[0],
-				middleName: data.full_name.split(" ").slice(1, -1).join(" ") || "",
-				lastName: data.full_name.split(" ").pop() || "",
-				gender: data.gender as any, // The API expects the enum value
-				birthDate: new Date(data.date_of_birth),
-				contact: {
-					value: data.contact_number,
-					contactType: auth.profile.contact.code,
-				},
-				avatarUrl: auth.profile.avatarUrl || "",
-			};
-
-			// Update local profile immediately for UX
-			setLocalProfile({
-				...localProfile,
-				full_name: data.full_name,
-				gender: data.gender,
-				date_of_birth: data.date_of_birth,
-				contact_number: data.contact_number,
-			});
-
-			// Persist to server
-			mutation.mutate(updateData);
-		} catch (err) {
-			showError("Error", "Failed to save profile");
-			console.error(err);
-			setIsSaving(false);
-		}
+		mutation.mutate(data);
 	};
 
 	const handleCredentialSuccess = () => {
@@ -189,7 +131,7 @@ function StudentProfilePage() {
 
 					<StudentProfileForm
 						ref={formRef}
-						profile={localProfile}
+						profile={auth.profile}
 						isEditing={isEditing}
 						isSaving={isSaving}
 						onSubmit={handleFormSubmit}
