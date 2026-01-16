@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useRouterState, useNavigate, useSearch } from '@tanstack/react-router';
 import { Search, Home, Compass, WalletCards, Plus, Repeat, Bell, User, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import ProfileDropdown from './ProfileDropdown';
+import ProfileDropdown from './profile/ProfileDropdown';
 
 /**
  * User role type for navigation context
