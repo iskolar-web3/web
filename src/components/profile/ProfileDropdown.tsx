@@ -179,7 +179,7 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
 								<UserIcon className="w-4 md:w-5 h-4 md:h-5 text-[#6B7280]" />
 							)}
 						</div>
-						<div className="min-w-0 flex-1">
+						<div className="min-w-0 flex-1 text-left">
 							{auth.user ? (
 								<p className="text-xs md:text-sm text-primary truncate">
 									{getDisplayName(auth.user, auth.profile)}
@@ -221,10 +221,10 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
 							animate={{ opacity: 1, scale: 1 }}
 							exit={{ opacity: 0, scale: 0.95 }}
 							transition={{ duration: 0.2 }}
-							className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 p-6"
+							className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 py-4 px-5"
 							onClick={(e) => e.stopPropagation()}
 						>
-							<h3 className="text-lg text-primary mb-2 font-semibold">
+							<h3 className="text-lg text-primary mb-2">
 								Confirm Logout
 							</h3>
 							<p className="text-sm text-[#6B7280] mb-6">
@@ -235,14 +235,14 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
 								<button
 									type="button"
 									onClick={() => setShowLogoutConfirmation(false)}
-									className="px-4 py-2 cursor-pointer text-sm text-[#6B7280] hover:bg-[#F9FAFB] rounded-lg transition-colors"
+									className="px-4 py-2 cursor-pointer text-sm text-[#6B7280] hover:bg-[#F9FAFB] rounded-sm transition-colors"
 								>
 									Cancel
 								</button>
 								<button
 									type="button"
 									onClick={handleLogout}
-									className="px-4 py-2 cursor-pointer text-sm text-white bg-[#EF4444] hover:bg-[#DC2626] rounded-lg transition-colors"
+									className="px-4 py-2 cursor-pointer text-sm text-white bg-[#EF4444] hover:bg-[#DC2626] rounded-sm transition-colors"
 								>
 									Logout
 								</button>
