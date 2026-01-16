@@ -12,7 +12,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import EditHeader from "@/components/profile/EditHeader";
 import StudentProfileForm, {
 	type StudentProfileFormData,
-} from "@/components/student/profile/StudentProfileForm";
+} from "@/components/student/profile/ProfileForm";
 import CredentialUploadModal from "@/components/student/profile/credentials/CredentialUploadModal";
 import CredentialsList from "@/components/student/profile/credentials/CredentialsList";
 import type { StudentProfile } from "@/types/profile.types";
