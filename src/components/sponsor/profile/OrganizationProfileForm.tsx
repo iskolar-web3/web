@@ -80,7 +80,7 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
               <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
                 Organization Name
               </label>
-              <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
+              <div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
                 <p className="text-sm md:text-base text-primary">{profile.name || '—'}</p>
               </div>
             </div>
@@ -89,8 +89,8 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
             <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
               Organization Type
             </label>
-            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-[#6B7280]" />
+            <div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
               <p className="text-sm md:text-base text-primary">
                 {
                   [
@@ -109,8 +109,8 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
             <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
               Contact Number
             </label>
-            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-              <Phone className="w-4 h-4 text-[#6B7280]" />
+            <div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+              <Phone className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
               <p className="text-sm md:text-base text-primary">{profile.contact_number || '—'}</p>
             </div>
           </div>
@@ -134,7 +134,7 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
                   <Input
                     {...field}
                     disabled={isSaving}
-                    className={`h-auto py-3 ${
+                    className={`h-auto ${
                       errors.name
                         ? 'border-[#EF4444] focus-visible:ring-[#EF4444]/20'
                         : ''
@@ -162,7 +162,7 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
                   disabled={isSaving}
                 >
                   <SelectTrigger
-                    className={`h-auto py-3 ${
+                    className={`h-auto ${
                       errors.organization_type
                         ? 'border-[#EF4444] focus:ring-[#EF4444]/20'
                         : ''
@@ -201,7 +201,7 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
                   {...field}
                   type="tel"
                   disabled={isSaving}
-                  className={`h-auto py-3 ${
+                  className={`h-auto ${
                     errors.contact_number
                       ? 'border-[#EF4444] focus-visible:ring-[#EF4444]/20'
                       : ''

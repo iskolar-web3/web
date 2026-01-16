@@ -88,7 +88,7 @@ const IndividualSponsorProfileForm = forwardRef<HTMLFormElement, IndividualSpons
             <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
               Name
             </label>
-            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
+            <div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
               <p className="text-sm md:text-base text-primary">{profile.full_name || '—'}</p>
             </div>
           </div>
@@ -96,8 +96,8 @@ const IndividualSponsorProfileForm = forwardRef<HTMLFormElement, IndividualSpons
             <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
               Employment Type
             </label>
-            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-[#6B7280]" />
+            <div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+              <Briefcase className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
               <p className="text-sm md:text-base text-primary">
                 {
                   [
@@ -115,8 +115,8 @@ const IndividualSponsorProfileForm = forwardRef<HTMLFormElement, IndividualSpons
             <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
               Date of Birth
             </label>
-            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-              <CalendarIcon className="w-4 h-4 text-[#6B7280]" />
+            <div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+              <CalendarIcon className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
               <p className="text-sm md:text-base text-primary">
                 {profile.date_of_birth ? formatDate(profile.date_of_birth) : '—'}
               </p>
@@ -126,8 +126,8 @@ const IndividualSponsorProfileForm = forwardRef<HTMLFormElement, IndividualSpons
             <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
               Contact Number
             </label>
-            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-              <Phone className="w-4 h-4 text-[#6B7280]" />
+            <div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+              <Phone className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
               <p className="text-sm md:text-base text-primary">{profile.contact_number || '—'}</p>
             </div>
           </div>
@@ -150,7 +150,7 @@ const IndividualSponsorProfileForm = forwardRef<HTMLFormElement, IndividualSpons
                 <Input
                   {...field}
                   disabled={isSaving}
-                  className={`h-auto py-3 ${
+                  className={`h-auto ${
                     errors.full_name
                       ? 'border-[#EF4444] focus-visible:ring-[#EF4444]/20'
                       : ''
@@ -177,7 +177,7 @@ const IndividualSponsorProfileForm = forwardRef<HTMLFormElement, IndividualSpons
                   disabled={isSaving}
                 >
                   <SelectTrigger
-                    className={`h-auto py-3 ${
+                    className={`h-auto ${
                       errors.employment_type
                         ? 'border-[#EF4444] focus:ring-[#EF4444]/20'
                         : ''
@@ -228,7 +228,7 @@ const IndividualSponsorProfileForm = forwardRef<HTMLFormElement, IndividualSpons
                       <button
                         type="button"
                         disabled={isSaving}
-                        className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+                        className={`w-full min-h-[40px] px-4 text-sm border rounded-sm focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
                           dateValue ? 'text-primary' : 'text-gray-400'
                         } ${
                           errors.date_of_birth
@@ -281,7 +281,7 @@ const IndividualSponsorProfileForm = forwardRef<HTMLFormElement, IndividualSpons
                   {...field}
                   type="tel"
                   disabled={isSaving}
-                  className={`h-auto py-3 ${
+                  className={`h-auto ${
                     errors.contact_number
                       ? 'border-[#EF4444] focus-visible:ring-[#EF4444]/20'
                       : ''

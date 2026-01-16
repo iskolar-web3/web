@@ -1,6 +1,6 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Phone, CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { forwardRef } from "react";
 import type { JSX } from "react";
 import { Input } from "@/components/ui/input";
@@ -80,44 +80,44 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 			return (
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 					<div>
-						<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+						<label className="block text-xs text-[#6B7280] mb-1.5">
 							First Name
 						</label>
-						<div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-							<p className="text-sm md:text-base text-primary">
+						<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+							<p className="text-sm md:text-sm text-primary">
 								{profile.firstName}
 							</p>
 						</div>
 					</div>
 
 					<div>
-						<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+						<label className="block text-xs text-[#6B7280] mb-1.5">
 							Middle Name
 						</label>
-						<div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-							<p className="text-sm md:text-base text-primary">
+						<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+							<p className="text-sm md:text-sm text-primary">
 								{profile.middleName}
 							</p>
 						</div>
 					</div>
 
 					<div>
-						<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+						<label className="block text-xs text-[#6B7280] mb-1.5">
 							Last Name
 						</label>
-						<div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-							<p className="text-sm md:text-base text-primary">
+						<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+							<p className="text-sm md:text-sm text-primary">
 								{profile.lastName}
 							</p>
 						</div>
 					</div>
 
 					<div>
-						<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+						<label className="block text-xs text-[#6B7280] mb-1.5">
 							Gender
 						</label>
-						<div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-							<p className="text-sm md:text-base text-primary">
+						<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+							<p className="text-sm md:text-sm text-primary">
 								{[
 									{ value: Gender.Male, label: "Male" },
 									{ value: Gender.Female, label: "Female" },
@@ -129,12 +129,11 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 					</div>
 
 					<div>
-						<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+						<label className="block text-xs text-[#6B7280] mb-1.5">
 							Date of Birth
 						</label>
-						<div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-							<CalendarIcon className="w-4 h-4 text-[#6B7280]" />
-							<p className="text-sm md:text-base text-primary">
+						<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+							<p className="text-sm md:text-sm text-primary">
 								{profile.birthDate
 									? format(profile.birthDate, "MMMM d, yyyy")
 									: "—"}
@@ -142,12 +141,11 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 						</div>
 					</div>
 					<div>
-						<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+						<label className="block text-xs text-[#6B7280] mb-1.5">
 							Contact Number
 						</label>
-						<div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
-							<Phone className="w-4 h-4 text-[#6B7280]" />
-							<p className="text-sm md:text-base text-primary">
+						<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+							<p className="text-xs md:text-sm text-primary">
 								{profile.contact.value || "—"}
 							</p>
 						</div>
@@ -292,7 +290,7 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 											<button
 												type="button"
 												disabled={isSaving}
-												className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+												className={`w-full min-h-[40px] px-4 py-3 text-sm border rounded-sm focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
 													field.value ? "text-primary" : "text-gray-400"
 												} ${
 													errors.birthDate
@@ -370,4 +368,3 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 StudentProfileForm.displayName = "StudentProfileForm";
 
 export default StudentProfileForm;
-
