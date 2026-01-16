@@ -1,31 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { User, Phone, Edit, Award } from "lucide-react";
+import { User, Edit, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useToast } from "@/hooks/useToast";
-import { useProfileForm } from "@/hooks/useProfileForm";
 import { useUserProfile } from "@/hooks/queries/useUserProfile";
 import Toast from "@/components/Toast";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import ProfileError from "@/components/profile/ProfileError";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import EditHeader from "@/components/profile/EditHeader";
-import InfoField from "@/components/profile/InfoField";
-import SelectField from "@/components/profile/SelectField";
-import DateField from "@/components/profile/DateField";
+import StudentProfileForm, {
+	type StudentProfileFormData,
+} from "@/components/student/StudentProfileForm";
 import CredentialUploadModal from "@/components/student/CredentialUploadModal";
 import CredentialsList from "@/components/student/CredentialsList";
 import type { StudentProfile } from "@/types/profile.types";
 import { useAuth } from "@/auth";
-import {
-	updateStudentRequestSchema,
-	type Student,
-	type UpdateStudentRequest,
-} from "@/lib/student/model";
+import type { Student } from "@/lib/student/model";
 import { UserRole } from "@/lib/user/model";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { updateStudent } from "@/lib/student/api";
 import { useMutation } from "@tanstack/react-query";
 
@@ -37,6 +30,7 @@ function StudentProfilePage() {
 	usePageTitle("Profile");
 
 	const { studentId } = Route.useParams();
+	const auth = useAuth<Student>();
 	const {
 		data: profile,
 		isLoading,
@@ -48,29 +42,37 @@ function StudentProfilePage() {
 		profile && profile.role === "student" ? (profile as StudentProfile) : null,
 	);
 	const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false);
+	const [isEditing, setIsEditing] = useState(false);
+	const [isSaving, setIsSaving] = useState(false);
+
+	const formRef = useRef<HTMLFormElement>(null);
 	const { toast, showSuccess, showError } = useToast();
 
-	const auth = useAuth<Student>();
-
-	const {
-		isEditing,
-		isSaving,
-		editedProfile,
-		handleEditClick,
-		handleCancelEdit,
-		handleSaveEdit,
-		handleFieldChange,
-		handleDateChange,
-	} = useProfileForm(localProfile, setLocalProfile, { showSuccess, showError });
+	const mutation = useMutation({
+		mutationFn: updateStudent,
+		onSuccess: async (res) => {
+			console.log(res.data);
+			showSuccess(`Success`, res.message, 1250);
+			setIsEditing(false);
+			setIsSaving(false);
+		},
+		onError: (err) => {
+			showError("Error", err.message);
+			console.error(err);
+			setIsSaving(false);
+		},
+	});
 
 	// Update local profile when fetched profile changes
-	if (
-		profile &&
-		profile.role === "student" &&
-		localProfile?.user_id !== profile.user_id
-	) {
-		setLocalProfile(profile as StudentProfile);
-	}
+	useEffect(() => {
+		if (
+			profile &&
+			profile.role === "student" &&
+			localProfile?.user_id !== profile.user_id
+		) {
+			setLocalProfile(profile as StudentProfile);
+		}
+	}, [profile, localProfile?.user_id]);
 
 	if (isLoading) {
 		return <ProfileSkeleton />;
@@ -80,48 +82,62 @@ function StudentProfilePage() {
 		return <ProfileError error={error?.message || "Failed to load profile"} />;
 	}
 
-	const currentProfile =
-		isEditing && editedProfile
-			? (editedProfile as StudentProfile)
-			: localProfile;
+	const handleEditClick = () => {
+		setIsEditing(true);
+	};
+
+	const handleCancelEdit = () => {
+		setIsEditing(false);
+	};
+
+	const handleSaveEdit = async () => {
+		if (formRef.current) {
+			formRef.current.dispatchEvent(
+				new Event("submit", { bubbles: true, cancelable: true })
+			);
+		}
+	};
+
+	const handleFormSubmit = async (data: StudentProfileFormData) => {
+		setIsSaving(true);
+		try {
+			// Map StudentProfileFormData to UpdateStudentRequest format
+			const updateData = {
+				id: auth.profile.id,
+				userId: auth.profile.userId,
+				firstName: data.full_name.split(" ")[0],
+				middleName: data.full_name.split(" ").slice(1, -1).join(" ") || "",
+				lastName: data.full_name.split(" ").pop() || "",
+				gender: data.gender as any, // The API expects the enum value
+				birthDate: new Date(data.date_of_birth),
+				contact: {
+					value: data.contact_number,
+					contactType: auth.profile.contact.code,
+				},
+				avatarUrl: auth.profile.avatarUrl || "",
+			};
+
+			// Update local profile immediately for UX
+			setLocalProfile({
+				...localProfile,
+				full_name: data.full_name,
+				gender: data.gender,
+				date_of_birth: data.date_of_birth,
+				contact_number: data.contact_number,
+			});
+
+			// Persist to server
+			mutation.mutate(updateData);
+		} catch (err) {
+			showError("Error", "Failed to save profile");
+			console.error(err);
+			setIsSaving(false);
+		}
+	};
 
 	const handleCredentialSuccess = () => {
 		showSuccess("Success", "Your credential has been saved.", 2500);
 	};
-
-	// TODO: Integrate react hook forms with the editable profile
-	const form = useForm<UpdateStudentRequest>({
-		resolver: zodResolver(updateStudentRequestSchema),
-		mode: "onBlur",
-		defaultValues: {
-			id: auth.profile.id,
-			userId: auth.profile.userId,
-			contact: auth.profile.contact,
-			avatarUrl: auth.profile.avatarUrl || "",
-			birthDate: auth.profile.birthDate,
-			firstName: auth.profile.firstName,
-			middleName: auth.profile.middleName || "",
-			lastName: auth.profile.lastName,
-			gender: auth.profile.gender.code,
-		},
-	});
-
-	const mutation = useMutation({
-		mutationFn: updateStudent,
-		onSuccess: async (res) => {
-			console.log(res.data);
-			showSuccess(`Success`, res.message, 1250);
-		},
-		onError: (err) => {
-			showError("Error", err.message);
-			console.error(err);
-		},
-	});
-
-    // TODO: Use this for the form's onSubmit function
-	async function onSubmit(value: UpdateStudentRequest): Promise<void> {
-		mutation.mutate(value);
-	}
 
 	return (
 		<div className="min-h-screen">
@@ -171,38 +187,13 @@ function StudentProfilePage() {
 						onSave={handleSaveEdit}
 					/>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-						<InfoField
-							label="Full Name"
-							value={currentProfile.full_name}
-							isEditing={isEditing}
-							onChange={(value) => handleFieldChange("full_name", value)}
-						/>
-						<SelectField
-							label="Gender"
-							value={currentProfile.gender}
-							options={[
-								{ value: "male", label: "Male" },
-								{ value: "female", label: "Female" },
-							]}
-							isEditing={isEditing}
-							onChange={(value) => handleFieldChange("gender", value)}
-						/>
-						<DateField
-							label="Date of Birth"
-							value={currentProfile.date_of_birth}
-							isEditing={isEditing}
-							onChange={handleDateChange}
-						/>
-						<InfoField
-							label="Contact Number"
-							value={currentProfile.contact_number}
-							icon={<Phone className="w-4 h-4 text-[#6B7280]" />}
-							isEditing={isEditing}
-							onChange={(value) => handleFieldChange("contact_number", value)}
-							type="tel"
-						/>
-					</div>
+					<StudentProfileForm
+						ref={formRef}
+						profile={localProfile}
+						isEditing={isEditing}
+						isSaving={isSaving}
+						onSubmit={handleFormSubmit}
+					/>
 				</motion.div>
 
 				{/* Credentials */}
@@ -250,4 +241,3 @@ function ProfileAvatar() {
 		</div>
 	);
 }
-
