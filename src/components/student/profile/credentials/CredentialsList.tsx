@@ -53,7 +53,7 @@ export default function CredentialsList() {
     }
     
     return (
-      <div className="text-center py-8 text-red-500">
+      <div className="text-center py-8 text-[#EF4444]">
         <p className="text-sm">Error loading credentials: {error.message}</p>
       </div>
     );

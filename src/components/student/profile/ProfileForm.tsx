@@ -146,12 +146,12 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
                   disabled={isSaving}
                   className={`h-auto py-3 ${
                     errors.full_name
-                      ? 'border-red-500 focus-visible:ring-red-500/20'
+                      ? 'border-[#EF4444] focus-visible:ring-[#EF4444]/20'
                       : ''
                   }`}
                 />
                 {errors.full_name && (
-                  <p className="mt-1 text-xs text-red-500">{errors.full_name.message}</p>
+                  <p className="mt-1 text-xs text-[#EF4444]">{errors.full_name.message}</p>
                 )}
               </div>
             )}
@@ -173,7 +173,7 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
                   <SelectTrigger
                     className={`h-auto py-3 ${
                       errors.gender
-                        ? 'border-red-500 focus:ring-red-500/20'
+                        ? 'border-[#EF4444] focus:ring-[#EF4444]/20'
                         : ''
                     }`}
                   >
@@ -185,7 +185,7 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
                   </SelectContent>
                 </Select>
                 {errors.gender && (
-                  <p className="mt-1 text-xs text-red-500">{errors.gender.message}</p>
+                  <p className="mt-1 text-xs text-[#EF4444]">{errors.gender.message}</p>
                 )}
               </div>
             )}
@@ -219,7 +219,7 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
                           dateValue ? 'text-primary' : 'text-gray-400'
                         } ${
                           errors.date_of_birth
-                            ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                            ? 'border-[#EF4444] focus:ring-[#EF4444]/20 focus:border-[#EF4444]'
                             : 'border-input focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
                         } disabled:bg-gray-100 disabled:cursor-not-allowed`}
                       >
@@ -247,7 +247,7 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
                     </PopoverContent>
                   </Popover>
                   {errors.date_of_birth && (
-                    <p className="mt-1 text-xs text-red-500">
+                    <p className="mt-1 text-xs text-[#EF4444]">
                       {errors.date_of_birth.message}
                     </p>
                   )}
@@ -270,12 +270,12 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
                   disabled={isSaving}
                   className={`h-auto py-3 ${
                     errors.contact_number
-                      ? 'border-red-500 focus-visible:ring-red-500/20'
+                      ? 'border-[#EF4444] focus-visible:ring-[#EF4444]/20'
                       : ''
                   }`}
                 />
                 {errors.contact_number && (
-                  <p className="mt-1 text-xs text-red-500">
+                  <p className="mt-1 text-xs text-[#EF4444]">
                     {errors.contact_number.message}
                   </p>
                 )}

@@ -136,12 +136,12 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
                     disabled={isSaving}
                     className={`h-auto py-3 ${
                       errors.name
-                        ? 'border-red-500 focus-visible:ring-red-500/20'
+                        ? 'border-[#EF4444] focus-visible:ring-[#EF4444]/20'
                         : ''
                     }`}
                   />
                   {errors.name && (
-                    <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+                    <p className="mt-1 text-xs text-[#EF4444]">{errors.name.message}</p>
                   )}
                 </div>
               )}
@@ -164,7 +164,7 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
                   <SelectTrigger
                     className={`h-auto py-3 ${
                       errors.organization_type
-                        ? 'border-red-500 focus:ring-red-500/20'
+                        ? 'border-[#EF4444] focus:ring-[#EF4444]/20'
                         : ''
                     }`}
                   >
@@ -181,7 +181,7 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
                   </SelectContent>
                 </Select>
                 {errors.organization_type && (
-                  <p className="mt-1 text-xs text-red-500">
+                  <p className="mt-1 text-xs text-[#EF4444]">
                     {errors.organization_type.message}
                   </p>
                 )}
@@ -203,12 +203,12 @@ const OrganizationSponsorProfileForm = forwardRef<HTMLFormElement, OrganizationS
                   disabled={isSaving}
                   className={`h-auto py-3 ${
                     errors.contact_number
-                      ? 'border-red-500 focus-visible:ring-red-500/20'
+                      ? 'border-[#EF4444] focus-visible:ring-[#EF4444]/20'
                       : ''
                   }`}
                 />
                 {errors.contact_number && (
-                  <p className="mt-1 text-xs text-red-500">
+                  <p className="mt-1 text-xs text-[#EF4444]">
                     {errors.contact_number.message}
                   </p>
                 )}
