@@ -5,8 +5,14 @@ import { Phone, Building2 } from 'lucide-react';
 import { forwardRef } from 'react';
 import type { JSX } from 'react';
 import type { GovernmentSponsorProfile } from '@/types/profile.types';
-import FormInput from '@/components/profile/form/FormInput';
-import FormSelect from '@/components/profile/form/FormSelect';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 /**
  * Validation schema for government sponsor profile updates
@@ -70,35 +76,44 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="md:col-span-2">
-            <FormInput
-              label="Agency Name"
-              value={profile.name}
-              disabled
-              isEditing={false}
-            />
+            <div>
+              <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+                Agency Name
+              </label>
+              <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
+                <p className="text-sm md:text-base text-primary">{profile.name || '—'}</p>
+              </div>
+            </div>
           </div>
-          <FormSelect
-            label="Agency Type"
-            value={profile.agency_type}
-            options={[
-              { value: 'national_government_agency', label: 'National Government Agency' },
-              { value: 'local_government_unit', label: 'Local Government Unit' },
-              {
-                value: 'government_owned_and_controlled_corporation',
-                label: 'Government Owned and Controlled Corporation',
-              },
-            ]}
-            icon={<Building2 className="w-4 h-4 text-[#6B7280]" />}
-            disabled
-            isEditing={false}
-          />
-          <FormInput
-            label="Contact Number"
-            value={profile.contact_number}
-            icon={<Phone className="w-4 h-4 text-[#6B7280]" />}
-            disabled
-            isEditing={false}
-          />
+          <div>
+            <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+              Agency Type
+            </label>
+            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#6B7280]" />
+              <p className="text-sm md:text-base text-primary">
+                {
+                  [
+                    { value: 'national_government_agency', label: 'National Government Agency' },
+                    { value: 'local_government_unit', label: 'Local Government Unit' },
+                    {
+                      value: 'government_owned_and_controlled_corporation',
+                      label: 'Government Owned and Controlled Corporation',
+                    },
+                  ].find((opt) => opt.value === profile.agency_type)?.label || profile.agency_type || '—'
+                }
+              </p>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+              Contact Number
+            </label>
+            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
+              <Phone className="w-4 h-4 text-[#6B7280]" />
+              <p className="text-sm md:text-base text-primary">{profile.contact_number || '—'}</p>
+            </div>
+          </div>
         </div>
       );
     }
@@ -112,13 +127,23 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
               name="name"
               control={control}
               render={({ field }) => (
-                <FormInput
-                  label="Agency Name"
-                  {...field}
-                  error={errors.name?.message}
-                  isEditing={isEditing}
-                  disabled={isSaving}
-                />
+                <div>
+                  <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+                    Agency Name
+                  </label>
+                  <Input
+                    {...field}
+                    disabled={isSaving}
+                    className={`h-auto py-3 ${
+                      errors.name
+                        ? 'border-red-500 focus-visible:ring-red-500/20'
+                        : ''
+                    }`}
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+                  )}
+                </div>
               )}
             />
           </div>
@@ -127,22 +152,42 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
             name="agency_type"
             control={control}
             render={({ field }) => (
-              <FormSelect
-                label="Agency Type"
-                {...field}
-                icon={<Building2 className="w-4 h-4 text-[#6B7280]" />}
-                options={[
-                  { value: 'national_government_agency', label: 'National Government Agency' },
-                  { value: 'local_government_unit', label: 'Local Government Unit' },
-                  {
-                    value: 'government_owned_and_controlled_corporation',
-                    label: 'Government Owned and Controlled Corporation',
-                  },
-                ]}
-                error={errors.agency_type?.message}
-                isEditing={isEditing}
-                disabled={isSaving}
-              />
+              <div>
+                <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+                  Agency Type
+                </label>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={isSaving}
+                >
+                  <SelectTrigger
+                    className={`h-auto py-3 ${
+                      errors.agency_type
+                        ? 'border-red-500 focus:ring-red-500/20'
+                        : ''
+                    }`}
+                  >
+                    <SelectValue placeholder="Select agency type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="national_government_agency">
+                      National Government Agency
+                    </SelectItem>
+                    <SelectItem value="local_government_unit">
+                      Local Government Unit
+                    </SelectItem>
+                    <SelectItem value="government_owned_and_controlled_corporation">
+                      Government Owned and Controlled Corporation
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.agency_type && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.agency_type.message}
+                  </p>
+                )}
+              </div>
             )}
           />
 
@@ -150,15 +195,26 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
             name="contact_number"
             control={control}
             render={({ field }) => (
-              <FormInput
-                label="Contact Number"
-                type="tel"
-                icon={<Phone className="w-4 h-4 text-[#6B7280]" />}
-                {...field}
-                error={errors.contact_number?.message}
-                isEditing={isEditing}
-                disabled={isSaving}
-              />
+              <div>
+                <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+                  Contact Number
+                </label>
+                <Input
+                  {...field}
+                  type="tel"
+                  disabled={isSaving}
+                  className={`h-auto py-3 ${
+                    errors.contact_number
+                      ? 'border-red-500 focus-visible:ring-red-500/20'
+                      : ''
+                  }`}
+                />
+                {errors.contact_number && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.contact_number.message}
+                  </p>
+                )}
+              </div>
             )}
           />
         </div>

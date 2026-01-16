@@ -1,13 +1,25 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Phone } from 'lucide-react';
+import { Phone, CalendarIcon } from 'lucide-react';
 import { forwardRef } from 'react';
 import type { JSX } from 'react';
 import type { StudentProfile } from '@/types/profile.types';
-import FormInput from '@/components/profile/form/FormInput';
-import FormSelect from '@/components/profile/form/FormSelect';
-import FormDateField from '@/components/profile/form/FormDateField';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { formatDate, parseDateString } from '@/utils/profile.utils';
 
 /**
  * Validation schema for student profile updates
@@ -70,35 +82,49 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
       // View mode
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <FormInput
-            label="Full Name"
-            value={profile.full_name}
-            disabled
-            isEditing={false}
-          />
-          <FormSelect
-            label="Gender"
-            value={profile.gender}
-            options={[
-              { value: 'male', label: 'Male' },
-              { value: 'female', label: 'Female' },
-            ]}
-            disabled
-            isEditing={false}
-          />
-          <FormDateField
-            label="Date of Birth"
-            value={profile.date_of_birth}
-            disabled
-            isEditing={false}
-          />
-          <FormInput
-            label="Contact Number"
-            value={profile.contact_number}
-            icon={<Phone className="w-4 h-4 text-[#6B7280]" />}
-            disabled
-            isEditing={false}
-          />
+          <div>
+            <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+              Full Name
+            </label>
+            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
+              <p className="text-sm md:text-base text-primary">{profile.full_name || '—'}</p>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+              Gender
+            </label>
+            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
+              <p className="text-sm md:text-base text-primary">
+                {
+                  [
+                    { value: 'male', label: 'Male' },
+                    { value: 'female', label: 'Female' },
+                  ].find((opt) => opt.value === profile.gender)?.label || profile.gender || '—'
+                }
+              </p>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+              Date of Birth
+            </label>
+            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
+              <CalendarIcon className="w-4 h-4 text-[#6B7280]" />
+              <p className="text-sm md:text-base text-primary">
+                {profile.date_of_birth ? formatDate(profile.date_of_birth) : '—'}
+              </p>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+              Contact Number
+            </label>
+            <div className="px-4 py-3 bg-[#F9FAFB] border border-border rounded-lg flex items-center gap-2">
+              <Phone className="w-4 h-4 text-[#6B7280]" />
+              <p className="text-sm md:text-base text-primary">{profile.contact_number || '—'}</p>
+            </div>
+          </div>
         </div>
       );
     }
@@ -111,13 +137,23 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
             name="full_name"
             control={control}
             render={({ field }) => (
-              <FormInput
-                label="Full Name"
-                {...field}
-                error={errors.full_name?.message}
-                isEditing={isEditing}
-                disabled={isSaving}
-              />
+              <div>
+                <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+                  Full Name
+                </label>
+                <Input
+                  {...field}
+                  disabled={isSaving}
+                  className={`h-auto py-3 ${
+                    errors.full_name
+                      ? 'border-red-500 focus-visible:ring-red-500/20'
+                      : ''
+                  }`}
+                />
+                {errors.full_name && (
+                  <p className="mt-1 text-xs text-red-500">{errors.full_name.message}</p>
+                )}
+              </div>
             )}
           />
 
@@ -125,46 +161,125 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
             name="gender"
             control={control}
             render={({ field }) => (
-              <FormSelect
-                label="Gender"
-                {...field}
-                options={[
-                  { value: 'male', label: 'Male' },
-                  { value: 'female', label: 'Female' },
-                ]}
-                error={errors.gender?.message}
-                isEditing={isEditing}
-                disabled={isSaving}
-              />
+              <div>
+                <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+                  Gender
+                </label>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={isSaving}
+                >
+                  <SelectTrigger
+                    className={`h-auto py-3 ${
+                      errors.gender
+                        ? 'border-red-500 focus:ring-red-500/20'
+                        : ''
+                    }`}
+                  >
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.gender && (
+                  <p className="mt-1 text-xs text-red-500">{errors.gender.message}</p>
+                )}
+              </div>
             )}
           />
 
           <Controller
             name="date_of_birth"
             control={control}
-            render={({ field }) => (
-              <FormDateField
-                label="Date of Birth"
-                {...field}
-                error={errors.date_of_birth?.message}
-                isEditing={isEditing}
-              />
-            )}
+            render={({ field }) => {
+              const dateValue = field.value ? parseDateString(field.value) : undefined;
+              const handleDateSelect = (date: Date | undefined) => {
+                if (date) {
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  field.onChange(`${year}-${month}-${day}`);
+                }
+              };
+
+              return (
+                <div>
+                  <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+                    Date of Birth
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+                          dateValue ? 'text-primary' : 'text-gray-400'
+                        } ${
+                          errors.date_of_birth
+                            ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                            : 'border-input focus:border-[#3A52A6] focus:ring-[#3A52A6]/20'
+                        } disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                      >
+                        <span>
+                          {dateValue
+                            ? dateValue.toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })
+                            : 'Set date'}
+                        </span>
+                        <CalendarIcon className="h-4 w-4 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateValue}
+                        onSelect={handleDateSelect}
+                        captionLayout="dropdown"
+                        disabled={(date) => date > new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {errors.date_of_birth && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.date_of_birth.message}
+                    </p>
+                  )}
+                </div>
+              );
+            }}
           />
 
           <Controller
             name="contact_number"
             control={control}
             render={({ field }) => (
-              <FormInput
-                label="Contact Number"
-                type="tel"
-                icon={<Phone className="w-4 h-4 text-[#6B7280]" />}
-                {...field}
-                error={errors.contact_number?.message}
-                isEditing={isEditing}
-                disabled={isSaving}
-              />
+              <div>
+                <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+                  Contact Number
+                </label>
+                <Input
+                  {...field}
+                  type="tel"
+                  disabled={isSaving}
+                  className={`h-auto py-3 ${
+                    errors.contact_number
+                      ? 'border-red-500 focus-visible:ring-red-500/20'
+                      : ''
+                  }`}
+                />
+                {errors.contact_number && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.contact_number.message}
+                  </p>
+                )}
+              </div>
             )}
           />
         </div>
