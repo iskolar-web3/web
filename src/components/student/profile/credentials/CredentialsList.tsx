@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { format } from 'date-fns';
 import { useAccount } from 'wagmi';
 import { useCredentialsByHolder, useCredential } from '@/hooks/useNFTCredential';
 import { Award, FileText, Pencil, Eye } from 'lucide-react';
@@ -53,7 +54,7 @@ export default function CredentialsList() {
     }
     
     return (
-      <div className="text-center py-8 text-[#EF4444]">
+      <div className="text-center py-8 text-red-500">
         <p className="text-sm">Error loading credentials: {error.message}</p>
       </div>
     );
@@ -80,6 +81,20 @@ export default function CredentialsList() {
     </>
   );
 }
+
+const formatCredentialDate = (issuedDate: string) => {
+  try {
+     if (issuedDate.match(/^\d{4}-\d{2}/)) {
+         const date = new Date(issuedDate);
+         if (!isNaN(date.getTime())) {
+             return format(date, 'MMMM yyyy');
+         }
+     }
+     return issuedDate;
+  } catch {
+    return issuedDate; 
+  }
+};
 
 /**
  * Individual credential card component
@@ -178,7 +193,7 @@ function CredentialCard({ tokenId, onUpdate, onEditSuccess }: { tokenId: bigint,
             {/* Issued Date */}
             {credential.issuedDate && (
               <p className="text-xs text-primary/55">
-                Issued {credential.issuedDate}
+                Issued {formatCredentialDate(credential.issuedDate)}
               </p>
             )}
 
@@ -213,4 +228,3 @@ function CredentialCard({ tokenId, onUpdate, onEditSuccess }: { tokenId: bigint,
     </>
   );
 }
-
