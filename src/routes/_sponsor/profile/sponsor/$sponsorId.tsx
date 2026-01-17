@@ -12,23 +12,19 @@ import ProfileError from "@/components/profile/ProfileError";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import EditHeader from "@/components/profile/EditHeader";
 import IndividualSponsorProfileForm, {
-	type IndividualSponsorProfileFormData,
 } from "@/components/sponsor/profile/IndividualProfileForm";
 import OrganizationSponsorProfileForm, {
-	type OrganizationSponsorProfileFormData,
 } from "@/components/sponsor/profile/OrganizationProfileForm";
 import GovernmentSponsorProfileForm, {
-	type GovernmentSponsorProfileFormData,
 } from "@/components/sponsor/profile/GovernmentProfileForm";
 import type {
 	IndividualSponsorProfile,
 	OrganizationSponsorProfile,
 	GovernmentSponsorProfile,
 } from "@/types/profile.types";
-import { getDisplayName } from "@/utils/profile.utils";
 import { useAuth } from "@/auth";
-import { SponsorType, type AnySponsor, type IndividualSponsor, type OrganizationSponsor, type UpdateIndividualSponsorRequest, type UpdateOrganizationSponsorRequest } from "@/lib/sponsor/model";
-import { getSponsorName, updateIndividualSponsor, updateOrganizationSponsor } from "@/lib/sponsor/api";
+import { SponsorType, type AnySponsor, type GovernmentSponsor, type IndividualSponsor, type OrganizationSponsor, type UpdateGovernmentSponsorRequest, type UpdateIndividualSponsorRequest, type UpdateOrganizationSponsorRequest } from "@/lib/sponsor/model";
+import { getSponsorName, updateGovernmentSponsor, updateIndividualSponsor, updateOrganizationSponsor } from "@/lib/sponsor/api";
 import { UserRole } from "@/lib/user/model";
 
 export const Route = createFileRoute("/_sponsor/profile/sponsor/$sponsorId")({
@@ -100,6 +96,21 @@ function SponsorProfile() {
 		},
 	});
 
+	const governmentSponsorMutation = useMutation({
+		mutationFn: updateGovernmentSponsor,
+		onSuccess: async (res) => {
+			setIsEditing(false);
+			setIsSaving(false);
+            auth.setProfile(res.data)
+			showSuccess(`Success`, "Profile updated successfully", 1250);
+		},
+		onError: (err: any) => {
+			showError("Error", err.message || "Failed to update profile");
+			console.error(err);
+			setIsSaving(false);
+		},
+	});
+
 	// Update local profile when fetched profile changes
 	useEffect(() => {
 		if (
@@ -152,20 +163,10 @@ function SponsorProfile() {
 	};
 
 	const handleGovernmentSponsorSubmit = async (
-		data: GovernmentSponsorProfileFormData,
+		data: UpdateGovernmentSponsorRequest,
 	) => {
 		setIsSaving(true);
-		try {
-			setLocalProfile({
-				...localProfile,
-				...data,
-			});
-			individualSponsorMutation.mutate(data);
-		} catch (err) {
-			showError("Error", "Failed to save profile");
-			console.error(err);
-			setIsSaving(false);
-		}
+		governmentSponsorMutation.mutate(data);
 	};
 
 	return (
@@ -237,7 +238,7 @@ function SponsorProfile() {
 					{isGovernment && (
 						<GovernmentSponsorProfileForm
 							ref={formRef}
-							profile={localProfile as GovernmentSponsorProfile}
+							profile={auth.profile as GovernmentSponsor}
 							isEditing={isEditing}
 							isSaving={isSaving}
 							onSubmit={handleGovernmentSponsorSubmit}

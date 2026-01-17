@@ -1,10 +1,8 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Phone, Building2 } from 'lucide-react';
 import { forwardRef } from 'react';
 import type { JSX } from 'react';
-import type { GovernmentSponsorProfile } from '@/types/profile.types';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -13,36 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-/**
- * Validation schema for government sponsor profile updates
- */
-export const governmentSponsorProfileSchema = z.object({
-  name: z.string().min(1, 'Agency name is required'),
-  agency_type: z.string().min(1, 'Agency type is required'),
-  contact_number: z
-    .string()
-    .min(1, 'Contact number is required')
-    .regex(/^\d+$/, 'Contact number must contain only numbers')
-    .min(11, 'Contact number must be at least 11 digits'),
-});
-
-export type GovernmentSponsorProfileFormData = z.infer<
-  typeof governmentSponsorProfileSchema
->;
+import { AgencyType, updateGovernmentSponsorRequestSchema, type GovernmentSponsor, type UpdateGovernmentSponsorRequest } from '@/lib/sponsor/model';
 
 /**
  * Props for GovernmentSponsorProfileForm component
  */
 interface GovernmentSponsorProfileFormProps {
   /** Initial profile data to populate form */
-  profile: GovernmentSponsorProfile;
+  profile: GovernmentSponsor;
   /** Whether the form is in edit mode */
   isEditing: boolean;
   /** Whether the form is currently submitting */
   isSaving: boolean;
   /** Callback when form is submitted */
-  onSubmit: (data: GovernmentSponsorProfileFormData) => Promise<void>;
+  onSubmit: (data: UpdateGovernmentSponsorRequest) => Promise<void>;
 }
 
 /**
@@ -61,13 +43,20 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
       control,
       handleSubmit,
       formState: { errors },
-    } = useForm<GovernmentSponsorProfileFormData>({
-      resolver: zodResolver(governmentSponsorProfileSchema),
+    } = useForm<UpdateGovernmentSponsorRequest>({
+      resolver: zodResolver(updateGovernmentSponsorRequestSchema),
       mode: 'onBlur',
       defaultValues: {
+        id: profile.id,
+        userId: profile.userId,
         name: profile.name,
-        agency_type: profile.agency_type,
-        contact_number: profile.contact_number,
+        agencyType: profile.agencyType.code,
+        contact: {
+            contactType: profile.contact.code,
+            value: profile.contact.value,
+        },
+        avatarUrl: profile.avatarUrl || "",
+        sponsorType: profile.sponsorType.code,
       },
     });
 
@@ -94,13 +83,13 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
               <p className="text-sm md:text-base text-primary">
                 {
                   [
-                    { value: 'national_government_agency', label: 'National Government Agency' },
-                    { value: 'local_government_unit', label: 'Local Government Unit' },
+                    { value: AgencyType.NationalGovernmentAgency, label: 'National Government Agency' },
+                    { value: AgencyType.LocalGovernmentUnit, label: 'Local Government Unit' },
                     {
-                      value: 'government_owned_and_controlled_corporation',
+                      value: AgencyType.GovernmentOwnedAndControlledCorporation,
                       label: 'Government Owned and Controlled Corporation',
                     },
-                  ].find((opt) => opt.value === profile.agency_type)?.label || profile.agency_type || '—'
+                  ].find((opt) => opt.value === profile.agencyType.code)?.label || profile.agencyType.name || '—'
                 }
               </p>
             </div>
@@ -111,7 +100,7 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
             </label>
             <div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
               <Phone className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-              <p className="text-sm md:text-base text-primary">{profile.contact_number || '—'}</p>
+              <p className="text-sm md:text-base text-primary">{profile.contact.value || '—'}</p>
             </div>
           </div>
         </div>
@@ -149,7 +138,7 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
           </div>
 
           <Controller
-            name="agency_type"
+            name="agencyType"
             control={control}
             render={({ field }) => (
               <div>
@@ -163,7 +152,7 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
                 >
                   <SelectTrigger
                     className={`h-auto ${
-                      errors.agency_type
+                      errors.agencyType
                         ? 'border-[#EF4444] focus:ring-[#EF4444]/20'
                         : ''
                     }`}
@@ -171,52 +160,52 @@ const GovernmentSponsorProfileForm = forwardRef<HTMLFormElement, GovernmentSpons
                     <SelectValue placeholder="Select agency type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="national_government_agency">
+                    <SelectItem value={AgencyType.NationalGovernmentAgency}>
                       National Government Agency
                     </SelectItem>
-                    <SelectItem value="local_government_unit">
+                    <SelectItem value={AgencyType.LocalGovernmentUnit}>
                       Local Government Unit
                     </SelectItem>
-                    <SelectItem value="government_owned_and_controlled_corporation">
+                    <SelectItem value={AgencyType.GovernmentOwnedAndControlledCorporation}>
                       Government Owned and Controlled Corporation
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.agency_type && (
+                {errors.agencyType && (
                   <p className="mt-1 text-xs text-[#EF4444]">
-                    {errors.agency_type.message}
+                    {errors.agencyType.message}
                   </p>
                 )}
               </div>
             )}
           />
 
-          <Controller
-            name="contact_number"
-            control={control}
-            render={({ field }) => (
-              <div>
-                <label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
-                  Contact Number
-                </label>
-                <Input
-                  {...field}
-                  type="tel"
-                  disabled={isSaving}
-                  className={`h-auto ${
-                    errors.contact_number
-                      ? 'border-[#EF4444] focus-visible:ring-[#EF4444]/20'
-                      : ''
-                  }`}
-                />
-                {errors.contact_number && (
-                  <p className="mt-1 text-xs text-[#EF4444]">
-                    {errors.contact_number.message}
-                  </p>
-                )}
-              </div>
-            )}
-          />
+				<Controller
+					name="contact.value"
+					control={control}
+					render={({ field }) => (
+						<div>
+							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								Contact Number
+							</label>
+							<Input
+								{...field}
+								type="tel"
+								disabled={isSaving}
+								className={`h-auto py-3 ${
+									errors.contact?.value
+										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
+										: ""
+								}`}
+							/>
+							{errors.contact?.value && (
+								<p className="mt-1 text-xs text-[#EF4444]">
+									{errors.contact.value?.message}
+								</p>
+							)}
+						</div>
+					)}
+				/>
         </div>
 
         {/* Form submit button is handled by parent component */}
