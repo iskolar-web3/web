@@ -1,251 +1,277 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { User, Building2, Edit } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { usePageTitle } from '@/hooks/usePageTitle';
-import { useRef, useState, useEffect } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { useUserProfile } from '@/hooks/queries/useUserProfile';
-import { useMutation } from '@tanstack/react-query';
-import Toast from '@/components/Toast';
-import ProfileSkeleton from '@/components/profile/ProfileSkeleton';
-import ProfileError from '@/components/profile/ProfileError';
-import ProfileHeader from '@/components/profile/ProfileHeader';
-import EditHeader from '@/components/profile/EditHeader';
+import { createFileRoute } from "@tanstack/react-router";
+import { User, Building2, Edit } from "lucide-react";
+import { motion } from "framer-motion";
+import { usePageTitle } from "@/hooks/usePageTitle";
+import { useRef, useState, useEffect } from "react";
+import { useToast } from "@/hooks/useToast";
+import { useUserProfile } from "@/hooks/queries/useUserProfile";
+import { useMutation } from "@tanstack/react-query";
+import Toast from "@/components/Toast";
+import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
+import ProfileError from "@/components/profile/ProfileError";
+import ProfileHeader from "@/components/profile/ProfileHeader";
+import EditHeader from "@/components/profile/EditHeader";
 import IndividualSponsorProfileForm, {
-  type IndividualSponsorProfileFormData,
-} from '@/components/sponsor/profile/IndividualProfileForm';
+	type IndividualSponsorProfileFormData,
+} from "@/components/sponsor/profile/IndividualProfileForm";
 import OrganizationSponsorProfileForm, {
-  type OrganizationSponsorProfileFormData,
-} from '@/components/sponsor/profile/OrganizationProfileForm';
+	type OrganizationSponsorProfileFormData,
+} from "@/components/sponsor/profile/OrganizationProfileForm";
 import GovernmentSponsorProfileForm, {
-  type GovernmentSponsorProfileFormData,
-} from '@/components/sponsor/profile/GovernmentProfileForm';
-import type { 
-  IndividualSponsorProfile, 
-  OrganizationSponsorProfile, 
-  GovernmentSponsorProfile, 
-} from '@/types/profile.types';
-import { getDisplayName } from '@/utils/profile.utils';
+	type GovernmentSponsorProfileFormData,
+} from "@/components/sponsor/profile/GovernmentProfileForm";
+import type {
+	IndividualSponsorProfile,
+	OrganizationSponsorProfile,
+	GovernmentSponsorProfile,
+} from "@/types/profile.types";
+import { getDisplayName } from "@/utils/profile.utils";
 
-export const Route = createFileRoute('/_sponsor/profile/sponsor/$sponsorId')({
-  component: SponsorProfile,
+export const Route = createFileRoute("/_sponsor/profile/sponsor/$sponsorId")({
+	component: SponsorProfile,
 });
 
-type SponsorProfile = IndividualSponsorProfile | OrganizationSponsorProfile | GovernmentSponsorProfile;
+type SponsorProfile =
+	| IndividualSponsorProfile
+	| OrganizationSponsorProfile
+	| GovernmentSponsorProfile;
 
 function SponsorProfile() {
-  usePageTitle('Profile');
+	usePageTitle("Profile");
 
-  const { sponsorId } = Route.useParams();
-  const { data: profile, isLoading, error, isError } = useUserProfile(sponsorId);
-  
-  const [localProfile, setLocalProfile] = useState<SponsorProfile | null>(
-    profile && (profile.role === 'individual_sponsor' || profile.role === 'organization_sponsor' || profile.role === 'government_sponsor')
-      ? (profile as SponsorProfile)
-      : null
-  );
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+	const { sponsorId } = Route.useParams();
+	const {
+		data: profile,
+		isLoading,
+		error,
+		isError,
+	} = useUserProfile(sponsorId);
 
-  const formRef = useRef<HTMLFormElement>(null);
-  const { toast, showSuccess, showError } = useToast();
+	const [localProfile, setLocalProfile] = useState<SponsorProfile | null>(
+		profile &&
+			(profile.role === "individual_sponsor" ||
+				profile.role === "organization_sponsor" ||
+				profile.role === "government_sponsor")
+			? (profile as SponsorProfile)
+			: null,
+	);
+	const [isEditing, setIsEditing] = useState(false);
+	const [isSaving, setIsSaving] = useState(false);
 
-  const mutation = useMutation({
-    mutationFn: async (data: any) => {
-      // TODO: Implement update sponsor API call
-      console.log('Update sponsor:', data);
-      return { success: true };
-    },
-    onSuccess: async () => {
-      showSuccess(`Success`, 'Profile updated successfully', 1250);
-      setIsEditing(false);
-      setIsSaving(false);
-    },
-    onError: (err: any) => {
-      showError('Error', err.message || 'Failed to update profile');
-      console.error(err);
-      setIsSaving(false);
-    },
-  });
+	const formRef = useRef<HTMLFormElement>(null);
+	const { toast, showSuccess, showError } = useToast();
 
-  // Update local profile when fetched profile changes
+	const mutation = useMutation({
+		mutationFn: async (data: any) => {
+			// TODO: Implement update sponsor API call
+			console.log("Update sponsor:", data);
+			return { success: true };
+		},
+		onSuccess: async () => {
+			showSuccess(`Success`, "Profile updated successfully", 1250);
+			setIsEditing(false);
+			setIsSaving(false);
+		},
+		onError: (err: any) => {
+			showError("Error", err.message || "Failed to update profile");
+			console.error(err);
+			setIsSaving(false);
+		},
+	});
+
+	// Update local profile when fetched profile changes
 	useEffect(() => {
-		if (profile && (profile.role === 'individual_sponsor' || profile.role === 'organization_sponsor' || profile.role === 'government_sponsor') && localProfile?.user_id !== profile.user_id) {
+		if (
+			profile &&
+			(profile.role === "individual_sponsor" ||
+				profile.role === "organization_sponsor" ||
+				profile.role === "government_sponsor") &&
+			localProfile?.user_id !== profile.user_id
+		) {
 			setLocalProfile(profile as SponsorProfile);
 		}
 	}, [profile, localProfile?.user_id]);
 
-  if (isLoading) {
-    return <ProfileSkeleton />;
-  }
+	if (isLoading) {
+		return <ProfileSkeleton />;
+	}
 
-  if (isError || !localProfile || !profile) {
-    return <ProfileError error={error?.message || 'Failed to load profile'} />;
-  }
+	if (isError || !localProfile || !profile) {
+		return <ProfileError error={error?.message || "Failed to load profile"} />;
+	}
 
-  const isIndividual = profile.role === 'individual_sponsor';
-  const isOrganization = profile.role === 'organization_sponsor';
-  const isGovernment = profile.role === 'government_sponsor';
+	const isIndividual = profile.role === "individual_sponsor";
+	const isOrganization = profile.role === "organization_sponsor";
+	const isGovernment = profile.role === "government_sponsor";
 
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
+	const handleEditClick = () => {
+		setIsEditing(true);
+	};
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-  };
+	const handleCancelEdit = () => {
+		setIsEditing(false);
+	};
 
-  const handleSaveEdit = async () => {
-    if (formRef.current) {
-      formRef.current.dispatchEvent(
-        new Event('submit', { bubbles: true, cancelable: true })
-      );
-    }
-  };
+	const handleSaveEdit = async () => {
+		if (formRef.current) {
+			formRef.current.dispatchEvent(
+				new Event("submit", { bubbles: true, cancelable: true }),
+			);
+		}
+	};
 
-  const handleIndividualSponsorSubmit = async (data: IndividualSponsorProfileFormData) => {
-    setIsSaving(true);
-    try {
-      setLocalProfile({
-        ...localProfile,
-        ...data,
-      });
-      mutation.mutate(data);
-    } catch (err) {
-      showError('Error', 'Failed to save profile');
-      console.error(err);
-      setIsSaving(false);
-    }
-  };
+	const handleIndividualSponsorSubmit = async (
+		data: IndividualSponsorProfileFormData,
+	) => {
+		setIsSaving(true);
+		try {
+			setLocalProfile({
+				...localProfile,
+				...data,
+			});
+			mutation.mutate(data);
+		} catch (err) {
+			showError("Error", "Failed to save profile");
+			console.error(err);
+			setIsSaving(false);
+		}
+	};
 
-  const handleOrganizationSponsorSubmit = async (data: OrganizationSponsorProfileFormData) => {
-    setIsSaving(true);
-    try {
-      setLocalProfile({
-        ...localProfile,
-        ...data,
-      });
-      mutation.mutate(data);
-    } catch (err) {
-      showError('Error', 'Failed to save profile');
-      console.error(err);
-      setIsSaving(false);
-    }
-  };
+	const handleOrganizationSponsorSubmit = async (
+		data: OrganizationSponsorProfileFormData,
+	) => {
+		setIsSaving(true);
+		try {
+			setLocalProfile({
+				...localProfile,
+				...data,
+			});
+			mutation.mutate(data);
+		} catch (err) {
+			showError("Error", "Failed to save profile");
+			console.error(err);
+			setIsSaving(false);
+		}
+	};
 
-  const handleGovernmentSponsorSubmit = async (data: GovernmentSponsorProfileFormData) => {
-    setIsSaving(true);
-    try {
-      setLocalProfile({
-        ...localProfile,
-        ...data,
-      });
-      mutation.mutate(data);
-    } catch (err) {
-      showError('Error', 'Failed to save profile');
-      console.error(err);
-      setIsSaving(false);
-    }
-  };
+	const handleGovernmentSponsorSubmit = async (
+		data: GovernmentSponsorProfileFormData,
+	) => {
+		setIsSaving(true);
+		try {
+			setLocalProfile({
+				...localProfile,
+				...data,
+			});
+			mutation.mutate(data);
+		} catch (err) {
+			showError("Error", "Failed to save profile");
+			console.error(err);
+			setIsSaving(false);
+		}
+	};
 
-  return (
-    <div className="min-h-screen">
-      {toast && <Toast {...toast} />}
-      <div className="max-w-[44rem] mx-auto space-y-6">
-        {/* Profile Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-          className="bg-card rounded-lg shadow-sm border border-[#E0ECFF] overflow-hidden"
-        > 
-          <div className="px-6 pb-6">
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mt-6">
-              <ProfileAvatar isIndividual={isIndividual} />
-              <ProfileHeader 
-                name={getDisplayName(profile)}
-                role={profile.role}
-                email={profile.email}
-                contactNumber={profile.contact_number}
-              />
-            </div>
-          </div>
-        </motion.div>
+	return (
+		<div className="min-h-screen">
+			{toast && <Toast {...toast} />}
+			<div className="max-w-[44rem] mx-auto space-y-6">
+				{/* Profile Header */}
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.3, delay: 0.1 }}
+					className="bg-card rounded-lg shadow-sm border border-[#E0ECFF] overflow-hidden"
+				>
+					<div className="px-6 pb-6">
+						<div className="flex flex-col md:flex-row items-center md:items-start gap-6 mt-6">
+							<ProfileAvatar isIndividual={isIndividual} />
+							<ProfileHeader
+								name={getDisplayName(profile)}
+								role={profile.role}
+								email={profile.email}
+								contactNumber={profile.contact_number}
+							/>
+						</div>
+					</div>
+				</motion.div>
 
-        {/* Information Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-          className="bg-white rounded-lg shadow-sm border border-[#E0ECFF] p-6"
-        >
-          <EditHeader
-            title={
-              isIndividual ? 'Personal Information' :
-              isOrganization ? 'Organization Information' :
-              'Government Agency Information'
-            }
-            isEditing={isEditing}
-            isSaving={isSaving}
-            onEdit={handleEditClick}
-            onCancel={handleCancelEdit}
-            onSave={handleSaveEdit}
-          />
-          
-          {isIndividual && (
-            <IndividualSponsorProfileForm
-              ref={formRef}
-              profile={localProfile as IndividualSponsorProfile}
-              isEditing={isEditing}
-              isSaving={isSaving}
-              onSubmit={handleIndividualSponsorSubmit}
-            />
-          )}
+				{/* Information Section */}
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.3, delay: 0.2 }}
+					className="bg-white rounded-lg shadow-sm border border-[#E0ECFF] p-6"
+				>
+					<EditHeader
+						title={
+							isIndividual
+								? "Personal Information"
+								: isOrganization
+									? "Organization Information"
+									: "Government Agency Information"
+						}
+						isEditing={isEditing}
+						isSaving={isSaving}
+						onEdit={handleEditClick}
+						onCancel={handleCancelEdit}
+						onSave={handleSaveEdit}
+					/>
 
-          {isOrganization && (
-            <OrganizationSponsorProfileForm
-              ref={formRef}
-              profile={localProfile as OrganizationSponsorProfile}
-              isEditing={isEditing}
-              isSaving={isSaving}
-              onSubmit={handleOrganizationSponsorSubmit}
-            />
-          )}
+					{isIndividual && (
+						<IndividualSponsorProfileForm
+							ref={formRef}
+							profile={localProfile as IndividualSponsorProfile}
+							isEditing={isEditing}
+							isSaving={isSaving}
+							onSubmit={handleIndividualSponsorSubmit}
+						/>
+					)}
 
-          {isGovernment && (
-            <GovernmentSponsorProfileForm
-              ref={formRef}
-              profile={localProfile as GovernmentSponsorProfile}
-              isEditing={isEditing}
-              isSaving={isSaving}
-              onSubmit={handleGovernmentSponsorSubmit}
-            />
-          )}
-        </motion.div>
-      </div>
-    </div>
-  );
+					{isOrganization && (
+						<OrganizationSponsorProfileForm
+							ref={formRef}
+							profile={localProfile as OrganizationSponsorProfile}
+							isEditing={isEditing}
+							isSaving={isSaving}
+							onSubmit={handleOrganizationSponsorSubmit}
+						/>
+					)}
+
+					{isGovernment && (
+						<GovernmentSponsorProfileForm
+							ref={formRef}
+							profile={localProfile as GovernmentSponsorProfile}
+							isEditing={isEditing}
+							isSaving={isSaving}
+							onSubmit={handleGovernmentSponsorSubmit}
+						/>
+					)}
+				</motion.div>
+			</div>
+		</div>
+	);
 }
 
 function ProfileAvatar({ isIndividual }: { isIndividual: boolean }) {
-  return (
-    <div className="relative">
-      <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white p-1 shadow-lg">
-        <div className="w-full h-full rounded-full bg-muted flex items-center justify-center">
-          {isIndividual ? (
-            <User className="w-12 h-12 md:w-14 md:h-14 text-[#6B7280]" />
-          ) : (
-            <Building2 className="w-12 h-12 md:w-14 md:h-14 text-[#6B7280]" />
-          )}
-        </div>
-      </div>
-      <button
-        className="absolute bottom-0 right-0 w-8 h-8 bg-secondary hover:bg-[#2f4389] rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer"
-        title="Edit profile picture"
-        aria-label="Edit profile picture"
-      >
-        <Edit className="w-4 h-4 text-tertiary" />
-      </button>
-    </div>
-  );
+	return (
+		<div className="relative">
+			<div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white p-1 shadow-lg">
+				<div className="w-full h-full rounded-full bg-muted flex items-center justify-center">
+					{isIndividual ? (
+						<User className="w-12 h-12 md:w-14 md:h-14 text-[#6B7280]" />
+					) : (
+						<Building2 className="w-12 h-12 md:w-14 md:h-14 text-[#6B7280]" />
+					)}
+				</div>
+			</div>
+			<button
+				className="absolute bottom-0 right-0 w-8 h-8 bg-secondary hover:bg-[#2f4389] rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer"
+				title="Edit profile picture"
+				aria-label="Edit profile picture"
+			>
+				<Edit className="w-4 h-4 text-tertiary" />
+			</button>
+		</div>
+	);
 }
+
