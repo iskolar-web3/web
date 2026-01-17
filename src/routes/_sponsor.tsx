@@ -1,9 +1,22 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import type { JSX } from "react";
 import HeaderNav from "@/components/HeaderNav";
+import { UserRole } from "@/lib/user/model";
+import { getDefaultPathOfRole } from "@/lib/api";
 
 export const Route = createFileRoute("/_sponsor")({
   component: SponsorLayout,
+  beforeLoad: async ({context}) => {
+      const ses = await context.auth.getSession()
+      if(!ses) {
+          throw redirect({to: "/login"})
+      }
+
+      if(ses.user.role?.code !== UserRole.Sponsor) {
+			const path = getDefaultPathOfRole(ses.user);
+			throw redirect({ to: path });
+      }
+  }
 });
 
 function SponsorLayout(): JSX.Element {
