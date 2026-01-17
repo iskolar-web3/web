@@ -1,4 +1,6 @@
 import { BACKEND_URL, type ApiResponse } from "../api";
+import { getCookie } from "../cookie";
+import { ACCESS_TOKEN_KEY } from "../user/auth";
 import {
 	anySponsorSchema,
 	SponsorType,
@@ -6,6 +8,7 @@ import {
 	type GovernmentSponsor,
 	type IndividualSponsor,
 	type OrganizationSponsor,
+	type UpdateIndividualSponsorRequest,
 } from "./model";
 
 export async function getMySponsorProfile(
@@ -37,4 +40,27 @@ export function getSponsorName(sponsor: AnySponsor): string {
 		default:
 			return "iSkolar";
 	}
+}
+
+export async function updateIndividualSponsor(
+	value: UpdateIndividualSponsorRequest,
+): Promise<ApiResponse<IndividualSponsor>> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	const response = await fetch(
+		`${BACKEND_URL}/sponsors/individuals/${value.id}`,
+		{
+			method: "PATCH",
+			body: JSON.stringify(value),
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		},
+	);
+	const result: ApiResponse<IndividualSponsor> = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message || "Failed to update profile.");
+	}
+
+	return result;
 }

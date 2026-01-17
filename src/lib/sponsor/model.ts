@@ -1,6 +1,6 @@
 import z from "zod";
 import { enumDetailSchema } from "../api";
-import { contactDetailSchema } from "../user/model";
+import { contactDetailSchema, createContactRequestSchema } from "../user/model";
 
 export enum SponsorType {
 	Individual = "individual",
@@ -29,6 +29,35 @@ export const individualSponsorSchema = z.object({
 	avatarUrl: z.string().nullable(),
 });
 export type IndividualSponsor = z.output<typeof individualSponsorSchema>;
+
+export const createIndividualSponsorRequestSchema = z.object({
+	userId: z.uuidv4(),
+	firstName: z.string().nonempty({ error: "First name is required." }),
+	middleName: z.string().optional(),
+	lastName: z.string().nonempty({ error: "Last name is required." }),
+	sponsorType: z.enum(SponsorType),
+	employmentType: z.enum(EmploymentType, {
+		error: "Employment type is required.",
+	}),
+	birthDate: z.coerce.date({ error: "Birth date is required." }),
+	contact: createContactRequestSchema,
+});
+export type CreateIndividualSponsorRequest = z.infer<
+	typeof createIndividualSponsorRequestSchema
+>;
+
+export const updateIndividualSponsorRequestSchema =
+	createIndividualSponsorRequestSchema
+		.extend({
+			avatarUrl: z.string(),
+		})
+		.partial()
+		.extend({
+			id: z.uuidv4(),
+		});
+export type UpdateIndividualSponsorRequest = z.infer<
+	typeof updateIndividualSponsorRequestSchema
+>;
 
 export enum OrganizationType {
 	PrivateCompany = "private_company",

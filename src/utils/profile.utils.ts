@@ -1,3 +1,5 @@
+import { SponsorType, type AnySponsor } from '@/lib/sponsor/model';
+import { UserRole, type User } from '@/lib/user/model';
 import type {
   UserProfile,
   StudentProfile,
@@ -30,15 +32,25 @@ export function getDisplayName(profile: UserProfile): string {
 /**
  * Gets the role label for display
  */
-export function getRoleLabel(role: UserProfile['role']): string {
-  const roleMap: Record<UserProfile['role'], string> = {
-    student: 'Student',
-    individual_sponsor: 'Individual',
-    organization_sponsor: 'Organization',
-    government_sponsor: 'Government',
-    school: 'School',
-  };
-  return roleMap[role];
+export function getRoleLabel(user: User, profile: any): string {
+    if(!user.role) {
+        return "No role"
+    }
+
+  if(user.role.code !== UserRole.Sponsor) {
+      return user.role.name
+  }
+
+  const sponsor = profile as AnySponsor;
+
+  switch(sponsor.sponsorType.code) {
+      case SponsorType.Individual:
+          return "Individual"
+      case SponsorType.Organization:
+          return "Organization"
+      case SponsorType.Government:
+          return "Government"
+  }
 }
 
 /**

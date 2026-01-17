@@ -26,6 +26,10 @@ import type {
 	GovernmentSponsorProfile,
 } from "@/types/profile.types";
 import { getDisplayName } from "@/utils/profile.utils";
+import { useAuth } from "@/auth";
+import { SponsorType, type AnySponsor, type IndividualSponsor, type UpdateIndividualSponsorRequest } from "@/lib/sponsor/model";
+import { getSponsorName, updateIndividualSponsor } from "@/lib/sponsor/api";
+import { UserRole } from "@/lib/user/model";
 
 export const Route = createFileRoute("/_sponsor/profile/sponsor/$sponsorId")({
 	component: SponsorProfile,
@@ -39,6 +43,7 @@ type SponsorProfile =
 function SponsorProfile() {
 	usePageTitle("Profile");
 
+	const auth = useAuth<AnySponsor>();
 	const { sponsorId } = Route.useParams();
 	const {
 		data: profile,
@@ -46,6 +51,10 @@ function SponsorProfile() {
 		error,
 		isError,
 	} = useUserProfile(sponsorId);
+
+	const isIndividual = auth.profile.sponsorType.code === SponsorType.Individual;
+	const isOrganization = auth.profile.sponsorType.code === SponsorType.Organization;
+	const isGovernment = auth.profile.sponsorType.code === SponsorType.Government;
 
 	const [localProfile, setLocalProfile] = useState<SponsorProfile | null>(
 		profile &&
@@ -61,16 +70,13 @@ function SponsorProfile() {
 	const formRef = useRef<HTMLFormElement>(null);
 	const { toast, showSuccess, showError } = useToast();
 
-	const mutation = useMutation({
-		mutationFn: async (data: any) => {
-			// TODO: Implement update sponsor API call
-			console.log("Update sponsor:", data);
-			return { success: true };
-		},
-		onSuccess: async () => {
-			showSuccess(`Success`, "Profile updated successfully", 1250);
+	const individualSponsorMutation = useMutation({
+		mutationFn: updateIndividualSponsor,
+		onSuccess: async (res) => {
 			setIsEditing(false);
 			setIsSaving(false);
+            auth.setProfile(res.data)
+			showSuccess(`Success`, "Profile updated successfully", 1250);
 		},
 		onError: (err: any) => {
 			showError("Error", err.message || "Failed to update profile");
@@ -96,13 +102,9 @@ function SponsorProfile() {
 		return <ProfileSkeleton />;
 	}
 
-	if (isError || !localProfile || !profile) {
-		return <ProfileError error={error?.message || "Failed to load profile"} />;
+	if (auth.error) {
+		return <ProfileError error={auth.error.message} />;
 	}
-
-	const isIndividual = profile.role === "individual_sponsor";
-	const isOrganization = profile.role === "organization_sponsor";
-	const isGovernment = profile.role === "government_sponsor";
 
 	const handleEditClick = () => {
 		setIsEditing(true);
@@ -121,20 +123,10 @@ function SponsorProfile() {
 	};
 
 	const handleIndividualSponsorSubmit = async (
-		data: IndividualSponsorProfileFormData,
+		data: UpdateIndividualSponsorRequest,
 	) => {
 		setIsSaving(true);
-		try {
-			setLocalProfile({
-				...localProfile,
-				...data,
-			});
-			mutation.mutate(data);
-		} catch (err) {
-			showError("Error", "Failed to save profile");
-			console.error(err);
-			setIsSaving(false);
-		}
+		individualSponsorMutation.mutate(data);
 	};
 
 	const handleOrganizationSponsorSubmit = async (
@@ -146,7 +138,7 @@ function SponsorProfile() {
 				...localProfile,
 				...data,
 			});
-			mutation.mutate(data);
+			individualSponsorMutation.mutate(data);
 		} catch (err) {
 			showError("Error", "Failed to save profile");
 			console.error(err);
@@ -163,7 +155,7 @@ function SponsorProfile() {
 				...localProfile,
 				...data,
 			});
-			mutation.mutate(data);
+			individualSponsorMutation.mutate(data);
 		} catch (err) {
 			showError("Error", "Failed to save profile");
 			console.error(err);
@@ -186,10 +178,10 @@ function SponsorProfile() {
 						<div className="flex flex-col md:flex-row items-center md:items-start gap-6 mt-6">
 							<ProfileAvatar isIndividual={isIndividual} />
 							<ProfileHeader
-								name={getDisplayName(profile)}
-								role={profile.role}
-								email={profile.email}
-								contactNumber={profile.contact_number}
+								name={getSponsorName(auth.profile)}
+								role={UserRole.Sponsor}
+								email={auth.profile.email}
+								contactNumber={auth.profile.contact.value}
 							/>
 						</div>
 					</div>
@@ -220,7 +212,7 @@ function SponsorProfile() {
 					{isIndividual && (
 						<IndividualSponsorProfileForm
 							ref={formRef}
-							profile={localProfile as IndividualSponsorProfile}
+							profile={auth.profile as IndividualSponsor}
 							isEditing={isEditing}
 							isSaving={isSaving}
 							onSubmit={handleIndividualSponsorSubmit}

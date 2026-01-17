@@ -1,10 +1,8 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Phone, Briefcase, CalendarIcon } from "lucide-react";
 import { forwardRef } from "react";
 import type { JSX } from "react";
-import type { IndividualSponsorProfile } from "@/types/profile.types";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -19,38 +17,27 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { formatDate, parseDateString } from "@/utils/profile.utils";
-
-/**
- * Validation schema for individual sponsor profile updates
- */
-export const individualSponsorProfileSchema = z.object({
-	full_name: z.string().min(1, "Full name is required"),
-	employment_type: z.string().min(1, "Employment type is required"),
-	date_of_birth: z.string().min(1, "Date of birth is required"),
-	contact_number: z
-		.string()
-		.min(1, "Contact number is required")
-		.regex(/^\d+$/, "Contact number must contain only numbers")
-		.min(11, "Contact number must be at least 11 digits"),
-});
-
-export type IndividualSponsorProfileFormData = z.infer<
-	typeof individualSponsorProfileSchema
->;
+import {
+	EmploymentType,
+	updateIndividualSponsorRequestSchema,
+	type IndividualSponsor,
+	type UpdateIndividualSponsorRequest,
+} from "@/lib/sponsor/model";
+import { getSponsorName } from "@/lib/sponsor/api";
+import { format } from "date-fns";
 
 /**
  * Props for IndividualSponsorProfileForm component
  */
 interface IndividualSponsorProfileFormProps {
 	/** Initial profile data to populate form */
-	profile: IndividualSponsorProfile;
+	profile: IndividualSponsor;
 	/** Whether the form is in edit mode */
 	isEditing: boolean;
 	/** Whether the form is currently submitting */
 	isSaving: boolean;
 	/** Callback when form is submitted */
-	onSubmit: (data: IndividualSponsorProfileFormData) => Promise<void>;
+	onSubmit: (data: UpdateIndividualSponsorRequest) => Promise<void>;
 }
 
 /**
@@ -71,14 +58,23 @@ const IndividualSponsorProfileForm = forwardRef<
 		control,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<IndividualSponsorProfileFormData>({
-		resolver: zodResolver(individualSponsorProfileSchema),
+	} = useForm<UpdateIndividualSponsorRequest>({
+		resolver: zodResolver(updateIndividualSponsorRequestSchema),
 		mode: "onBlur",
 		defaultValues: {
-			full_name: profile.full_name,
-			employment_type: profile.employment_type,
-			date_of_birth: profile.date_of_birth,
-			contact_number: profile.contact_number,
+			id: profile.id,
+			userId: profile.userId,
+			firstName: profile.firstName,
+			middleName: profile.middleName || "",
+			lastName: profile.lastName,
+			birthDate: profile.birthDate,
+			contact: {
+				value: profile.contact.value,
+				contactType: profile.contact.code,
+			},
+			avatarUrl: profile.avatarUrl || "",
+			employmentType: profile.employmentType.code,
+			sponsorType: profile.sponsorType.code,
 		},
 	});
 
@@ -88,14 +84,37 @@ const IndividualSponsorProfileForm = forwardRef<
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 				<div>
 					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
-						Name
+						First Name
 					</label>
 					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
 						<p className="text-sm md:text-base text-primary">
-							{profile.full_name || "—"}
+							{profile.firstName || "—"}
 						</p>
 					</div>
 				</div>
+
+				<div>
+					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+						Middle Name
+					</label>
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+						<p className="text-sm md:text-base text-primary">
+							{profile.middleName || "—"}
+						</p>
+					</div>
+				</div>
+
+				<div>
+					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+						Last Name
+					</label>
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
+						<p className="text-sm md:text-base text-primary">
+							{profile.lastName || "—"}
+						</p>
+					</div>
+				</div>
+
 				<div>
 					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
 						Employment Type
@@ -104,16 +123,19 @@ const IndividualSponsorProfileForm = forwardRef<
 						<Briefcase className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
 						<p className="text-sm md:text-base text-primary">
 							{[
-								{ value: "employed", label: "Employed" },
-								{ value: "self_employed", label: "Self Employed" },
-								{ value: "freelancer", label: "Freelancer" },
+								{ value: EmploymentType.Employed, label: "Employed" },
+								{ value: EmploymentType.SelfEmployed, label: "Self Employed" },
+								{ value: EmploymentType.Freelancer, label: "Freelancer" },
 								{
-									value: "overseas_filipino_worker",
+									value: EmploymentType.OFW,
 									label: "Overseas Filipino Worker",
 								},
-								{ value: "student", label: "Student" },
-							].find((opt) => opt.value === profile.employment_type)?.label ||
-								profile.employment_type ||
+								{
+									/* { value: "student", label: "Student" }, */
+								},
+							].find((opt) => opt.value === profile.employmentType.code)
+								?.label ||
+								profile.employmentType.name ||
 								"—"}
 						</p>
 					</div>
@@ -125,7 +147,9 @@ const IndividualSponsorProfileForm = forwardRef<
 					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
 						<CalendarIcon className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
 						<p className="text-sm md:text-base text-primary">
-							{profile.date_of_birth ? formatDate(profile.date_of_birth) : "—"}
+							{profile.birthDate
+								? format(profile.birthDate, "MMMM d, yyyy")
+								: "—"}
 						</p>
 					</div>
 				</div>
@@ -136,7 +160,7 @@ const IndividualSponsorProfileForm = forwardRef<
 					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
 						<Phone className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
 						<p className="text-sm md:text-base text-primary">
-							{profile.contact_number || "—"}
+							{profile.contact.value || "—"}
 						</p>
 					</div>
 				</div>
@@ -153,25 +177,25 @@ const IndividualSponsorProfileForm = forwardRef<
 		>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 				<Controller
-					name="full_name"
+					name="firstName"
 					control={control}
 					render={({ field }) => (
 						<div>
 							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
-								Name
+								First Name
 							</label>
 							<Input
 								{...field}
 								disabled={isSaving}
 								className={`h-auto ${
-									errors.full_name
+									errors.firstName
 										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 										: ""
 								}`}
 							/>
-							{errors.full_name && (
+							{errors.firstName && (
 								<p className="mt-1 text-xs text-[#EF4444]">
-									{errors.full_name.message}
+									{errors.firstName.message}
 								</p>
 							)}
 						</div>
@@ -179,7 +203,59 @@ const IndividualSponsorProfileForm = forwardRef<
 				/>
 
 				<Controller
-					name="employment_type"
+					name="middleName"
+					control={control}
+					render={({ field }) => (
+						<div>
+							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								Middle Name
+							</label>
+							<Input
+								{...field}
+								disabled={isSaving}
+								className={`h-auto ${
+									errors.middleName
+										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
+										: ""
+								}`}
+							/>
+							{errors.middleName && (
+								<p className="mt-1 text-xs text-[#EF4444]">
+									{errors.middleName.message}
+								</p>
+							)}
+						</div>
+					)}
+				/>
+
+				<Controller
+					name="lastName"
+					control={control}
+					render={({ field }) => (
+						<div>
+							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								Last Name
+							</label>
+							<Input
+								{...field}
+								disabled={isSaving}
+								className={`h-auto ${
+									errors.lastName
+										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
+										: ""
+								}`}
+							/>
+							{errors.lastName && (
+								<p className="mt-1 text-xs text-[#EF4444]">
+									{errors.lastName.message}
+								</p>
+							)}
+						</div>
+					)}
+				/>
+
+				<Controller
+					name="employmentType"
 					control={control}
 					render={({ field }) => (
 						<div>
@@ -193,7 +269,7 @@ const IndividualSponsorProfileForm = forwardRef<
 							>
 								<SelectTrigger
 									className={`h-auto ${
-										errors.employment_type
+										errors.employmentType
 											? "border-[#EF4444] focus:ring-[#EF4444]/20"
 											: ""
 									}`}
@@ -201,18 +277,24 @@ const IndividualSponsorProfileForm = forwardRef<
 									<SelectValue placeholder="Select employment type" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="employed">Employed</SelectItem>
-									<SelectItem value="self_employed">Self Employed</SelectItem>
-									<SelectItem value="freelancer">Freelancer</SelectItem>
-									<SelectItem value="overseas_filipino_worker">
+									<SelectItem value={EmploymentType.Employed}>
+										Employed
+									</SelectItem>
+									<SelectItem value={EmploymentType.SelfEmployed}>
+										Self Employed
+									</SelectItem>
+									<SelectItem value={EmploymentType.Freelancer}>
+										Freelancer
+									</SelectItem>
+									<SelectItem value={EmploymentType.OFW}>
 										Overseas Filipino Worker
 									</SelectItem>
-									<SelectItem value="student">Student</SelectItem>
+									{/* <SelectItem value="student">Student</SelectItem> */}
 								</SelectContent>
 							</Select>
-							{errors.employment_type && (
+							{errors.employmentType && (
 								<p className="mt-1 text-xs text-[#EF4444]">
-									{errors.employment_type.message}
+									{errors.employmentType.message}
 								</p>
 							)}
 						</div>
@@ -220,21 +302,9 @@ const IndividualSponsorProfileForm = forwardRef<
 				/>
 
 				<Controller
-					name="date_of_birth"
+					name="birthDate"
 					control={control}
 					render={({ field }) => {
-						const dateValue = field.value
-							? parseDateString(field.value)
-							: undefined;
-						const handleDateSelect = (date: Date | undefined) => {
-							if (date) {
-								const year = date.getFullYear();
-								const month = String(date.getMonth() + 1).padStart(2, "0");
-								const day = String(date.getDate()).padStart(2, "0");
-								field.onChange(`${year}-${month}-${day}`);
-							}
-						};
-
 						return (
 							<div>
 								<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
@@ -245,21 +315,17 @@ const IndividualSponsorProfileForm = forwardRef<
 										<button
 											type="button"
 											disabled={isSaving}
-											className={`w-full min-h-[40px] px-4 text-sm border rounded-sm focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
-												dateValue ? "text-primary" : "text-gray-400"
+											className={`w-full min-h-[40px] px-4 py-3 text-sm border rounded-sm focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+												field.value ? "text-primary" : "text-gray-400"
 											} ${
-												errors.date_of_birth
+												errors.birthDate
 													? "border-[#EF4444] focus:ring-[#EF4444]/20 focus:border-[#EF4444]"
 													: "border-input focus:border-[#3A52A6] focus:ring-[#3A52A6]/20"
 											} disabled:bg-gray-100 disabled:cursor-not-allowed`}
 										>
 											<span>
-												{dateValue
-													? dateValue.toLocaleDateString("en-US", {
-															month: "long",
-															day: "numeric",
-															year: "numeric",
-														})
+												{field.value
+													? format(field.value, "MMMM d, yyyy")
 													: "Set date"}
 											</span>
 											<CalendarIcon className="h-4 w-4 opacity-50" />
@@ -268,17 +334,16 @@ const IndividualSponsorProfileForm = forwardRef<
 									<PopoverContent className="w-auto p-0" align="start">
 										<Calendar
 											mode="single"
-											selected={dateValue}
-											onSelect={handleDateSelect}
+											selected={field.value}
+											onSelect={field.onChange}
 											captionLayout="dropdown"
 											disabled={(date) => date > new Date()}
-											initialFocus
 										/>
 									</PopoverContent>
 								</Popover>
-								{errors.date_of_birth && (
+								{errors.birthDate && (
 									<p className="mt-1 text-xs text-[#EF4444]">
-										{errors.date_of_birth.message}
+										{errors.birthDate.message}
 									</p>
 								)}
 							</div>
@@ -287,7 +352,7 @@ const IndividualSponsorProfileForm = forwardRef<
 				/>
 
 				<Controller
-					name="contact_number"
+					name="contact.value"
 					control={control}
 					render={({ field }) => (
 						<div>
@@ -298,15 +363,15 @@ const IndividualSponsorProfileForm = forwardRef<
 								{...field}
 								type="tel"
 								disabled={isSaving}
-								className={`h-auto ${
-									errors.contact_number
+								className={`h-auto py-3 ${
+									errors.contact?.value
 										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 										: ""
 								}`}
 							/>
-							{errors.contact_number && (
+							{errors.contact?.value && (
 								<p className="mt-1 text-xs text-[#EF4444]">
-									{errors.contact_number.message}
+									{errors.contact.value?.message}
 								</p>
 							)}
 						</div>
