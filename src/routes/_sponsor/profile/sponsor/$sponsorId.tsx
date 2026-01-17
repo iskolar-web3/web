@@ -2,9 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { User, Building2, Edit } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { useToast } from "@/hooks/useToast";
-import { useUserProfile } from "@/hooks/queries/useUserProfile";
 import { useMutation } from "@tanstack/react-query";
 import Toast from "@/components/Toast";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
@@ -40,26 +39,11 @@ function SponsorProfile() {
 	usePageTitle("Profile");
 
 	const auth = useAuth<AnySponsor>();
-	const { sponsorId } = Route.useParams();
-	const {
-		data: profile,
-		isLoading,
-		error,
-		isError,
-	} = useUserProfile(sponsorId);
 
 	const isIndividual = auth.profile.sponsorType.code === SponsorType.Individual;
 	const isOrganization = auth.profile.sponsorType.code === SponsorType.Organization;
 	const isGovernment = auth.profile.sponsorType.code === SponsorType.Government;
 
-	const [localProfile, setLocalProfile] = useState<SponsorProfile | null>(
-		profile &&
-			(profile.role === "individual_sponsor" ||
-				profile.role === "organization_sponsor" ||
-				profile.role === "government_sponsor")
-			? (profile as SponsorProfile)
-			: null,
-	);
 	const [isEditing, setIsEditing] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -111,20 +95,7 @@ function SponsorProfile() {
 		},
 	});
 
-	// Update local profile when fetched profile changes
-	useEffect(() => {
-		if (
-			profile &&
-			(profile.role === "individual_sponsor" ||
-				profile.role === "organization_sponsor" ||
-				profile.role === "government_sponsor") &&
-			localProfile?.user_id !== profile.user_id
-		) {
-			setLocalProfile(profile as SponsorProfile);
-		}
-	}, [profile, localProfile?.user_id]);
-
-	if (isLoading) {
+	if (auth.isLoading) {
 		return <ProfileSkeleton />;
 	}
 
