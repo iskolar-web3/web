@@ -33,7 +33,7 @@ export default function ProfileHeader({ name, role, email, contactNumber }: Prof
         <h2 className="text-xl md:text-2xl text-primary">{name}</h2>
         <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#E0ECFF] text-[#3A52A6] text-xs md:text-sm rounded-md mx-auto md:mx-0 w-fit">
           <Users className="w-3.5 h-3.5" />
-          {getRoleLabel(auth.user!, auth.profile)}
+          {auth.user ? getRoleLabel(auth.user, auth.profile) : "No role"}
         </span>
       </div>
       
