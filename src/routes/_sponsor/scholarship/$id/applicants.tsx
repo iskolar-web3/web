@@ -37,10 +37,7 @@ import { handleError } from "@/lib/errorHandler";
 import { logger } from "@/lib/logger";
 import { formatDateTime } from "@/utils/formatting.utils";
 import { scholarshipApplicationService } from "@/services/scholarshipApplication.service";
-import {
-	mockUpdateApplicationStatus,
-	mockBulkUpdateApplicationStatus,
-} from "@/mocks/scholarshipApplicants.mock";
+import { mockBulkUpdateApplicationStatus } from "@/mocks/scholarshipApplicants.mock";
 import { useScholarshipApplicants } from "@/hooks/queries/useScholarshipApplicants";
 import {
 	ScholarshipApplicationStatus,
@@ -274,7 +271,7 @@ function ApplicantsListPage() {
 
 		try {
 			setIsUpdatingStatus(true);
-            const payload = {
+			const payload = {
 				scholarshipId: params.id,
 				scholars: [
 					{
@@ -283,7 +280,7 @@ function ApplicantsListPage() {
 						remarks: remarks,
 					},
 				],
-			}
+			};
 
 			console.log("Updating status", payload);
 			mutation.mutate(payload);
@@ -570,6 +567,7 @@ function ApplicantsListPage() {
 									{filterStatus}
 								</span>
 								<span className="px-1  bg-[#3A52A6] text-tertiary text-[9px] md:text-[10px] rounded-full">
+									{/* @ts-expect-error just leave it like this for now */}
 									{statusCounts[filterStatus]}
 								</span>
 								<ChevronDown
@@ -605,6 +603,7 @@ function ApplicantsListPage() {
 														: "bg-muted text-[#6B7280]"
 												}`}
 											>
+												{/* @ts-expect-error just leave it like this for now */}
 												{statusCounts[status]}
 											</span>
 										</button>

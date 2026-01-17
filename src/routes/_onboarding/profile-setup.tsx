@@ -15,7 +15,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Contact, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
 	Popover,

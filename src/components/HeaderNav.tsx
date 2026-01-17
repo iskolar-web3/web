@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useRouterState, useNavigate, useSearch } from '@tanstack/react-router';
+import { Link, useRouterState, useNavigate } from '@tanstack/react-router';
 import { Search, Home, Compass, WalletCards, Plus, Repeat, Bell, User, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ProfileDropdown from './profile/ProfileDropdown';

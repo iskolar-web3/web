@@ -53,9 +53,10 @@ export default function Filters({ title, options, value, onChange }: FilterProps
               className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto custom-scrollbar"
             >
             {options.map((option, i) => {
+             const opt = option as string
               // Format the display text
-            const displayText = option 
-                ? option.toLowerCase().replace(/(^|[\s-])\w/g, (match) => match.toUpperCase())
+            const displayText = opt 
+                ? opt.toLowerCase().replace(/(^|[\s-])\w/g, (match) => match.toUpperCase())
                 : "All";
 
               return (

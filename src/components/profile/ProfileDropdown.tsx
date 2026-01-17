@@ -1,23 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { User as UserIcon } from "lucide-react";
-import { authService } from "@/services/auth.service";
-import { profileService } from "@/services/profile.service";
-import type { UserProfile } from "@/types/profile.types";
 import { handleError } from "@/lib/errorHandler";
 import { logger } from "@/lib/logger";
 import Toast from "@/components/Toast";
 import { useToast } from "@/hooks/useToast";
-import { mockStudentUser } from "@/mocks/userProfile.mock";
 import { useAuth } from "@/auth";
 import { UserRole, type User } from "@/lib/user/model";
 import type { Student } from "@/lib/student/model";
-import type { Sponsor } from "@/types/scholarship.types";
 import { getSponsorName } from "@/lib/sponsor/api";
 import type { AnySponsor } from "@/lib/sponsor/model";
 
-const USE_MOCK_DATA = true;
+// const USE_MOCK_DATA = true;
 
 /**
  * Props for the ProfileDropdown component
@@ -53,7 +48,7 @@ function getDisplayName(user: User, profile: any): string {
  */
 export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
 	const navigate = useNavigate();
-	const { toast, showError } = useToast();
+	const { toast } = useToast();
 
 	const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 	// const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -224,9 +219,7 @@ export default function ProfileDropdown({ onClose }: ProfileDropdownProps) {
 							className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 py-4 px-5"
 							onClick={(e) => e.stopPropagation()}
 						>
-							<h3 className="text-lg text-primary mb-2">
-								Confirm Logout
-							</h3>
+							<h3 className="text-lg text-primary mb-2">Confirm Logout</h3>
 							<p className="text-sm text-[#6B7280] mb-6">
 								Are you sure you want to logout? You will need to login again to
 								access your account.

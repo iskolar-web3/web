@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import type { ScholarshipFormData } from './useScholarshipForm';
 import type { ScholarshipOld } from '@/types/scholarship.types';
+import type { ScholarshipFormData } from '@/lib/scholarship/model';
 
 /**
  * Custom hook for generating a preview of scholarship data from form values

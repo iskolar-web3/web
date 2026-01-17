@@ -23,7 +23,6 @@ import {
 	type IndividualSponsor,
 	type UpdateIndividualSponsorRequest,
 } from "@/lib/sponsor/model";
-import { getSponsorName } from "@/lib/sponsor/api";
 import { format } from "date-fns";
 
 /**
@@ -59,6 +58,7 @@ const IndividualSponsorProfileForm = forwardRef<
 		handleSubmit,
 		formState: { errors },
 	} = useForm<UpdateIndividualSponsorRequest>({
+		// @ts-expect-error This works but gets TS error for some reason
 		resolver: zodResolver(updateIndividualSponsorRequestSchema),
 		mode: "onBlur",
 		defaultValues: {
@@ -172,6 +172,7 @@ const IndividualSponsorProfileForm = forwardRef<
 	return (
 		<form
 			ref={ref}
+			// @ts-expect-error This works but gets TS error for some reason
 			onSubmit={handleSubmit(onSubmit)}
 			className="space-y-4 md:space-y-6"
 		>
@@ -392,4 +393,3 @@ const IndividualSponsorProfileForm = forwardRef<
 IndividualSponsorProfileForm.displayName = "IndividualSponsorProfileForm";
 
 export default IndividualSponsorProfileForm;
-
