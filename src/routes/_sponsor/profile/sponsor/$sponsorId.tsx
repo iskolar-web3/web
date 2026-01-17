@@ -27,8 +27,8 @@ import type {
 } from "@/types/profile.types";
 import { getDisplayName } from "@/utils/profile.utils";
 import { useAuth } from "@/auth";
-import { SponsorType, type AnySponsor, type IndividualSponsor, type UpdateIndividualSponsorRequest } from "@/lib/sponsor/model";
-import { getSponsorName, updateIndividualSponsor } from "@/lib/sponsor/api";
+import { SponsorType, type AnySponsor, type IndividualSponsor, type OrganizationSponsor, type UpdateIndividualSponsorRequest, type UpdateOrganizationSponsorRequest } from "@/lib/sponsor/model";
+import { getSponsorName, updateIndividualSponsor, updateOrganizationSponsor } from "@/lib/sponsor/api";
 import { UserRole } from "@/lib/user/model";
 
 export const Route = createFileRoute("/_sponsor/profile/sponsor/$sponsorId")({
@@ -72,6 +72,21 @@ function SponsorProfile() {
 
 	const individualSponsorMutation = useMutation({
 		mutationFn: updateIndividualSponsor,
+		onSuccess: async (res) => {
+			setIsEditing(false);
+			setIsSaving(false);
+            auth.setProfile(res.data)
+			showSuccess(`Success`, "Profile updated successfully", 1250);
+		},
+		onError: (err: any) => {
+			showError("Error", err.message || "Failed to update profile");
+			console.error(err);
+			setIsSaving(false);
+		},
+	});
+
+	const organizationSponsorMutation = useMutation({
+		mutationFn: updateOrganizationSponsor,
 		onSuccess: async (res) => {
 			setIsEditing(false);
 			setIsSaving(false);
@@ -130,20 +145,10 @@ function SponsorProfile() {
 	};
 
 	const handleOrganizationSponsorSubmit = async (
-		data: OrganizationSponsorProfileFormData,
+		data: UpdateOrganizationSponsorRequest,
 	) => {
 		setIsSaving(true);
-		try {
-			setLocalProfile({
-				...localProfile,
-				...data,
-			});
-			individualSponsorMutation.mutate(data);
-		} catch (err) {
-			showError("Error", "Failed to save profile");
-			console.error(err);
-			setIsSaving(false);
-		}
+		organizationSponsorMutation.mutate(data);
 	};
 
 	const handleGovernmentSponsorSubmit = async (
@@ -222,7 +227,7 @@ function SponsorProfile() {
 					{isOrganization && (
 						<OrganizationSponsorProfileForm
 							ref={formRef}
-							profile={localProfile as OrganizationSponsorProfile}
+							profile={auth.profile as OrganizationSponsor}
 							isEditing={isEditing}
 							isSaving={isSaving}
 							onSubmit={handleOrganizationSponsorSubmit}

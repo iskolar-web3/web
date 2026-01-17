@@ -76,6 +76,30 @@ export const organizationSponsorSchema = z.object({
 });
 export type OrganizationSponsor = z.output<typeof organizationSponsorSchema>;
 
+export const createOrganizationSponsorRequestSchema = z.object({
+	userId: z.uuidv4(),
+	sponsorType: z.enum(SponsorType),
+	name: z.string().nonempty(),
+	organizationType: z.enum(OrganizationType),
+	contact: createContactRequestSchema,
+});
+export type CreateOrganizationSponsorRequest = z.infer<
+	typeof createOrganizationSponsorRequestSchema
+>;
+
+export const updateOrganizationSponsorRequestSchema =
+	createOrganizationSponsorRequestSchema
+		.extend({
+			avatarUrl: z.string(),
+		})
+		.partial()
+		.extend({
+			id: z.uuidv4(),
+		});
+export type UpdateOrganizationSponsorRequest = z.infer<
+	typeof updateOrganizationSponsorRequestSchema
+>;
+
 export enum AgencyType {
 	NationalGovernmentAgency = "national_government_agency",
 	LocalGovernmentUnit = "local_government_unit",
@@ -92,6 +116,30 @@ export const governmentSponsorSchema = z.object({
 	avatarUrl: z.string().nullable(),
 });
 export type GovernmentSponsor = z.output<typeof governmentSponsorSchema>;
+
+export const createGovernmentSponsorRequestSchema = z.object({
+	userId: z.uuidv4(),
+	sponsorType: z.enum(SponsorType),
+	name: z.string().nonempty(),
+	agencyType: z.enum(AgencyType),
+	contact: createContactRequestSchema,
+});
+export type CreateGovernmentSponsorRequest = z.infer<
+	typeof createGovernmentSponsorRequestSchema
+>;
+
+export const updateGovernmentSponsorRequestSchema =
+	createGovernmentSponsorRequestSchema
+		.extend({
+			avatarUrl: z.string(),
+		})
+		.partial()
+		.extend({
+			id: z.uuidv4(),
+		});
+export type UpdateGovernmentSponsorRequest = z.infer<
+	typeof updateGovernmentSponsorRequestSchema
+>;
 
 export const anySponsorSchema = z.union([
 	individualSponsorSchema,
