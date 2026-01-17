@@ -65,7 +65,10 @@ function Scholarships() {
 
 	const auth = useAuth<AnySponsor>();
 	const scholarships = useSuspenseQuery(
-		getMyScholarshipsQuery(auth.sessionToken, search),
+		getMyScholarshipsQuery(auth.sessionToken, {
+            ...search,
+            sponsorId: auth.profile.id
+        }),
 	);
 
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
