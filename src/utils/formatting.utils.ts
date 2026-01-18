@@ -142,3 +142,25 @@ export function formatAmountPerScholar(
   return formatCurrency(amountPerScholar, options);
 }
 
+/**
+ * Formats a credential issued date to display month and year
+ * @param issuedDate - Date string in format like 'YYYY-MM-DD' or similar
+ * @returns Formatted date string (e.g., "January 2024") or original input if invalid
+ */
+export function formatCredentialDate(issuedDate: string): string {
+  try {
+    if (issuedDate.match(/^\d{4}-\d{2}/)) {
+      const date = new Date(issuedDate);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+        });
+      }
+    }
+    return issuedDate;
+  } catch {
+    return issuedDate;
+  }
+}
+

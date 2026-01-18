@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import { format } from 'date-fns';
 import { useAccount } from 'wagmi';
 import { useCredentialsByHolder, useCredential } from '@/hooks/useNFTCredential';
 import { Award, FileText, Pencil, Eye } from 'lucide-react';
 import { getIPFSUrl } from '@/utils/ipfs.utils';
+import { formatCredentialDate } from '@/utils/formatting.utils';
 import { useToast } from '@/hooks/useToast';
 import Toast from '@/components/Toast';
 import CredentialEditModal from './CredentialEditModal';
@@ -82,19 +82,6 @@ export default function CredentialsList() {
   );
 }
 
-const formatCredentialDate = (issuedDate: string) => {
-  try {
-     if (issuedDate.match(/^\d{4}-\d{2}/)) {
-         const date = new Date(issuedDate);
-         if (!isNaN(date.getTime())) {
-             return format(date, 'MMMM yyyy');
-         }
-     }
-     return issuedDate;
-  } catch {
-    return issuedDate; 
-  }
-};
 
 /**
  * Individual credential card component
