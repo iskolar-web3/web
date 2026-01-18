@@ -1,6 +1,7 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, FileText } from 'lucide-react';
+import { formatCredentialDate } from '@/utils/formatting.utils';
 import { type CredentialData } from '@/lib/contracts';
 import { getIPFSUrl } from '@/utils/ipfs.utils';
 import { useTokenURI } from '@/hooks/useNFTCredential';
@@ -113,7 +114,7 @@ export default function CredentialDetailsModal({
               {credentialData.issuedDate &&
                 <div>
                   <label className="text-xs text-primary/80 uppercase tracking-wider">Issued Date</label>
-                  <p className="text-sm text-primary mt-0.5">{credentialData.issuedDate}</p>
+                  <p className="text-sm text-primary mt-0.5">{formatCredentialDate(credentialData.issuedDate)}</p>
                 </div>
               }
 
