@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { User, Edit, Award } from "lucide-react";
+import { User, Edit, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useRef, useState } from "react";
@@ -151,9 +151,9 @@ function StudentProfilePage() {
 						</div>
 						<button
 							onClick={() => setIsCredentialModalOpen(true)}
-							className="px-4 py-2 cursor-pointer bg-[#3B5AA8] hover:bg-[#2f4389] text-white text-xs font-medium rounded-sm transition-colors flex items-center gap-1"
+							className="px-3 py-2 cursor-pointer bg-[#3B5AA8] hover:bg-[#2f4389] text-white text-xs font-medium rounded-sm transition-colors flex items-center gap-2"
 						>
-							<Award className="w-3.5 h-3.5" />
+							<Plus className="w-3.5 h-3.5" />
 							Add Credential
 						</button>
 					</div>
