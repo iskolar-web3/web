@@ -356,11 +356,6 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
                   }`}
                 >
                   <div className="flex items-center justify-center gap-1">
-                    {type === 'Academic' ? (
-                      <Award className="w-4 h-4 text-[#3B5AA8]" />
-                    ) : (
-                      <FileText className="w-4 h-4 text-[#3B5AA8]" />
-                    )}
                     <span className="text-sm text-gray-900">{type}</span>
                   </div>
                 </button>
