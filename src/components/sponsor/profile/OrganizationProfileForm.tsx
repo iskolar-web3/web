@@ -1,6 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Phone, Building2 } from "lucide-react";
 import { forwardRef } from "react";
 import type { JSX } from "react";
 import { Input } from "@/components/ui/input";
@@ -73,23 +72,22 @@ const OrganizationSponsorProfileForm = forwardRef<
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 				<div className="md:col-span-2">
 					<div>
-						<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+						<label className="block text-xs text-[#6B7280] mb-1.5">
 							Organization Name
 						</label>
-						<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
-							<p className="text-sm md:text-base text-primary">
+						<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center">
+							<p className="text-xs md:text-sm text-primary">
 								{profile.name || "—"}
 							</p>
 						</div>
 					</div>
 				</div>
 				<div>
-					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+					<label className="block text-xs text-[#6B7280] mb-1.5">
 						Organization Type
 					</label>
-					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
-						<Building2 className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-						<p className="text-sm md:text-base text-primary">
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center">
+						<p className="text-xs md:text-sm text-primary">
 							{[
 								{
 									value: OrganizationType.PrivateCompany,
@@ -111,12 +109,11 @@ const OrganizationSponsorProfileForm = forwardRef<
 					</div>
 				</div>
 				<div>
-					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+					<label className="block text-xs text-[#6B7280] mb-1.5">
 						Contact Number
 					</label>
-					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
-						<Phone className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-						<p className="text-sm md:text-base text-primary">
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center">
+						<p className="text-xs md:text-sm text-primary">
 							{profile.contact.value || "—"}
 						</p>
 					</div>
@@ -139,13 +136,13 @@ const OrganizationSponsorProfileForm = forwardRef<
 						control={control}
 						render={({ field }) => (
 							<div>
-								<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								<label className="block text-xs text-[#6B7280] mb-1.5">
 									Organization Name
 								</label>
 								<Input
 									{...field}
 									disabled={isSaving}
-									className={`h-auto ${
+									className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-xs md:text-sm ${
 										errors.name
 											? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 											: ""
@@ -166,7 +163,7 @@ const OrganizationSponsorProfileForm = forwardRef<
 					control={control}
 					render={({ field }) => (
 						<div>
-							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+							<label className="block text-xs text-[#6B7280] mb-1.5">
 								Organization Type
 							</label>
 							<Select
@@ -175,7 +172,7 @@ const OrganizationSponsorProfileForm = forwardRef<
 								disabled={isSaving}
 							>
 								<SelectTrigger
-									className={`h-auto ${
+									className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-xs md:text-sm ${
 										errors.organizationType
 											? "border-[#EF4444] focus:ring-[#EF4444]/20"
 											: ""
@@ -209,14 +206,14 @@ const OrganizationSponsorProfileForm = forwardRef<
 					control={control}
 					render={({ field }) => (
 						<div>
-							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+							<label className="block text-xs text-[#6B7280] mb-1.5">
 								Contact Number
 							</label>
 							<Input
 								{...field}
 								type="tel"
 								disabled={isSaving}
-								className={`h-auto py-3 ${
+								className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-xs md:text-sm ${
 									errors.contact?.value
 										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 										: ""
