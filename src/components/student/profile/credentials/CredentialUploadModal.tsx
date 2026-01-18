@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { Upload, FileText, X, CheckCircle, Loader2, Wallet } from 'lucide-react';
+import { Upload, FileText, X, CheckCircle, Loader2, Wallet, CalendarIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,12 @@ import {
   handleFileSelection,
   formatFileSize,
 } from '@/utils/fileHandling.utils';
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+const YEARS = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
 
 interface CredentialUploadModalProps {
   isOpen: boolean;
@@ -410,65 +416,63 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
                   }`}
                 >
                   {formattedDate || 'Select month and year'}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <div className="p-4 space-y-2">
+              <PopoverContent className="w-auto p-4" align="start">
+                <div className="flex gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs">Year</label>
+                    <label className="text-xs font-medium">Month</label>
                     <select
+                      className="flex h-9 w-[120px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      value={formData.issuedDate ? new Date(formData.issuedDate).getMonth() : ''}
+                      onChange={(e) => {
+                        if (!e.target.value) return;
+                        const month = parseInt(e.target.value);
+                        const year = formData.issuedDate ? new Date(formData.issuedDate).getFullYear() : new Date().getFullYear();
+                        const newDate = new Date(year, month, 1);
+                        handleInputChange('issuedDate', format(newDate, 'yyyy-MM-dd'));
+                      }}
+                    >
+                      <option value="">Select</option>
+                      {MONTHS.map((month, index) => (
+                        <option key={month} value={index}>
+                          {month}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">Year</label>
+                    <select
+                      className="flex h-9 w-[100px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                       value={formData.issuedDate ? new Date(formData.issuedDate).getFullYear() : ''}
                       onChange={(e) => {
-                        const year = e.target.value;
+                        if (!e.target.value) return;
+                        const year = parseInt(e.target.value);
                         const month = formData.issuedDate ? new Date(formData.issuedDate).getMonth() : 0;
-                        if (year) {
-                          const date = new Date(parseInt(year), month, 1);
-                          handleInputChange('issuedDate', date.toISOString().split('T')[0]);
-                        }
+                        const newDate = new Date(year, month, 1);
+                        handleInputChange('issuedDate', format(newDate, 'yyyy-MM-dd'));
                       }}
-                      className="w-full px-3 py-2 cursor-pointer text-xs rounded-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
                     >
-                      <option value="">Select year</option>
-                      {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                      <option value="">Select</option>
+                      {YEARS.map((year) => (
                         <option key={year} value={year}>
                           {year}
                         </option>
                       ))}
                     </select>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs">Month</label>
-                    <select
-                      value={formData.issuedDate ? new Date(formData.issuedDate).getMonth() : ''}
-                      onChange={(e) => {
-                        const month = parseInt(e.target.value);
-                        const year = formData.issuedDate ? new Date(formData.issuedDate).getFullYear() : new Date().getFullYear();
-                        if (!isNaN(month) && year) {
-                          const date = new Date(year, month, 1);
-                          handleInputChange('issuedDate', date.toISOString().split('T')[0]);
-                        }
-                      }}
-                      className="w-full px-3 py-2 cursor-pointer text-xs rounded-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
-                    >
-                      <option value="">Select month</option>
-                      {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((month, index) => (
-                        <option key={index} value={index}>
-                          {month}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {formData.issuedDate && (
-                    <Button
-                      onClick={() => handleInputChange('issuedDate', '')}
-                      variant="outline"
-                      className="w-full mt-1 text-xs rounded-sm hover:bg-secondary/3 cursor-pointer"
-                      size="sm"
-                    >
-                      Clear
-                    </Button>
-                  )}
                 </div>
+                {formData.issuedDate && (
+                  <Button
+                    variant="ghost"
+                    className="w-full mt-4 h-8 text-xs hover:bg-secondary/10 hover:text-secondary"
+                    onClick={() => handleInputChange('issuedDate', '')}
+                  >
+                    Clear choice
+                  </Button>
+                )}
               </PopoverContent>
             </Popover>
           </div>
