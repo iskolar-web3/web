@@ -167,13 +167,13 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 						control={control}
 						render={({ field }) => (
 							<div>
-								<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								<label className="block text-xs text-[#6B7280] mb-1.5">
 									First Name
 								</label>
 								<Input
 									{...field}
 									disabled={isSaving}
-									className={`h-auto py-3 ${
+									className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-sm md:text-sm ${
 										errors.firstName
 											? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 											: ""
@@ -193,13 +193,13 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 						control={control}
 						render={({ field }) => (
 							<div>
-								<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								<label className="block text-xs text-[#6B7280] mb-1.5">
 									Middle Name
 								</label>
 								<Input
 									{...field}
 									disabled={isSaving}
-									className={`h-auto py-3 ${
+									className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-sm md:text-sm ${
 										errors.middleName
 											? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 											: ""
@@ -219,13 +219,13 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 						control={control}
 						render={({ field }) => (
 							<div>
-								<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								<label className="block text-xs text-[#6B7280] mb-1.5">
 									Last Name
 								</label>
 								<Input
 									{...field}
 									disabled={isSaving}
-									className={`h-auto py-3 ${
+									className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-sm md:text-sm ${
 										errors.lastName
 											? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 											: ""
@@ -245,7 +245,7 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 						control={control}
 						render={({ field }) => (
 							<div>
-								<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								<label className="block text-xs text-[#6B7280] mb-1.5">
 									Gender
 								</label>
 								<Select
@@ -254,7 +254,7 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 									disabled={isSaving}
 								>
 									<SelectTrigger
-										className={`h-auto py-3 ${
+										className={`min-h-[40px] h-auto w-full px-4 bg-[#F9FAFB] border-border rounded-sm text-sm md:text-sm ${
 											errors.gender
 												? "border-[#EF4444] focus:ring-[#EF4444]/20"
 												: ""
@@ -282,7 +282,7 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 						render={({ field }) => {
 							return (
 								<div>
-									<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+									<label className="block text-xs text-[#6B7280] mb-1.5">
 										Date of Birth
 									</label>
 									<Popover>
@@ -290,15 +290,15 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 											<button
 												type="button"
 												disabled={isSaving}
-												className={`w-full min-h-[40px] px-4 py-3 text-sm border rounded-sm focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+												className={`w-full min-h-[40px] px-4 bg-[#F9FAFB] text-sm border border-border rounded-sm focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
 													field.value ? "text-primary" : "text-gray-400"
 												} ${
 													errors.birthDate
 														? "border-[#EF4444] focus:ring-[#EF4444]/20 focus:border-[#EF4444]"
-														: "border-input focus:border-[#3A52A6] focus:ring-[#3A52A6]/20"
+														: "focus:border-[#3A52A6] focus:ring-[#3A52A6]/20"
 												} disabled:bg-gray-100 disabled:cursor-not-allowed`}
 											>
-												<span>
+												<span className="text-sm md:text-sm">
 													{field.value
 														? format(field.value, "MMMM d, yyyy")
 														: "Set date"}
@@ -331,14 +331,14 @@ const StudentProfileForm = forwardRef<HTMLFormElement, StudentProfileFormProps>(
 						control={control}
 						render={({ field }) => (
 							<div>
-								<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								<label className="block text-xs text-[#6B7280] mb-1.5">
 									Contact Number
 								</label>
 								<Input
 									{...field}
 									type="tel"
 									disabled={isSaving}
-									className={`h-auto py-3 ${
+									className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-xs md:text-sm ${
 										errors.contact?.value
 											? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 											: ""
