@@ -6,6 +6,8 @@ export const NFT_CREDENTIAL_ADDRESSES = {
   hardhat: '0x5FbDB2315678afecb367f032d93F642f64180aa3' as `0x${string}`,
   // Sepolia testnet (chain ID: 11155111)
   sepolia: '0xe117Bb3BF3a96880ac21722733EFB5c55C295460' as `0x${string}`,
+  // Amoy testnet (chain ID: 80002)
+  amoy: '0x048c39a7f1dcD4589d5359ebD010A0dEEBBe08f0' as `0x${string}`,
 } as const;
 
 /**
@@ -37,6 +39,8 @@ export function getContractAddress(chainId: number): `0x${string}` | undefined {
       return NFT_CREDENTIAL_ADDRESSES.hardhat;
     case 11155111: // Sepolia
       return NFT_CREDENTIAL_ADDRESSES.sepolia;
+    case 80002: // Amoy
+      return NFT_CREDENTIAL_ADDRESSES.amoy;
     default:
       return undefined;
   }
