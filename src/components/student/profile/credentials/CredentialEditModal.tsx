@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Upload, FileText, Award, X, CheckCircle, Loader2, Wallet, CalendarIcon } from 'lucide-react';
+import { Upload, FileText, X, CheckCircle, Loader2, Wallet, CalendarIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -385,13 +385,11 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
                   <SelectContent>
                     <SelectItem value="Academic">
                       <div className="flex items-center gap-2">
-                        <Award className="w-4 h-4 text-[#3B5AA8]" />
                         <span>Academic</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="Certification">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-[#3B5AA8]" />
                         <span>Certification</span>
                       </div>
                     </SelectItem>
@@ -512,7 +510,7 @@ export default function CredentialEditModal({ isOpen, onClose, onSuccess, tokenI
                       {field.value && (
                         <Button
                           variant="ghost"
-                          className="w-full mt-4 h-8 text-xs hover:bg-secondary/10 hover:text-secondary"
+                          className="w-full mt-4 h-8 text-xs border border-border bg-card hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 cursor-pointer transition-colors"
                           onClick={() => field.onChange('')}
                         >
                           Clear choice
