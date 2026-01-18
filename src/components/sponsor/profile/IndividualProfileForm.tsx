@@ -1,6 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Phone, Briefcase, CalendarIcon } from "lucide-react";
 import { forwardRef } from "react";
 import type { JSX } from "react";
 import { Input } from "@/components/ui/input";
@@ -83,45 +82,44 @@ const IndividualSponsorProfileForm = forwardRef<
 		return (
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 				<div>
-					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+					<label className="block text-xs text-[#6B7280] mb-1.5">
 						First Name
 					</label>
-					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
-						<p className="text-sm md:text-base text-primary">
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center">
+						<p className="text-xs md:text-sm text-primary">
 							{profile.firstName || "—"}
 						</p>
 					</div>
 				</div>
 
 				<div>
-					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+					<label className="block text-xs text-[#6B7280] mb-1.5">
 						Middle Name
 					</label>
-					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
-						<p className="text-sm md:text-base text-primary">
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center">
+						<p className="text-xs md:text-sm text-primary">
 							{profile.middleName || "—"}
 						</p>
 					</div>
 				</div>
 
 				<div>
-					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+					<label className="block text-xs text-[#6B7280] mb-1.5">
 						Last Name
 					</label>
-					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
-						<p className="text-sm md:text-base text-primary">
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center">
+						<p className="text-xs md:text-sm text-primary">
 							{profile.lastName || "—"}
 						</p>
 					</div>
 				</div>
 
 				<div>
-					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+					<label className="block text-xs text-[#6B7280] mb-1.5">
 						Employment Type
 					</label>
-					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
-						<Briefcase className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-						<p className="text-sm md:text-base text-primary">
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center">
+						<p className="text-xs md:text-sm text-primary">
 							{[
 								{ value: EmploymentType.Employed, label: "Employed" },
 								{ value: EmploymentType.SelfEmployed, label: "Self Employed" },
@@ -141,12 +139,11 @@ const IndividualSponsorProfileForm = forwardRef<
 					</div>
 				</div>
 				<div>
-					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+					<label className="block text-xs text-[#6B7280] mb-1.5">
 						Date of Birth
 					</label>
-					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
-						<CalendarIcon className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-						<p className="text-sm md:text-base text-primary">
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center">
+						<p className="text-xs md:text-sm text-primary">
 							{profile.birthDate
 								? format(profile.birthDate, "MMMM d, yyyy")
 								: "—"}
@@ -154,12 +151,11 @@ const IndividualSponsorProfileForm = forwardRef<
 					</div>
 				</div>
 				<div>
-					<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+					<label className="block text-xs text-[#6B7280] mb-1.5">
 						Contact Number
 					</label>
-					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center gap-2">
-						<Phone className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-						<p className="text-sm md:text-base text-primary">
+					<div className="min-h-[40px] px-4 bg-[#F9FAFB] border border-border rounded-sm flex items-center">
+						<p className="text-xs md:text-sm text-primary">
 							{profile.contact.value || "—"}
 						</p>
 					</div>
@@ -182,13 +178,13 @@ const IndividualSponsorProfileForm = forwardRef<
 					control={control}
 					render={({ field }) => (
 						<div>
-							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+							<label className="block text-xs text-[#6B7280] mb-1.5">
 								First Name
 							</label>
 							<Input
 								{...field}
 								disabled={isSaving}
-								className={`h-auto ${
+								className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-xs md:text-sm ${
 									errors.firstName
 										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 										: ""
@@ -208,13 +204,13 @@ const IndividualSponsorProfileForm = forwardRef<
 					control={control}
 					render={({ field }) => (
 						<div>
-							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+							<label className="block text-xs text-[#6B7280] mb-1.5">
 								Middle Name
 							</label>
 							<Input
 								{...field}
 								disabled={isSaving}
-								className={`h-auto ${
+								className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-xs md:text-sm ${
 									errors.middleName
 										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 										: ""
@@ -234,13 +230,13 @@ const IndividualSponsorProfileForm = forwardRef<
 					control={control}
 					render={({ field }) => (
 						<div>
-							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+							<label className="block text-xs text-[#6B7280] mb-1.5">
 								Last Name
 							</label>
 							<Input
 								{...field}
 								disabled={isSaving}
-								className={`h-auto ${
+								className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-xs md:text-sm ${
 									errors.lastName
 										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 										: ""
@@ -260,7 +256,7 @@ const IndividualSponsorProfileForm = forwardRef<
 					control={control}
 					render={({ field }) => (
 						<div>
-							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+							<label className="block text-xs text-[#6B7280] mb-1.5">
 								Employment Type
 							</label>
 							<Select
@@ -269,7 +265,7 @@ const IndividualSponsorProfileForm = forwardRef<
 								disabled={isSaving}
 							>
 								<SelectTrigger
-									className={`h-auto ${
+									className={`min-h-[40px] h-auto w-full px-4 bg-[#F9FAFB] border-border rounded-sm text-xs md:text-sm ${
 										errors.employmentType
 											? "border-[#EF4444] focus:ring-[#EF4444]/20"
 											: ""
@@ -308,7 +304,7 @@ const IndividualSponsorProfileForm = forwardRef<
 					render={({ field }) => {
 						return (
 							<div>
-								<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+								<label className="block text-xs text-[#6B7280] mb-1.5">
 									Date of Birth
 								</label>
 								<Popover>
@@ -316,20 +312,19 @@ const IndividualSponsorProfileForm = forwardRef<
 										<button
 											type="button"
 											disabled={isSaving}
-											className={`w-full min-h-[40px] px-4 py-3 text-sm border rounded-sm focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
+											className={`w-full min-h-[40px] px-4 bg-[#F9FAFB] text-sm border border-border rounded-sm focus:outline-none focus:ring-2 transition-all text-left flex items-center justify-between ${
 												field.value ? "text-primary" : "text-gray-400"
 											} ${
 												errors.birthDate
 													? "border-[#EF4444] focus:ring-[#EF4444]/20 focus:border-[#EF4444]"
-													: "border-input focus:border-[#3A52A6] focus:ring-[#3A52A6]/20"
+													: "focus:border-[#3A52A6] focus:ring-[#3A52A6]/20"
 											} disabled:bg-gray-100 disabled:cursor-not-allowed`}
 										>
-											<span>
+											<span className="text-xs md:text-sm">
 												{field.value
 													? format(field.value, "MMMM d, yyyy")
 													: "Set date"}
 											</span>
-											<CalendarIcon className="h-4 w-4 opacity-50" />
 										</button>
 									</PopoverTrigger>
 									<PopoverContent className="w-auto p-0" align="start">
@@ -357,14 +352,14 @@ const IndividualSponsorProfileForm = forwardRef<
 					control={control}
 					render={({ field }) => (
 						<div>
-							<label className="block text-xs md:text-sm text-[#6B7280] mb-1.5">
+							<label className="block text-xs text-[#6B7280] mb-1.5">
 								Contact Number
 							</label>
 							<Input
 								{...field}
 								type="tel"
 								disabled={isSaving}
-								className={`h-auto py-3 ${
+								className={`min-h-[40px] h-auto px-4 bg-[#F9FAFB] border-border rounded-sm text-xs md:text-sm ${
 									errors.contact?.value
 										? "border-[#EF4444] focus-visible:ring-[#EF4444]/20"
 										: ""
