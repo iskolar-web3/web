@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { Upload, FileText, Award, X, CheckCircle, Loader2, Wallet } from 'lucide-react';
+import { Upload, FileText, X, CheckCircle, Loader2, Wallet } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
