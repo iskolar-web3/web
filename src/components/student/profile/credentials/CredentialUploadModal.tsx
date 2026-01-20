@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Upload, FileText, X, CheckCircle, Loader2, Wallet, CalendarIcon } from 'lucide-react';
 import {
   Dialog,
@@ -8,6 +8,14 @@ import {
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useIssueCredential } from '@/hooks/useNFTCredential';
@@ -22,12 +30,9 @@ import {
   handleFileSelection,
   formatFileSize,
 } from '@/utils/fileHandling.utils';
-
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-const YEARS = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 interface CredentialUploadModalProps {
   isOpen: boolean;
@@ -35,20 +40,37 @@ interface CredentialUploadModalProps {
   onSuccess?: () => void;
 }
 
-interface FormData {
-  type: string;
-  name: string;
-  institution: string;
-  issuedDate: string;
-}
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+const YEARS = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
+
+const credentialSchema = z.object({
+  type: z.string().min(1, 'Type is required'),
+  name: z.string().min(1, 'Name is required'),
+  institution: z.string().min(1, 'Institution is required'),
+  issuedDate: z.string().optional(),
+});
+
+type CredentialFormData = z.infer<typeof credentialSchema>;
 
 export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: CredentialUploadModalProps) {
-  const [formData, setFormData] = useState<FormData>({
-    type: '',
-    name: '',
-    institution: '',
-    issuedDate: '',
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CredentialFormData>({
+    resolver: zodResolver(credentialSchema),
+    defaultValues: {
+      type: '',
+      name: '',
+      institution: '',
+      issuedDate: '',
+    },
   });
+
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -71,10 +93,6 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
       hasHandledSuccess.current = false;
     }
   }, [isOpen]);
-
-  const handleInputChange = useCallback((field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  }, []);
 
   /**
    * Handles file selection, validation, compression, and preview generation
@@ -123,21 +141,14 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
     setPreview(null);
   }, []);
 
-  const resetForm = useCallback(() => {
-    setFormData({ type: '', name: '', institution: '', issuedDate: '' });
-    setFile(null);
-    setPreview(null);
-    setUploadSuccess(false);
-  }, []);
-
-  const handleSubmit = useCallback(async () => {
-    if (!formData.type || !formData.name || !formData.institution || !file) {
-      showError('Validation Error', 'Please fill in all required fields and upload a file', 3000);
+  const onFormSubmit = async (data: CredentialFormData) => {
+    if (!isConnected || !address) {
+      showError('Wallet Not Connected', 'Please connect your wallet to upload credentials', 3000);
       return;
     }
 
-    if (!isConnected || !address) {
-      showError('Wallet Not Connected', 'Please connect your wallet to upload credentials', 3000);
+    if (!file) {
+      showError('Validation Error', 'Please upload a file', 3000);
       return;
     }
 
@@ -154,23 +165,23 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
       const documentURI = getIPFSUri(documentUpload.ipfsHash);
 
       // Format date as YYYY-MM
-      const formattedDate = formData.issuedDate 
-        ? format(new Date(formData.issuedDate), 'yyyy-MM')
+      const formattedDate = data.issuedDate 
+        ? format(new Date(data.issuedDate), 'yyyy-MM')
         : '';
 
       // Create metadata object
       const metadata = {
-        name: formData.name,
-        description: `${formData.type} credential issued by ${formData.institution}`,
+        name: data.name,
+        description: `${data.type} credential issued by ${data.institution}`,
         image: documentURI, // Use document URI as the image
         attributes: [
           {
             trait_type: 'Type',
-            value: formData.type,
+            value: data.type,
           },
           {
             trait_type: 'Issuing Institution',
-            value: formData.institution,
+            value: data.institution,
           },
           {
             trait_type: 'Issued Date',
@@ -178,9 +189,9 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
           },
         ],
         properties: {
-          credentialType: formData.type,
-          credentialName: formData.name,
-          issuingInstitution: formData.institution,
+          credentialType: data.type,
+          credentialName: data.name,
+          issuingInstitution: data.institution,
           issuedDate: formattedDate,
           documentURI: documentURI,
         },
@@ -198,9 +209,9 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
       // Issue credential on-chain
       await issueCredential(
         address, 
-        formData.type,
-        formData.name,
-        formData.institution,
+        data.type,
+        data.name,
+        data.institution,
         formattedDate,
         documentURI,
         tokenURI,
@@ -211,7 +222,7 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
       showError('Upload Failed', handled.message, 4000);
       setIsUploading(false);
     }
-  }, [formData, file, isConnected, address, issueCredential, showError]);
+  };
 
   // Watch for transaction success
   useEffect(() => {
@@ -221,11 +232,14 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
       setIsUploading(false);
       onSuccess?.();
       setTimeout(() => {
-        resetForm();
+        reset();
+        setFile(null);
+        setPreview(null);
+        setUploadSuccess(false);
         onClose();
       }, 1500);
     }
-  }, [isSuccess, resetForm, onSuccess, onClose]);
+  }, [isSuccess, onSuccess, onClose, reset]);
 
   // Watch for contract errors
   useEffect(() => {
@@ -252,22 +266,13 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
   const handleClose = useCallback(() => {
     const isLoading = isPending || isConfirming || isUploading;
     if (!isLoading) {
-      resetForm();
+      reset();
+      setFile(null);
+      setPreview(null);
+      setUploadSuccess(false);
       onClose();
     }
-  }, [isPending, isConfirming, isUploading, resetForm, onClose]);
-
-
-  /**
-   * Format date for display
-   */
-  const formattedDate = useMemo(() => {
-    if (!formData.issuedDate) return null;
-    return new Date(formData.issuedDate).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-    });
-  }, [formData.issuedDate]);
+  }, [isPending, isConfirming, isUploading, reset, onClose]);
 
   const isLoading = isPending || isConfirming || isUploading;
 
@@ -348,25 +353,40 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
             <label className="block text-xs text-gray-500 mb-2">
               Type*
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              {['Academic', 'Certification'].map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => handleInputChange('type', type)}
+            <Controller
+              name="type"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
                   disabled={isLoading}
-                  className={`p-4 cursor-pointer rounded-sm border-2 transition-all disabled:opacity-50 ${
-                    formData.type === type
-                      ? 'border-secondary bg-secondary/5'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
                 >
-                  <div className="flex items-center justify-center gap-1">
-                    <span className="text-sm text-gray-900">{type}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
+                  <SelectTrigger
+                    className={`w-full ${
+                      errors.type
+                        ? 'border-red-500 focus:ring-red-500/20'
+                        : ''
+                    }`}
+                  >
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Academic">
+                      <div className="flex items-center gap-2">
+                        <span>Academic</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Certification">
+                      <div className="flex items-center gap-2">
+                        <span>Certification</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.type && <p className="mt-1 text-xs text-red-500">{errors.type.message}</p>}
           </div>
 
           {/* Credential Name */}
@@ -374,14 +394,13 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
             <label className="block text-xs text-gray-500 mb-2">
               Name*
             </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
+            <Input
+              {...control.register('name')}
               disabled={isLoading}
               placeholder="e.g., Dean's List Award"
-              className="w-full px-3 py-2 text-sm rounded-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent disabled:bg-gray-50"
+              className={errors.name ? 'border-red-500 focus-visible:ring-red-500/20' : ''}
             />
+            {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
           </div>
 
           {/* Issuing Institution */}
@@ -390,14 +409,13 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
               Issuing Institution*
             </label>
             <div className="relative">
-              <input
-                type="text"
-                value={formData.institution}
-                onChange={(e) => handleInputChange('institution', e.target.value)}
+              <Input
+                {...control.register('institution')}
                 disabled={isLoading}
                 placeholder="e.g., University of the Philippines"
-                className="w-full px-3 py-2 text-sm rounded-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent disabled:bg-gray-50"
+                className={errors.institution ? 'border-red-500 focus-visible:ring-red-500/20' : ''}
               />
+              {errors.institution && <p className="mt-1 text-xs text-red-500">{errors.institution.message}</p>}
             </div>
           </div>
 
@@ -406,75 +424,92 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
             <label className="block text-xs text-gray-500 mb-2">
               Issued Date 
             </label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  disabled={isLoading}
-                  variant="outline"
-                  className={`w-full justify-start cursor-pointer rounded-sm hover:bg-secondary/3 ${
-                    formData.issuedDate ? 'text-gray-900' : 'text-gray-500'
-                  }`}
-                >
-                  {formattedDate || 'Select month and year'}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-4" align="start">
-                <div className="flex gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium">Month</label>
-                    <select
-                      className="flex h-9 w-[120px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      value={formData.issuedDate ? new Date(formData.issuedDate).getMonth() : ''}
-                      onChange={(e) => {
-                        if (!e.target.value) return;
-                        const month = parseInt(e.target.value);
-                        const year = formData.issuedDate ? new Date(formData.issuedDate).getFullYear() : new Date().getFullYear();
-                        const newDate = new Date(year, month, 1);
-                        handleInputChange('issuedDate', format(newDate, 'yyyy-MM-dd'));
-                      }}
-                    >
-                      <option value="">Select</option>
-                      {MONTHS.map((month, index) => (
-                        <option key={month} value={index}>
-                          {month}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium">Year</label>
-                    <select
-                      className="flex h-9 w-[100px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      value={formData.issuedDate ? new Date(formData.issuedDate).getFullYear() : ''}
-                      onChange={(e) => {
-                        if (!e.target.value) return;
-                        const year = parseInt(e.target.value);
-                        const month = formData.issuedDate ? new Date(formData.issuedDate).getMonth() : 0;
-                        const newDate = new Date(year, month, 1);
-                        handleInputChange('issuedDate', format(newDate, 'yyyy-MM-dd'));
-                      }}
-                    >
-                      <option value="">Select</option>
-                      {YEARS.map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                {formData.issuedDate && (
-                  <Button
-                    variant="ghost"
-                    className="w-full mt-4 h-8 text-xs border border-border bg-card hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 cursor-pointer transition-colors"
-                    onClick={() => handleInputChange('issuedDate', '')}
-                  >
-                    Clear choice
-                  </Button>
-                )}
-              </PopoverContent>
-            </Popover>
+            <Controller
+              name="issuedDate"
+              control={control}
+              render={({ field }) => {
+                const dateValue = field.value ? new Date(field.value) : undefined;
+                
+                const currentYear = dateValue ? dateValue.getFullYear() : undefined;
+                const currentMonth = dateValue ? dateValue.getMonth() : undefined;
+
+                const handleYearChange = (yearStr: string) => {
+                  if (!yearStr) return;
+                  const year = parseInt(yearStr);
+                  const month = currentMonth !== undefined ? currentMonth : 0;
+                  const newDate = new Date(year, month, 1);
+                  field.onChange(format(newDate, 'yyyy-MM-dd'));
+                };
+
+                const handleMonthChange = (monthStr: string) => {
+                  if (!monthStr) return;
+                  const month = parseInt(monthStr);
+                  const year = currentYear || new Date().getFullYear();
+                  const newDate = new Date(year, month, 1);
+                  field.onChange(format(newDate, 'yyyy-MM-dd'));
+                };
+
+                return (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        disabled={isLoading}
+                        variant="outline"
+                        className={`w-full justify-start cursor-pointer rounded-sm hover:bg-secondary/3 ${
+                          dateValue ? 'text-gray-900' : 'text-gray-500'
+                        }`}
+                      >
+                        {dateValue ? format(dateValue, 'MMMM yyyy') : 'Select month and year'}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-4" align="start">
+                      <div className="flex gap-4">
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium">Month</label>
+                          <select
+                            className="flex h-9 w-[120px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            value={currentMonth !== undefined ? currentMonth : ''}
+                            onChange={(e) => handleMonthChange(e.target.value)}
+                          >
+                            <option value="" disabled>Select</option>
+                            {MONTHS.map((month, index) => (
+                              <option key={month} value={index}>
+                                {month}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium">Year</label>
+                          <select
+                            className="flex h-9 w-[100px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            value={currentYear || ''}
+                            onChange={(e) => handleYearChange(e.target.value)}
+                          >
+                            <option value="" disabled>Select</option>
+                            {YEARS.map((year) => (
+                              <option key={year} value={year}>
+                                {year}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      {field.value && (
+                        <Button
+                          variant="ghost"
+                          className="w-full mt-4 h-8 text-xs hover:bg-secondary/10 hover:text-secondary"
+                          onClick={() => field.onChange('')}
+                        >
+                          Clear choice
+                        </Button>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                );
+              }}
+            />
           </div>
 
           {/* File Upload */}
@@ -571,15 +606,15 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
         {/* Footer */}
         <DialogFooter className="bg-gray-50 rounded-b-sm border-t border-gray-200 px-6 py-4 flex gap-3 flex-shrink-0">
           <Button
-            onClick={resetForm}
+            onClick={handleClose}
             disabled={isLoading}
             variant="outline"
             className="flex-1 cursor-pointer"
           >
-            Reset
+            Cancel
           </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={handleSubmit(onFormSubmit)}
             disabled={isLoading || !isConnected}
             className="flex-1 bg-[#3B5AA8] cursor-pointer hover:bg-[#2f4389] disabled:bg-gray-300"
           >
