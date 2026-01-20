@@ -3,6 +3,8 @@ import { Link, useRouterState, useNavigate } from '@tanstack/react-router';
 import { Search, Home, Compass, WalletCards, Plus, Repeat, Bell, User, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ProfileDropdown from './profile/ProfileDropdown';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from '@/auth';
 
 /**
  * User role type for navigation context
@@ -166,6 +168,8 @@ export default function HeaderNav({ role }: HeaderNavProps) {
     }
     return false;
   };
+
+  const auth = useAuth()
 
   return (
     <header className="fixed top-0 left-0 right-0 w-full bg-white border-b border-[#E0ECFF] z-50">
@@ -337,7 +341,14 @@ export default function HeaderNav({ role }: HeaderNavProps) {
                 className="w-8 md:w-10 h-8 md:h-10 rounded-full bg-muted flex items-center justify-center hover:ring-2 hover:ring-[#3A52A6] hover:ring-offset-2 transition-all cursor-pointer"
                 aria-label="Profile menu"
               >
-                <User className="w-4 md:w-5 h-4 md:h-5 text-[#6B7280]" />
+
+				<Avatar className="size-full">
+					<AvatarImage src={auth.user?.avatarUrl || ""} />
+					<AvatarFallback>
+                        <User className="w-4 md:w-5 h-4 md:h-5 text-[#6B7280]" />
+					</AvatarFallback>
+				</Avatar>
+
               </button>
 
               <AnimatePresence>
