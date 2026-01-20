@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronsRight, Calendar, Coins, Users, Info, Check, Clock } from 'lucide-react';
-import type { ApplicationOld, ApplicationStatusOld } from '@/types/application.types';
 import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting.utils';
 import type { Application, ScholarshipApplicationStatus } from '@/lib/scholarship/model';
 import { getSponsorName } from '@/lib/sponsor/api';

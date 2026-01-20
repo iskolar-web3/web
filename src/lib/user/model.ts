@@ -1,5 +1,4 @@
 import { enumDetailSchema } from "@/lib/api";
-import type { Student } from "@/types/student";
 import z from "zod";
 
 export enum UserRole {

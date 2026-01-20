@@ -56,6 +56,8 @@ export function getNetworkName(chainId: number): string {
       return 'Sepolia';
     case 31337:
       return 'Hardhat Local';
+    case 80002:
+      return 'Polygon Amoy';
     default:
       return `Chain ${chainId}`;
   }
@@ -72,8 +74,9 @@ export function getExplorerTxUrl(chainId: number, txHash: `0x${string}`): string
       return `https://sepolia.etherscan.io/tx/${txHash}`;
     case 31337: // Hardhat localhost
       return `http://localhost:8545/tx/${txHash}`;
+    case 80002: // Polygon Amoy
+      return `https://amoy.polygonscan.com/tx/${txHash}`;
     default:
       return null;
   }
 }
-

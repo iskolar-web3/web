@@ -57,7 +57,7 @@ function LoginPage(): JSX.Element {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showPreloader, setShowPreloader] = useState(false);
+  const [showPreloader, _] = useState(false);
   const { toast, showSuccess, showError } = useToast();
   const auth = useAuth()
 

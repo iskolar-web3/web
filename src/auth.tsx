@@ -20,10 +20,12 @@ export type AuthContextValue<T = any> = {
 	user: User | null;
 	setUser: React.Dispatch<React.SetStateAction<User | null>>;
 	profile: T;
+	setProfile: React.Dispatch<React.SetStateAction<T>>;
 	sessionToken: string;
 	getSession: () => Promise<AuthSession | null>;
 	logout: () => Promise<void>;
 	isLoading: boolean;
+	error: Error | null;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -37,6 +39,7 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 	const [sessionToken, setSessionToken] = useState<string>("");
 	const [profile, setProfile] = useState<any | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<Error | null>(null);
 
 	async function getSession(): Promise<AuthSession | null> {
 		try {
@@ -46,17 +49,18 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 			}
 
 			const session = await validateSession(token);
-			if (session === null) {
+			if (session.data === null) {
 				setUser(null);
+				setError(new Error(session.message));
 				return null;
 			}
 
-			setUser(session.user);
+			setUser(session.data.user);
 			setSessionToken(token);
-			setCookie(ACCESS_TOKEN_KEY, session.token);
-			setCookie(REFRESH_TOKEN_KEY, session.refreshToken);
+			setCookie(ACCESS_TOKEN_KEY, session.data.token);
+			setCookie(REFRESH_TOKEN_KEY, session.data.refreshToken);
 
-			switch (session.user.role?.code) {
+			switch (session.data.user.role?.code) {
 				case UserRole.Student:
 					const student = await getMyStudentProfile(token);
 					setProfile(student);
@@ -71,7 +75,7 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 					setProfile(null);
 			}
 
-			return session;
+			return session.data;
 		} finally {
 			setIsLoading(false);
 		}
@@ -100,10 +104,12 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
 				user,
 				setUser,
 				profile,
+                setProfile,
 				getSession,
 				logout,
 				sessionToken,
 				isLoading,
+				error,
 			}}
 		>
 			{props.children}

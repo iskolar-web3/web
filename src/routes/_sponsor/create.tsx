@@ -18,11 +18,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Toast from '@/components/Toast';
-import ScholarshipPreviewCard from '@/components/sponsor/ScholarshipPreviewCard';
-import ScholarshipFullPreviewModal from '@/components/sponsor/ScholarshipFullPreviewDrawer';
-import CustomFormFieldModal from '@/components/sponsor/CustomFormFieldModal';
-import CustomFormFieldsList from '@/components/sponsor/CustomFormFieldsList';
-import DescriptionModal from '@/components/sponsor/DescriptionModal';
+import ScholarshipPreviewCard from '@/components/sponsor/create-scholarship/ScholarshipPreviewCard';
+import ScholarshipFullPreviewModal from '@/components/sponsor/create-scholarship/ScholarshipFullPreviewDrawer';
+import CustomFormFieldModal from '@/components/sponsor/create-scholarship/CustomFormFieldModal';
+import CustomFormFieldsList from '@/components/sponsor/create-scholarship/CustomFormFieldsList';
+import DescriptionModal from '@/components/sponsor/create-scholarship/DescriptionModal';
 import { useScholarshipForm } from '@/hooks/useScholarshipForm';
 import { useScholarshipPreview } from '@/hooks/useScholarshipPreview';
 import { useToast } from '@/hooks/useToast';

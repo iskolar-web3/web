@@ -1,6 +1,6 @@
 import z from "zod";
 import { enumDetailSchema } from "../api";
-import { contactDetailSchema } from "../user/model";
+import { contactDetailSchema, createContactRequestSchema } from "../user/model";
 
 export enum SponsorType {
 	Individual = "individual",
@@ -30,6 +30,35 @@ export const individualSponsorSchema = z.object({
 });
 export type IndividualSponsor = z.output<typeof individualSponsorSchema>;
 
+export const createIndividualSponsorRequestSchema = z.object({
+	userId: z.uuidv4(),
+	firstName: z.string().nonempty({ error: "First name is required." }),
+	middleName: z.string().optional(),
+	lastName: z.string().nonempty({ error: "Last name is required." }),
+	sponsorType: z.enum(SponsorType),
+	employmentType: z.enum(EmploymentType, {
+		error: "Employment type is required.",
+	}),
+	birthDate: z.coerce.date({ error: "Birth date is required." }),
+	contact: createContactRequestSchema,
+});
+export type CreateIndividualSponsorRequest = z.infer<
+	typeof createIndividualSponsorRequestSchema
+>;
+
+export const updateIndividualSponsorRequestSchema =
+	createIndividualSponsorRequestSchema
+		.extend({
+			avatarUrl: z.string(),
+		})
+		.partial()
+		.extend({
+			id: z.uuidv4(),
+		});
+export type UpdateIndividualSponsorRequest = z.infer<
+	typeof updateIndividualSponsorRequestSchema
+>;
+
 export enum OrganizationType {
 	PrivateCompany = "private_company",
 	NonGovernmentalOrganization = "non_governmental_organization",
@@ -47,6 +76,30 @@ export const organizationSponsorSchema = z.object({
 });
 export type OrganizationSponsor = z.output<typeof organizationSponsorSchema>;
 
+export const createOrganizationSponsorRequestSchema = z.object({
+	userId: z.uuidv4(),
+	sponsorType: z.enum(SponsorType),
+	name: z.string().nonempty(),
+	organizationType: z.enum(OrganizationType),
+	contact: createContactRequestSchema,
+});
+export type CreateOrganizationSponsorRequest = z.infer<
+	typeof createOrganizationSponsorRequestSchema
+>;
+
+export const updateOrganizationSponsorRequestSchema =
+	createOrganizationSponsorRequestSchema
+		.extend({
+			avatarUrl: z.string(),
+		})
+		.partial()
+		.extend({
+			id: z.uuidv4(),
+		});
+export type UpdateOrganizationSponsorRequest = z.infer<
+	typeof updateOrganizationSponsorRequestSchema
+>;
+
 export enum AgencyType {
 	NationalGovernmentAgency = "national_government_agency",
 	LocalGovernmentUnit = "local_government_unit",
@@ -63,6 +116,30 @@ export const governmentSponsorSchema = z.object({
 	avatarUrl: z.string().nullable(),
 });
 export type GovernmentSponsor = z.output<typeof governmentSponsorSchema>;
+
+export const createGovernmentSponsorRequestSchema = z.object({
+	userId: z.uuidv4(),
+	sponsorType: z.enum(SponsorType),
+	name: z.string().nonempty(),
+	agencyType: z.enum(AgencyType),
+	contact: createContactRequestSchema,
+});
+export type CreateGovernmentSponsorRequest = z.infer<
+	typeof createGovernmentSponsorRequestSchema
+>;
+
+export const updateGovernmentSponsorRequestSchema =
+	createGovernmentSponsorRequestSchema
+		.extend({
+			avatarUrl: z.string(),
+		})
+		.partial()
+		.extend({
+			id: z.uuidv4(),
+		});
+export type UpdateGovernmentSponsorRequest = z.infer<
+	typeof updateGovernmentSponsorRequestSchema
+>;
 
 export const anySponsorSchema = z.union([
 	individualSponsorSchema,

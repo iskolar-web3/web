@@ -2,7 +2,6 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
 	Calendar,
 	Upload,
@@ -27,22 +26,14 @@ import {
 } from "@/components/ui/select";
 import Toast from "@/components/Toast";
 import { useToast } from "@/hooks/useToast";
-import { Skeleton } from "@/components/ui/skeleton";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { compressFile } from "@/utils/fileCompression.utils";
-import {
-	normalizeText,
-	normalizeEmail,
-	normalizePhone,
-	normalizeNumber,
-} from "@/utils/normalize.utils";
 import { handleError } from "@/lib/errorHandler";
 import { logger } from "@/lib/logger";
 import {
 	FormFieldType,
 	type CreateApplicationRequest,
 	type FormField,
-	type Scholarship,
 } from "@/lib/scholarship/model";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import {
@@ -62,8 +53,7 @@ export const Route = createFileRoute("/_student/scholarship/$id/apply")({
 function ApplyScholarshipPage() {
 	usePageTitle("Apply");
 
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const [_, setLoading] = useState(true);
 	const [submitting, setSubmitting] = useState(false);
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [pendingData, setPendingData] = useState<CreateApplicationRequest>();
@@ -200,17 +190,17 @@ function ApplyScholarshipPage() {
 		return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 	};
 
-	const fileToBase64 = (file: File): Promise<string> => {
-		return new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.onload = () => {
-				const result = reader.result as string;
-				resolve(result.split(",")[1]);
-			};
-			reader.onerror = reject;
-			reader.readAsDataURL(file);
-		});
-	};
+	// const fileToBase64 = (file: File): Promise<string> => {
+	// 	return new Promise((resolve, reject) => {
+	// 		const reader = new FileReader();
+	// 		reader.onload = () => {
+	// 			const result = reader.result as string;
+	// 			resolve(result.split(",")[1]);
+	// 		};
+	// 		reader.onerror = reject;
+	// 		reader.readAsDataURL(file);
+	// 	});
+	// };
 
 	const onSubmit = (data: CreateApplicationRequest) => {
 		// customFields.forEach(field => {

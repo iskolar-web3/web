@@ -10,8 +10,10 @@ export const Route = createFileRoute("/_onboarding")({
 			return;
 		}
 
-		const path = getDefaultPathOfRole(session.user);
-		throw redirect({ to: path });
+		if (session.user.role !== null) {
+			const path = getDefaultPathOfRole(session.user);
+			throw redirect({ to: path });
+		}
 	},
 });
 
@@ -32,4 +34,3 @@ function OnboardingLayout(): JSX.Element {
 		</div>
 	);
 }
-

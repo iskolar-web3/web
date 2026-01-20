@@ -28,9 +28,9 @@ interface EditHeaderProps {
 export default function EditHeader({ title, isEditing, isSaving, onEdit, onCancel, onSave }: EditHeaderProps): JSX.Element {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg md:text-xl text-primary">{title}</h3>
+      <h3 className="text-base md:text-lg text-primary">{title}</h3>
       {!isEditing ? (
-        <button onClick={onEdit} className="px-2 py-2 bg-[#3A52A6] hover:bg-[#2f4389] text-white rounded-lg flex items-center gap-2 transition-colors cursor-pointer text-xs">
+        <button onClick={onEdit} className="px-2 py-2 bg-[#3A52A6] hover:bg-[#2f4389] text-white rounded-sm flex items-center gap-2 transition-colors cursor-pointer text-xs">
           <Edit className="h-3 w-3 md:w-4 md:h-4" />
         </button>
       ) : (

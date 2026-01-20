@@ -1,7 +1,7 @@
 import { BACKEND_URL, type ApiResponse } from "../api";
 import { getCookie } from "../cookie";
 import { ACCESS_TOKEN_KEY } from "../user/auth";
-import type { Student, UpdateStudentRequest } from "./model";
+import { studentSchema, type Student, type UpdateStudentRequest } from "./model";
 
 export async function getMyStudentProfile(
 	token: string,
@@ -16,15 +16,18 @@ export async function getMyStudentProfile(
 	}
 
 	const result: ApiResponse<Student | null> = await response.json();
-	console.log(result);
-	return result.data;
+    if(!result.data){
+        return null;
+    }
+
+    return studentSchema.parse(result.data)
 }
 
 export async function updateStudent(
 	value: UpdateStudentRequest,
 ): Promise<ApiResponse<Student>> {
 	const token = getCookie(ACCESS_TOKEN_KEY);
-	const response = await fetch(`${BACKEND_URL}/students`, {
+	const response = await fetch(`${BACKEND_URL}/students/${value.id}`, {
 		method: "PATCH",
 		body: JSON.stringify(value),
 		headers: {

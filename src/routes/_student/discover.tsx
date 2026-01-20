@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import ScholarshipCard from "@/components/student/ScholarshipCard"; 
+import ScholarshipCard from "@/components/student/discover/ScholarshipCard"; 
 import ScholarshipCardSkeleton from "@/components/ScholarshipCardSkeleton"; 
-import Filters from "@/components/student/Filters"; 
+import Filters from "@/components/student/discover/Filters"; 
 import { Filter, X, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
-import ScholarshipDetailsModal from '@/components/student/ScholarshipDetailsDrawer';
+import ScholarshipDetailsModal from '@/components/student/discover/ScholarshipDetailsDrawer';
 import { usePageTitle } from "@/hooks/usePageTitle"
 import { useScholarships } from '@/hooks/queries/useScholarships';
 import { ScholarshipPurpose, ScholarshipType, type Scholarship } from '@/lib/scholarship/model';

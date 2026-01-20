@@ -3,6 +3,7 @@ import { useAccount } from 'wagmi';
 import { useCredentialsByHolder, useCredential } from '@/hooks/useNFTCredential';
 import { Award, FileText, Pencil, Eye } from 'lucide-react';
 import { getIPFSUrl } from '@/utils/ipfs.utils';
+import { formatCredentialDate } from '@/utils/formatting.utils';
 import { useToast } from '@/hooks/useToast';
 import Toast from '@/components/Toast';
 import CredentialEditModal from './CredentialEditModal';
@@ -80,6 +81,7 @@ export default function CredentialsList() {
     </>
   );
 }
+
 
 /**
  * Individual credential card component
@@ -178,7 +180,7 @@ function CredentialCard({ tokenId, onUpdate, onEditSuccess }: { tokenId: bigint,
             {/* Issued Date */}
             {credential.issuedDate && (
               <p className="text-xs text-primary/55">
-                Issued {credential.issuedDate}
+                Issued {formatCredentialDate(credential.issuedDate)}
               </p>
             )}
 
@@ -213,4 +215,3 @@ function CredentialCard({ tokenId, onUpdate, onEditSuccess }: { tokenId: bigint,
     </>
   );
 }
-

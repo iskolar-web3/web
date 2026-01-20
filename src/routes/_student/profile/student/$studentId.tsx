@@ -1,33 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { User, Phone, Edit, Award } from "lucide-react";
+import { User, Edit, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useToast } from "@/hooks/useToast";
-import { useProfileForm } from "@/hooks/useProfileForm";
-import { useUserProfile } from "@/hooks/queries/useUserProfile";
 import Toast from "@/components/Toast";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import ProfileError from "@/components/profile/ProfileError";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import EditHeader from "@/components/profile/EditHeader";
-import InfoField from "@/components/profile/InfoField";
-import SelectField from "@/components/profile/SelectField";
-import DateField from "@/components/profile/DateField";
-import CredentialUploadModal from "@/components/student/CredentialUploadModal";
-import CredentialsList from "@/components/student/CredentialsList";
-import type { StudentProfile } from "@/types/profile.types";
+import CredentialUploadModal from "@/components/student/profile/credentials/CredentialUploadModal";
+import CredentialsList from "@/components/student/profile/credentials/CredentialsList";
 import { useAuth } from "@/auth";
-import {
-	updateStudentRequestSchema,
-	type Student,
-	type UpdateStudentRequest,
-} from "@/lib/student/model";
+import type { Student, UpdateStudentRequest } from "@/lib/student/model";
 import { UserRole } from "@/lib/user/model";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { updateStudent } from "@/lib/student/api";
 import { useMutation } from "@tanstack/react-query";
+import StudentProfileForm from "@/components/student/profile/ProfileForm";
+import { uploadFile } from "@/lib/api";
+import { ACCESS_TOKEN_KEY } from "@/lib/user/auth";
+import { getCookie } from "@/lib/cookie";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Route = createFileRoute("/_student/profile/student/$studentId")({
 	component: StudentProfilePage,
@@ -36,92 +29,65 @@ export const Route = createFileRoute("/_student/profile/student/$studentId")({
 function StudentProfilePage() {
 	usePageTitle("Profile");
 
-	const { studentId } = Route.useParams();
-	const {
-		data: profile,
-		isLoading,
-		error,
-		isError,
-	} = useUserProfile(studentId);
-
-	const [localProfile, setLocalProfile] = useState<StudentProfile | null>(
-		profile && profile.role === "student" ? (profile as StudentProfile) : null,
-	);
-	const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false);
-	const { toast, showSuccess, showError } = useToast();
-
 	const auth = useAuth<Student>();
+	const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false);
+	const [isEditing, setIsEditing] = useState(false);
+	const [isSaving, setIsSaving] = useState(false);
 
-	const {
-		isEditing,
-		isSaving,
-		editedProfile,
-		handleEditClick,
-		handleCancelEdit,
-		handleSaveEdit,
-		handleFieldChange,
-		handleDateChange,
-	} = useProfileForm(localProfile, setLocalProfile, { showSuccess, showError });
-
-	// Update local profile when fetched profile changes
-	if (
-		profile &&
-		profile.role === "student" &&
-		localProfile?.user_id !== profile.user_id
-	) {
-		setLocalProfile(profile as StudentProfile);
-	}
-
-	if (isLoading) {
-		return <ProfileSkeleton />;
-	}
-
-	if (isError || !localProfile || !profile) {
-		return <ProfileError error={error?.message || "Failed to load profile"} />;
-	}
-
-	const currentProfile =
-		isEditing && editedProfile
-			? (editedProfile as StudentProfile)
-			: localProfile;
-
-	const handleCredentialSuccess = () => {
-		showSuccess("Success", "Your credential has been saved.", 2500);
-	};
-
-	// TODO: Integrate react hook forms with the editable profile
-	const form = useForm<UpdateStudentRequest>({
-		resolver: zodResolver(updateStudentRequestSchema),
-		mode: "onBlur",
-		defaultValues: {
-			id: auth.profile.id,
-			userId: auth.profile.userId,
-			contact: auth.profile.contact,
-			avatarUrl: auth.profile.avatarUrl || "",
-			birthDate: auth.profile.birthDate,
-			firstName: auth.profile.firstName,
-			middleName: auth.profile.middleName || "",
-			lastName: auth.profile.lastName,
-			gender: auth.profile.gender.code,
-		},
-	});
+	const formRef = useRef<HTMLFormElement>(null);
+	const { toast, showSuccess, showError } = useToast();
 
 	const mutation = useMutation({
 		mutationFn: updateStudent,
 		onSuccess: async (res) => {
-			console.log(res.data);
+			auth.setProfile(res.data);
+			// @ts-expect-error this works
+			auth.setUser((prev) => ({ ...prev, avatarUrl: res.data.avatarUrl }));
+			setIsEditing(false);
+			setIsSaving(false);
 			showSuccess(`Success`, res.message, 1250);
 		},
 		onError: (err) => {
 			showError("Error", err.message);
 			console.error(err);
+			setIsSaving(false);
 		},
 	});
 
-    // TODO: Use this for the form's onSubmit function
-	async function onSubmit(value: UpdateStudentRequest): Promise<void> {
-		mutation.mutate(value);
+	if (auth.isLoading) {
+		return <ProfileSkeleton />;
 	}
+
+	if (auth.error) {
+		return (
+			<ProfileError error={auth.error.message || "Failed to load profile"} />
+		);
+	}
+
+	const handleEditClick = () => {
+		setIsEditing(true);
+	};
+
+	const handleCancelEdit = () => {
+		setIsEditing(false);
+	};
+
+	const handleSaveEdit = async () => {
+		if (formRef.current) {
+			formRef.current.dispatchEvent(
+				new Event("submit", { bubbles: true, cancelable: true }),
+			);
+		}
+	};
+
+	const handleFormSubmit = async (data: UpdateStudentRequest) => {
+		setIsSaving(true);
+		mutation.mutate(data);
+	};
+
+	const handleCredentialSuccess = () => {
+		showSuccess("Success", "Your credential has been saved.", 2500);
+	};
 
 	return (
 		<div className="min-h-screen">
@@ -144,7 +110,7 @@ function StudentProfilePage() {
 				>
 					<div className="px-6 pb-6">
 						<div className="flex flex-col md:flex-row items-center md:items-start gap-6 mt-6">
-							<ProfileAvatar />
+							<ProfileAvatar onSubmit={handleFormSubmit} />
 							<ProfileHeader
 								name={`${auth.profile.firstName} ${auth.profile.lastName}`}
 								role={UserRole.Student}
@@ -171,38 +137,13 @@ function StudentProfilePage() {
 						onSave={handleSaveEdit}
 					/>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-						<InfoField
-							label="Full Name"
-							value={currentProfile.full_name}
-							isEditing={isEditing}
-							onChange={(value) => handleFieldChange("full_name", value)}
-						/>
-						<SelectField
-							label="Gender"
-							value={currentProfile.gender}
-							options={[
-								{ value: "male", label: "Male" },
-								{ value: "female", label: "Female" },
-							]}
-							isEditing={isEditing}
-							onChange={(value) => handleFieldChange("gender", value)}
-						/>
-						<DateField
-							label="Date of Birth"
-							value={currentProfile.date_of_birth}
-							isEditing={isEditing}
-							onChange={handleDateChange}
-						/>
-						<InfoField
-							label="Contact Number"
-							value={currentProfile.contact_number}
-							icon={<Phone className="w-4 h-4 text-[#6B7280]" />}
-							isEditing={isEditing}
-							onChange={(value) => handleFieldChange("contact_number", value)}
-							type="tel"
-						/>
-					</div>
+					<StudentProfileForm
+						ref={formRef}
+						profile={auth.profile}
+						isEditing={isEditing}
+						isSaving={isSaving}
+						onSubmit={handleFormSubmit}
+					/>
 				</motion.div>
 
 				{/* Credentials */}
@@ -218,9 +159,9 @@ function StudentProfilePage() {
 						</div>
 						<button
 							onClick={() => setIsCredentialModalOpen(true)}
-							className="px-4 py-2 cursor-pointer bg-[#3B5AA8] hover:bg-[#2f4389] text-white text-xs font-medium rounded-sm transition-colors flex items-center gap-1"
+							className="px-3 py-2 cursor-pointer bg-[#3B5AA8] hover:bg-[#2f4389] text-white text-xs font-medium rounded-sm transition-colors flex items-center gap-2"
 						>
-							<Award className="w-3.5 h-3.5" />
+							<Plus className="w-3.5 h-3.5" />
 							Add Credential
 						</button>
 					</div>
@@ -232,22 +173,66 @@ function StudentProfilePage() {
 	);
 }
 
-function ProfileAvatar() {
+type ProfileAvatarProps = {
+	onSubmit: (data: UpdateStudentRequest) => Promise<void>;
+};
+
+function ProfileAvatar(props: ProfileAvatarProps) {
+	const auth = useAuth<Student>();
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	async function handleImageUpload(
+		e: React.ChangeEvent<HTMLInputElement>,
+	): Promise<void> {
+		const file = e.target.files?.[0];
+		if (!file) {
+			return;
+		}
+
+		const token = getCookie(ACCESS_TOKEN_KEY);
+		if (!token) {
+			return;
+		}
+
+		const uploadRes = await uploadFile(file, token);
+		await props.onSubmit({
+			id: auth.profile.id,
+			userId: auth.user?.id,
+			avatarUrl: uploadRes.data.url,
+		});
+		console.log("New avatar image upload:", uploadRes);
+	}
+
+	function handleClick(): void {
+		fileInputRef.current?.click();
+	}
+
 	return (
 		<div className="relative">
 			<div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white p-1 shadow-lg">
-				<div className="w-full h-full rounded-full bg-muted flex items-center justify-center">
-					<User className="w-12 h-12 md:w-14 md:h-14 text-[#6B7280]" />
-				</div>
+				<Avatar className="size-full">
+					<AvatarImage src={auth.profile?.avatarUrl || ""} />
+					<AvatarFallback>
+						<User className="w-12 h-12 md:w-14 md:h-14 text-[#6B7280]" />
+					</AvatarFallback>
+				</Avatar>
 			</div>
 			<button
 				className="absolute bottom-0 right-0 w-8 h-8 bg-secondary hover:bg-[#2f4389] rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer"
 				title="Edit profile picture"
 				aria-label="Edit profile picture"
+				onClick={handleClick}
 			>
 				<Edit className="w-4 h-4 text-tertiary" />
+
+				<input
+					type="file"
+					accept="image/*"
+					onChange={handleImageUpload}
+					className="hidden"
+					ref={fileInputRef}
+				/>
 			</button>
 		</div>
 	);
 }
-
