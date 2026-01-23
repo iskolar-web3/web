@@ -59,7 +59,7 @@ export function getNetworkName(chainId: number): string {
     case 80002:
       return 'Polygon Amoy';
     case 137:
-      return 'Polygon Mainnet';
+      return 'Polygon';
     default:
       return `Chain ${chainId}`;
   }
