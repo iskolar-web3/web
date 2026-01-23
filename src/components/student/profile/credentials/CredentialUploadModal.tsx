@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
-import { useIssueCredential } from '@/hooks/useNFTCredential';
+import { useIssueCredential } from '@/hooks/useCredential';
 import { format } from 'date-fns';
 import { uploadToIPFS, uploadMetadataToIPFS, getIPFSUri } from '@/utils/ipfs.utils';
 import { logger } from '@/lib/logger';
