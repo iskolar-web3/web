@@ -499,7 +499,7 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
                       {field.value && (
                         <Button
                           variant="ghost"
-                          className="w-full mt-4 h-8 text-xs hover:bg-secondary/10 hover:text-secondary"
+                          className="w-full mt-4 h-8 text-xs border border-border bg-card hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 cursor-pointer transition-colors"
                           onClick={() => field.onChange('')}
                         >
                           Clear choice
