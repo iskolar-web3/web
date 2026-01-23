@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAccount } from 'wagmi';
-import { useCredentialsByHolder, useCredential } from '@/hooks/useNFTCredential';
+import { useCredentialsByHolder, useCredential } from '@/hooks/useCredential';
 import { Award, FileText, Pencil, Eye } from 'lucide-react';
 import { getIPFSUrl } from '@/utils/ipfs.utils';
 import { formatCredentialDate } from '@/utils/formatting.utils';

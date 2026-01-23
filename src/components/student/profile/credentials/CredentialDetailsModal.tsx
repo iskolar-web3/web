@@ -4,7 +4,7 @@ import { ExternalLink, FileText } from 'lucide-react';
 import { formatCredentialDate } from '@/utils/formatting.utils';
 import { type CredentialData } from '@/lib/contracts';
 import { getIPFSUrl } from '@/utils/ipfs.utils';
-import { useTokenURI } from '@/hooks/useNFTCredential';
+import { useTokenURI } from '@/hooks/useCredential';
 import { getCredentialTxHash, getCredentialChainId, getExplorerTxUrl, getNetworkName } from '@/utils/txHashStorage.utils';
 import { useMemo } from 'react';
 

@@ -70,7 +70,7 @@ export function useIssueCredential() {
     tokenURI: string,
   ) => {
     if (!contractAddress) {
-      throw new Error('Contract address not found for current chain. Please switch to a supported network (Hardhat or Sepolia).');
+      throw new Error('Contract address not found for current chain. Please switch to a supported network (Polygon Mainnet, Polygon Amoy, Sepolia, or Hardhat).');
     }
 
     return writeContract({
