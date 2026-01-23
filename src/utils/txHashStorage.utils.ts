@@ -58,6 +58,8 @@ export function getNetworkName(chainId: number): string {
       return 'Hardhat Local';
     case 80002:
       return 'Polygon Amoy';
+    case 137:
+      return 'Polygon Mainnet';
     default:
       return `Chain ${chainId}`;
   }
@@ -76,6 +78,8 @@ export function getExplorerTxUrl(chainId: number, txHash: `0x${string}`): string
       return `http://localhost:8545/tx/${txHash}`;
     case 80002: // Polygon Amoy
       return `https://amoy.polygonscan.com/tx/${txHash}`;
+    case 137: // Polygon Mainnet
+      return `https://polygonscan.com/tx/${txHash}`;
     default:
       return null;
   }
