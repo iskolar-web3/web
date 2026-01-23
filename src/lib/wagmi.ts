@@ -1,5 +1,5 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { sepolia, polygonAmoy } from 'wagmi/chains';
+import { sepolia, polygonAmoy, polygon } from 'wagmi/chains';
 import { defineChain } from 'viem';
 
 const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || '';
@@ -31,7 +31,6 @@ const hardhat = defineChain({
 export const config = getDefaultConfig({
   appName: 'Iskolar',
   projectId: projectId || 'YOUR_PROJECT_ID',
-  chains: [hardhat, sepolia, polygonAmoy],
+  chains: [polygon, polygonAmoy, sepolia, hardhat],
   ssr: false,
 });
-
