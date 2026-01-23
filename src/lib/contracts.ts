@@ -1273,6 +1273,8 @@ export const NFT_CREDENTIAL_ADDRESSES = {
   sepolia: '0xe117Bb3BF3a96880ac21722733EFB5c55C295460' as `0x${string}`,
   // Amoy testnet (chain ID: 80002)
   amoy: '0x048c39a7f1dcD4589d5359ebD010A0dEEBBe08f0' as `0x${string}`,
+  // Polygon mainnet (chain ID: 137)
+  polygon: '0xd658c7e9db8629e0144DB043590ce838FB3A502d' as `0x${string}`,
 } as const;
 
 /**
@@ -1301,6 +1303,8 @@ export function getContractAddress(chainId: number): `0x${string}` | undefined {
       return NFT_CREDENTIAL_ADDRESSES.sepolia;
     case 80002: // Amoy
       return NFT_CREDENTIAL_ADDRESSES.amoy;
+    case 137: // Polygon
+      return NFT_CREDENTIAL_ADDRESSES.polygon;
     default:
       return undefined;
   }
