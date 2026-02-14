@@ -41,13 +41,13 @@ if (rootElement && !rootElement.innerHTML) {
 	const root = ReactDOM.createRoot(rootElement);
 	root.render(
 		<StrictMode>
-			<WagmiProvider>
-				<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
+			<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
+				<WagmiProvider>
 					<AuthProvider>
 						<App />
 					</AuthProvider>
-				</TanStackQueryProvider.Provider>
-			</WagmiProvider>
+				</WagmiProvider>
+			</TanStackQueryProvider.Provider>
 		</StrictMode>,
 	);
 }
