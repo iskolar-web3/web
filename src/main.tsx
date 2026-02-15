@@ -22,7 +22,6 @@ const router = createRouter({
 		...TanStackQueryProviderContext,
 		auth: undefined!, // Will be set from the component
 	},
-	defaultPreload: "intent",
 	scrollRestoration: true,
 	defaultStructuralSharing: true,
 });
