@@ -3,6 +3,7 @@ import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import type { JSX } from "react";
 import type { AuthContextValue } from "@/auth";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 type RouterContext = {
 	queryClient: QueryClient;
@@ -17,6 +18,8 @@ function RouteComponent(): JSX.Element {
 	return (
 		<>
 			<Outlet />
+
+			{import.meta.env.DEV && <ReactQueryDevtools />}
 		</>
 	);
 }

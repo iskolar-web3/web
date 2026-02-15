@@ -22,10 +22,8 @@ const router = createRouter({
 		...TanStackQueryProviderContext,
 		auth: undefined!, // Will be set from the component
 	},
-	defaultPreload: "intent",
 	scrollRestoration: true,
 	defaultStructuralSharing: true,
-	defaultPreloadStaleTime: 0,
 });
 
 // Register the router instance for type safety
@@ -41,13 +39,13 @@ if (rootElement && !rootElement.innerHTML) {
 	const root = ReactDOM.createRoot(rootElement);
 	root.render(
 		<StrictMode>
-			<WagmiProvider>
-				<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
+			<TanStackQueryProvider.Provider {...TanStackQueryProviderContext}>
+				<WagmiProvider>
 					<AuthProvider>
 						<App />
 					</AuthProvider>
-				</TanStackQueryProvider.Provider>
-			</WagmiProvider>
+				</WagmiProvider>
+			</TanStackQueryProvider.Provider>
 		</StrictMode>,
 	);
 }
