@@ -302,7 +302,7 @@ function ApplyScholarshipPage() {
 						if (files.length > 0) {
 							// TODO: Handle multiple files
 							const file = files[0];
-							const uploadRes = await uploadFile(file, auth.sessionToken);
+							const uploadRes = await uploadFile(file, auth.sessionToken, "application-files");
 
 							return {
 								...answer,

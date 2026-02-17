@@ -273,7 +273,7 @@ function ProfileAvatar(props: ProfileAvatarProps) {
 			return;
 		}
 
-		const uploadRes = await uploadFile(file, token);
+		const uploadRes = await uploadFile(file, token, "profile-images");
 
 		switch (auth.profile.sponsorType.code) {
 			case SponsorType.Individual:
