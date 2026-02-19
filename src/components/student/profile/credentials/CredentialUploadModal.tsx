@@ -281,7 +281,22 @@ export default function CredentialUploadModal({ isOpen, onClose, onSuccess }: Cr
       {toast && <Toast {...toast} />}
 
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="!max-w-2xl max-h-[90vh] flex flex-col p-0" showCloseButton={!isLoading}>
+        <DialogContent className="max-w-2xl! max-h-[90vh] flex flex-col p-0" showCloseButton={!isLoading}
+            onPointerDownOutside={(e) => {
+            // Identify the wallet modal container.
+            // For RainbowKit, it's usually [data-rk]
+            const target = e.target as HTMLElement;
+            
+            const isWalletClick = 
+              target.closest('[data-rk]') || 
+              target.closest('w3m-modal') ||
+              target.closest('.rk-overlay'); // RainbowKit specific backdrop
+
+            if (isWalletClick) {
+              e.preventDefault();
+            }
+          }}
+        >
           <DialogHeader className="px-6 py-3 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center justify-between">
               <h1 className="text-lg text-gray-900">Add credential</h1>
