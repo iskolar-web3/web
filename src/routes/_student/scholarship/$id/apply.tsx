@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -35,7 +35,11 @@ import {
 	type CreateApplicationRequest,
 	type FormField,
 } from "@/lib/scholarship/model";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
 	createApplication,
 	getScholarshipByIdQuery,
@@ -270,12 +274,20 @@ function ApplyScholarshipPage() {
 		setShowConfirmation(true);
 	};
 
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+
 	const mutation = useMutation({
 		mutationFn: createApplication,
 		onSuccess: async (res) => {
 			console.log(res);
 			showSuccess(`Success`, res.message, 1250);
 			setLoading(false);
+			await queryClient.invalidateQueries({
+				queryKey: ["scholarships", "applications"],
+				refetchType: "all",
+			});
+			await navigate({ to: "/home" });
 		},
 		onError: (err) => {
 			showError("Error", err.message);
@@ -302,7 +314,11 @@ function ApplyScholarshipPage() {
 						if (files.length > 0) {
 							// TODO: Handle multiple files
 							const file = files[0];
-							const uploadRes = await uploadFile(file, auth.sessionToken, "application-files");
+							const uploadRes = await uploadFile(
+								file,
+								auth.sessionToken,
+								"application-files",
+							);
 
 							return {
 								...answer,
@@ -884,4 +900,3 @@ function ApplyScholarshipPage() {
 		</div>
 	);
 }
-
