@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronsRight, Calendar, Coins, Users, Info, Check, Clock } from 'lucide-react';
+import { ChevronsRight, Calendar, Coins, Users, Info, Check, Clock, UserIcon } from 'lucide-react';
 import { calculateAmountPerScholar, formatCurrency, formatDate, formatDateTime } from '@/utils/formatting.utils';
 import type { Application, ScholarshipApplicationStatus } from '@/lib/scholarship/model';
 import { getSponsorName } from '@/lib/sponsor/api';
@@ -161,11 +161,17 @@ export default function ApplicationDetailsModal({ application, onClose }: Applic
             {/* Sponsor and Deadline */}
             <div className="space-y-3 text-[#6B7280]">
               <div className="flex items-center gap-2">
-                <img
-                  src={application.scholarship.sponsor.avatarUrl || ""}
-                  alt="Sponsor Profile"
-                  className="w-5.5 h-5.5 bg-white/20 rounded-full flex-shrink-0 object-cover"
-                />
+                <div className="w-5.5 h-5.5 rounded-full flex items-center justify-center flex-shrink-0">
+                  {application.scholarship.sponsor.avatarUrl ? (
+                    <img
+                      src={application.scholarship.sponsor.avatarUrl}
+                      alt={getSponsorName(application.scholarship.sponsor)}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="w-full h-full" />
+                  )}
+                </div>
                 <span className="text-sm">{getSponsorName(application.scholarship.sponsor)}</span>
               </div>
               <div className="flex items-center gap-2">

@@ -268,7 +268,7 @@ export default function ScholarshipDetailsModal({
                   {scholarship?.sponsor?.avatarUrl ? (
                     <img
                       src={scholarship?.sponsor?.avatarUrl}
-                      alt={scholarship.sponsor.email}
+                      alt={getSponsorName(scholarship.sponsor)}
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
