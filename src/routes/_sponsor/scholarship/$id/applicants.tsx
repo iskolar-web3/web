@@ -930,6 +930,24 @@ function ApplicantsListPage() {
 																				),
 																			)}
 																		</div>
+																	) : typeof item.value === "string" &&
+																		item.value.startsWith("http") ? (
+																		<div className="space-y-2 mt-2">
+																			<a
+																				href={item.value}
+																				rel="noreferrer"
+																				target="_blank"
+																				className="flex items-center justify-between bg-[#F3F4F6] px-4 py-3 rounded-lg border-l-4 border-[#3A52A6]"
+																			>
+																				<div className="flex items-center gap-3 flex-1 min-w-0">
+																					<FileText className="w-5 h-5 text-secondary shrink-0" />
+																					<p className="text-[11px] text-primary truncate">
+																						{item.value}
+																					</p>
+																				</div>
+																				<ExternalLink className="size-4 text-primary" />
+																			</a>
+																		</div>
 																	) : item.value === null ||
 																		item.value === "" ? (
 																		<p className="text-xs text-[#9CA3AF] italic mt-1">
