@@ -22,18 +22,19 @@ export function enumDetailSchema<T extends EnumLike>(code: T) {
 }
 
 export async function uploadFile(
-	file: File,
-	token: string,
+    file: File,
+    token: string,
+    type: "profile-images" | "scholarship-images" | "application-files" = "profile-images",
 ): Promise<ApiResponse<FileDataResponse>> {
-	const formData = new FormData();
-	formData.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-	const response = await fetch(`${BACKEND_URL}/upload`, {
-		method: "POST",
-		body: formData,
-		headers: { Authorization: `Bearer ${token}` },
-		credentials: "include",
-	});
+    const response = await fetch(`${BACKEND_URL}/upload?type=${type}`, {
+        method: "POST",
+        body: formData,
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+    });
 
 	const result: ApiResponse<FileDataResponse> = await response.json();
 	return result;

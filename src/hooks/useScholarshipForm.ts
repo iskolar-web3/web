@@ -72,7 +72,7 @@ export function useScholarshipForm(sponsorId: string) {
 
 			const token = getCookie(ACCESS_TOKEN_KEY);
 			if (token) {
-				const uploadRes = await uploadFile(file, token);
+				const uploadRes = await uploadFile(file, token, "scholarship-images");
 				console.log("Scholarship image upload:", uploadRes);
 
 				form.setValue("imageUrl", uploadRes.data.url, {

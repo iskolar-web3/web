@@ -194,7 +194,7 @@ function ProfileAvatar(props: ProfileAvatarProps) {
 			return;
 		}
 
-		const uploadRes = await uploadFile(file, token);
+		const uploadRes = await uploadFile(file, token, "profile-images");
 		await props.onSubmit({
 			id: auth.profile.id,
 			userId: auth.user?.id,

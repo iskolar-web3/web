@@ -67,7 +67,7 @@ const sponsorNavItems: NavItem[] = [
  */
 export default function HeaderNav({ role }: HeaderNavProps) {
 	const router = useRouterState();
-	const navigate = useNavigate({ from: "/scholarships" });
+	const navigate = useNavigate();
 	const currentPath = router.location.pathname;
 	const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -130,12 +130,12 @@ export default function HeaderNav({ role }: HeaderNavProps) {
 		// TODO: Implement search functionality
 		console.log("Search query:", searchQuery);
 
-		await navigate({
-			search: (prev) => ({
-				...prev,
-				search: searchQuery,
-			}),
-		});
+		// await navigate({
+		// 	search: (prev) => ({
+		// 		...prev,
+		// 		search: searchQuery,
+		// 	}),
+		// });
 	};
 
 	/**

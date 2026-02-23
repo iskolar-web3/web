@@ -4,6 +4,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+[data-rk] {
+  pointer-events: auto !important;
+}
+
 body {
   @apply m-0;
   font-family: 'Bree Serif', serif;

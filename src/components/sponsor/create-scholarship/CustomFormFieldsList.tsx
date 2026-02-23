@@ -1,19 +1,6 @@
 import { Edit2, Trash2 } from "lucide-react";
-import {
-	Type as TypeIcon,
-	AlignLeft,
-	ListChecks,
-	CheckSquare,
-	Hash,
-	Mail,
-	Phone,
-	Paperclip,
-	CalendarIcon,
-} from "lucide-react";
-import {
-	FormFieldType,
-	type CreateFormFieldRequest,
-} from "@/lib/scholarship/model";
+import type { CreateFormFieldRequest } from "@/lib/scholarship/model";
+import { getFieldTypeLabel, renderFieldTypeIcon } from "@/utils/formField.utils";
 
 /**
  * Props for the CustomFormFieldsList component
@@ -28,70 +15,6 @@ interface CustomFormFieldsListProps {
 	/** Whether the list is disabled */
 	disabled?: boolean;
 }
-
-/**
- * Renders the appropriate icon for a given field type
- * @param fieldType - The custom field type
- * @returns Icon component for the field type
- */
-export const renderFieldTypeIcon = (fieldType: FormFieldType) => {
-	const iconProps = { size: 18, className: "text-secondary" };
-
-	switch (fieldType) {
-		case FormFieldType.ShortAnswer:
-			return <TypeIcon {...iconProps} />;
-		case FormFieldType.Paragraph:
-			return <AlignLeft {...iconProps} />;
-		case FormFieldType.Dropdown:
-			return <ListChecks {...iconProps} />;
-		case FormFieldType.MultipleChoice:
-			return <ListChecks {...iconProps} />;
-		case FormFieldType.Checkbox:
-			return <CheckSquare {...iconProps} />;
-		case FormFieldType.Number:
-			return <Hash {...iconProps} />;
-		case FormFieldType.Date:
-			return <CalendarIcon {...iconProps} />;
-		case FormFieldType.Email:
-			return <Mail {...iconProps} />;
-		case FormFieldType.Phone:
-			return <Phone {...iconProps} />;
-		case FormFieldType.File:
-			return <Paperclip {...iconProps} />;
-	}
-};
-
-/**
- * Gets the human-readable label for a field type
- * @param fieldType - The custom field type
- * @returns Display label for the field type
- */
-export const getFieldTypeLabel = (fieldType: FormFieldType) => {
-	switch (fieldType) {
-		case FormFieldType.ShortAnswer:
-			return "Short answer";
-		case FormFieldType.Paragraph:
-			return "Long answer";
-		case FormFieldType.MultipleChoice:
-			return "Multiple choice";
-		case FormFieldType.Dropdown:
-			return "Dropdown";
-		case FormFieldType.Checkbox:
-			return "Checkbox";
-		case FormFieldType.Number:
-			return "Number";
-		case FormFieldType.Date:
-			return "Date";
-		case FormFieldType.Email:
-			return "Email";
-		case FormFieldType.Phone:
-			return "Phone number";
-		case FormFieldType.File:
-			return "File upload";
-		default:
-			return "IDK";
-	}
-};
 
 /**
  * Custom form fields list component
