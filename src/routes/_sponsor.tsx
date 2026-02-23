@@ -5,8 +5,8 @@ import { UserRole } from "@/lib/user/model";
 import { getDefaultPathOfRole } from "@/lib/api";
 
 export const Route = createFileRoute("/_sponsor")({
-  component: SponsorLayout,
-  beforeLoad: async ({context}) => {
+	component: SponsorLayout,
+	beforeLoad: async ({ context }) => {
 		let currentUser = context.auth.user;
 
 		if (!currentUser) {
@@ -22,16 +22,16 @@ export const Route = createFileRoute("/_sponsor")({
 			const path = getDefaultPathOfRole(currentUser);
 			throw redirect({ to: path });
 		}
-  }
+	},
 });
 
 function SponsorLayout(): JSX.Element {
-  return (
-    <div className="min-h-screen bg-background">
-      <HeaderNav role="sponsor" />
-      <div className="w-full px-4 md:px-14 pt-21 md:pt-24 pb-6">
-        <Outlet />
-      </div>
-    </div>
-  );
+	return (
+		<div className="min-h-screen bg-background">
+			<HeaderNav role="sponsor" />
+			<div className="w-full px-4 md:px-14 pt-21 md:pt-24 pb-6">
+				<Outlet />
+			</div>
+		</div>
+	);
 }
