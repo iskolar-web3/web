@@ -5,14 +5,6 @@ import {
 	Coins,
 	ChevronsRight,
 	Images,
-	Type,
-	AlignLeft,
-	ListChecks,
-	CheckSquare,
-	Hash,
-	Mail,
-	Phone,
-	Paperclip,
 	Edit2,
 	Trash2,
 	Archive,
@@ -32,8 +24,9 @@ import {
 	formatCurrency,
 	formatDeadline,
 } from "@/utils/formatting.utils";
-import { ScholarshipStatus, type Scholarship } from "@/lib/scholarship/model";
+import { FormFieldType, ScholarshipStatus, type Scholarship } from "@/lib/scholarship/model";
 import { getSponsorName } from "@/lib/sponsor/api";
+import { getFieldTypeLabel, renderFieldTypeIcon } from "@/utils/formField.utils";
 
 /**
  * Props for the ScholarshipDetailsModal component (sponsor view)
@@ -72,60 +65,6 @@ export default function ScholarshipDetailsModal({
 		scholarship.totalAmount,
 		scholarship.totalSlots,
 	);
-
-	/**
-	 * Gets the human-readable label for a field type
-	 * @param type - The custom field type
-	 * @returns Display label for the field type
-	 */
-	const getFieldTypeLabel = (type: string) => {
-		const typeMap: Record<string, string> = {
-			text: "Short answer",
-			textarea: "Long answer",
-			dropdown: "Dropdown",
-			multiple_choice: "Multiple choice",
-			checkbox: "Checkbox",
-			number: "Number",
-			date: "Date",
-			email: "Email",
-			phone: "Phone number",
-			file: "File upload",
-		};
-		return typeMap[type] || type;
-	};
-
-	/**
-	 * Renders the appropriate icon for a given field type
-	 * @param fieldType - The custom field type
-	 * @returns Icon component for the field type
-	 */
-	const renderFieldTypeIcon = (fieldType: string) => {
-		const iconProps = { size: 20, className: "text-secondary" };
-
-		switch (fieldType) {
-			case "text":
-				return <Type {...iconProps} />;
-			case "textarea":
-				return <AlignLeft {...iconProps} />;
-			case "dropdown":
-			case "multiple_choice":
-				return <ListChecks {...iconProps} />;
-			case "checkbox":
-				return <CheckSquare {...iconProps} />;
-			case "number":
-				return <Hash {...iconProps} />;
-			case "date":
-				return <Calendar {...iconProps} />;
-			case "email":
-				return <Mail {...iconProps} />;
-			case "phone":
-				return <Phone {...iconProps} />;
-			case "file":
-				return <Paperclip {...iconProps} />;
-			default:
-				return <Type {...iconProps} />;
-		}
-	};
 
 	/**
 	 * Checks if the scholarship is closed
@@ -395,37 +334,39 @@ export default function ScholarshipDetailsModal({
 									Application Form Fields
 								</h3>
 								<div className="space-y-2.5">
-									{scholarship.formFields.map((field: any, i: number) => (
+									{scholarship.formFields.map((field: any, i: number) => {
+										const fieldTypeCode = (field.fieldType?.code ?? field.type) as FormFieldType;
+										const fieldType = Object.values(FormFieldType).includes(fieldTypeCode) ? fieldTypeCode : FormFieldType.ShortAnswer;
+										const hasOptions = fieldType === FormFieldType.Dropdown || fieldType === FormFieldType.Checkbox || fieldType === FormFieldType.MultipleChoice;
+										return (
 										<div
 											key={i}
 											className="flex items-start gap-3 p-3 bg-[#F9FAFB] border border-[#E0ECFF] rounded-lg"
 										>
 											<div className="w-9 h-9 bg-[#E0ECFF] rounded-lg flex items-center justify-center flex-shrink-0">
-												{renderFieldTypeIcon(field.type)}
+												{renderFieldTypeIcon(fieldType)}
 											</div>
 											<div className="flex-1 min-w-0">
 												<div className="flex items-center gap-2 mb-1">
 													<span className="text-[13px] text-primary font-medium">
 														{field.label}
 													</span>
-													{field.required && (
+													{(field.isRequired ?? field.required) && (
 														<span className="px-1.5 py-0.5 bg-[#FEE2E2] text-[#DC2626] text-[9px] rounded">
 															Required
 														</span>
 													)}
 												</div>
 												<p className="text-[11px] text-[#6B7280]">
-													{getFieldTypeLabel(field.type)}
-													{(field.type === "dropdown" ||
-														field.type === "checkbox" ||
-														field.type === "multiple_choice") &&
+													{getFieldTypeLabel(fieldType)}
+													{hasOptions &&
 														field.options &&
 														field.options.length > 0 &&
 														` • ${field.options.length} option${field.options.length !== 1 ? "s" : ""}`}
 												</p>
 											</div>
 										</div>
-									))}
+									);})}
 								</div>
 							</div>
 						)}

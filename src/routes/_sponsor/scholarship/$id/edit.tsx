@@ -42,10 +42,7 @@ import {
 	type EditScholarshipFormData,
 	type Scholarship,
 } from "@/lib/scholarship/model";
-import {
-	getFieldTypeLabel,
-	renderFieldTypeIcon,
-} from "@/components/sponsor/create-scholarship/CustomFormFieldsList";
+import { getFieldTypeLabel, renderFieldTypeIcon } from "@/utils/formField.utils";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import {
 	getScholarshipByIdQuery,

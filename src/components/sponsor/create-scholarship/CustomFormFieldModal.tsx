@@ -19,7 +19,7 @@ import {
 	type CreateFormFieldOptionRequest,
 	type CreateFormFieldRequest,
 } from "@/lib/scholarship/model";
-import { getFieldTypeLabel, renderFieldTypeIcon } from "./CustomFormFieldsList";
+import { getFieldTypeLabel, renderFieldTypeIcon } from "@/utils/formField.utils";
 
 /**
  * Props for the CustomFormFieldModal component
