@@ -5,13 +5,19 @@ import type { JSX } from "react";
 export const Route = createFileRoute("/_onboarding")({
 	component: OnboardingLayout,
 	beforeLoad: async ({ context }) => {
-		const session = await context.auth.getSession();
-		if (!session) {
-			return;
+		let currentUser = context.auth.user;
+
+		if (!currentUser) {
+			const ses = await context.auth.getSession();
+			if (!ses) {
+				throw redirect({ to: "/login" });
+			}
+
+			currentUser = ses.user;
 		}
 
-		if (session.user.role !== null) {
-			const path = getDefaultPathOfRole(session.user);
+		if (currentUser.role !== null) {
+			const path = getDefaultPathOfRole(currentUser);
 			throw redirect({ to: path });
 		}
 	},

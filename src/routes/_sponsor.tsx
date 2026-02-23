@@ -7,15 +7,21 @@ import { getDefaultPathOfRole } from "@/lib/api";
 export const Route = createFileRoute("/_sponsor")({
   component: SponsorLayout,
   beforeLoad: async ({context}) => {
-      const ses = await context.auth.getSession()
-      if(!ses) {
-          throw redirect({to: "/login"})
-      }
+		let currentUser = context.auth.user;
 
-      if(ses.user.role?.code !== UserRole.Sponsor) {
-			const path = getDefaultPathOfRole(ses.user);
+		if (!currentUser) {
+			const ses = await context.auth.getSession();
+			if (!ses) {
+				throw redirect({ to: "/login" });
+			}
+
+			currentUser = ses.user;
+		}
+
+		if (currentUser.role?.code !== UserRole.Sponsor) {
+			const path = getDefaultPathOfRole(currentUser);
 			throw redirect({ to: path });
-      }
+		}
   }
 });
 
