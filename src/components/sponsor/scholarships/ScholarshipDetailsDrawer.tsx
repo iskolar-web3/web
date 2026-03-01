@@ -111,7 +111,7 @@ export default function ScholarshipDetailsModal({
 		try {
 			setLoading(true);
 
-			await onDelete?.(scholarship);
+			onDelete?.(scholarship);
 
 			setShowDeleteModal(false);
 			handleClose();

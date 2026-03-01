@@ -11,12 +11,18 @@ import type { JSX } from "react";
 export const Route = createFileRoute("/_auth")({
 	component: AuthLayout,
 	beforeLoad: async ({ context }) => {
-		const session = await context.auth.getSession();
-		if (!session) {
-			return;
+		let currentUser = context.auth.user;
+
+		if (!currentUser) {
+			const ses = await context.auth.getSession();
+			if (!ses) {
+				return
+			}
+
+			currentUser = ses.user;
 		}
 
-		switch (session.user.role?.code) {
+		switch (currentUser.role?.code) {
 			case UserRole.Student:
 				throw redirect({ to: "/home" });
 			case UserRole.Sponsor:

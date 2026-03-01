@@ -1,5 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
 	createFileRoute,
 	useNavigate,
@@ -7,8 +11,6 @@ import {
 } from "@tanstack/react-router";
 import {
 	Filter,
-	AlertCircle,
-	Loader2,
 	X,
 	GraduationCap,
 	Plus,
@@ -21,19 +23,16 @@ import ScholarshipDetailsModal from "@/components/sponsor/scholarships/Scholarsh
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Toast from "@/components/Toast";
 import { useToast } from "@/hooks/useToast";
-import { handleError } from "@/lib/errorHandler";
-import { scholarshipManagementService } from "@/services/scholarshipManagement.service";
-import { logger } from "@/lib/logger";
-import { mockApiDelay } from "@/mocks/scholarships.mock";
-import { getMyScholarshipsQuery } from "@/lib/scholarship/api";
+import {
+	deleteScholarship,
+	getMyScholarshipsQuery,
+} from "@/lib/scholarship/api";
 import { useAuth } from "@/auth";
 import type { AnySponsor } from "@/lib/sponsor/model";
 import {
 	getScholarshipQueryParamSchema,
 	type Scholarship,
 } from "@/lib/scholarship/model";
-
-const USE_MOCK_DATA = true;
 
 export const Route = createFileRoute("/_sponsor/scholarships")({
 	component: Scholarships,
@@ -66,15 +65,10 @@ function Scholarships() {
 	const auth = useAuth<AnySponsor>();
 	const scholarships = useSuspenseQuery(
 		getMyScholarshipsQuery(auth.sessionToken, {
-            ...search,
-            sponsorId: auth.profile.id
-        }),
+			...search,
+			sponsorId: auth.profile.id,
+		}),
 	);
-
-	const [showDeleteModal, setShowDeleteModal] = useState(false);
-	const [scholarshipToDelete, setScholarshipToDelete] =
-		useState<Scholarship | null>(null);
-	const [isDeleting, setIsDeleting] = useState(false);
 
 	const { toast, showSuccess, showError } = useToast();
 
@@ -92,49 +86,24 @@ function Scholarships() {
 		});
 	};
 
-	const handleDelete = (scholarship: Scholarship) => {
-		setScholarshipToDelete(scholarship);
-		setShowDeleteModal(true);
-	};
+	const deleteMutation = useMutation({
+		mutationFn: deleteScholarship,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["scholarships"] });
+			showSuccess("Success", "Scholarship deleted successfully", 2000);
+		},
+		onError: (err) => {
+			showError("Error", err.message);
+			console.error(err);
+		},
+	});
 
-	const handleDrawerDelete = async (scholarship: Scholarship) => {
-		try {
-			if (USE_MOCK_DATA) {
-				// Mock delete
-				await mockApiDelay(1000);
-				showSuccess("Success", "Scholarship deleted successfully", 2000);
+	function confirmDelete(): void {
+		if (!selectedScholarship) return;
 
-				queryClient.invalidateQueries({ queryKey: ["my-scholarships"] });
-			} else {
-				const response = await scholarshipManagementService.deleteScholarship(
-					scholarship.id,
-				);
-
-				if (response.success) {
-					showSuccess("Success", response.message, 2000);
-
-					queryClient.invalidateQueries({ queryKey: ["my-scholarships"] });
-				}
-			}
-		} catch (error) {
-			const handled = handleError(error, "Failed to delete scholarship.");
-			logger.error("Delete scholarship error:", handled.raw);
-			showError(`Error ${handled.code}`, handled.message, 2500);
-		}
-	};
-
-	const confirmDelete = async () => {
-		if (!scholarshipToDelete) return;
-
-		try {
-			setIsDeleting(true);
-			await handleDrawerDelete(scholarshipToDelete);
-		} finally {
-			setIsDeleting(false);
-			setShowDeleteModal(false);
-			setScholarshipToDelete(null);
-		}
-	};
+		deleteMutation.mutate(selectedScholarship.id);
+		setSelectedScholarship(null);
+	}
 
 	useEffect(() => {
 		if (scholarships.isError) {
@@ -598,7 +567,6 @@ function Scholarships() {
 										index={index}
 										onClick={() => setSelectedScholarship(scholarship)}
 										onEdit={handleEdit}
-										onDelete={handleDelete}
 										onViewApplicants={handleViewApplicants}
 									/>
 								))
@@ -613,63 +581,9 @@ function Scholarships() {
 					scholarship={selectedScholarship}
 					onClose={() => setSelectedScholarship(null)}
 					onEdit={handleEdit}
-					onDelete={handleDrawerDelete}
+					onDelete={confirmDelete}
 					onViewApplicants={handleViewApplicants}
 				/>
-			)}
-
-			{/* Delete Confirmation Modal */}
-			{showDeleteModal && scholarshipToDelete && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]">
-					<motion.div
-						initial={{ opacity: 0, scale: 0.95 }}
-						animate={{ opacity: 1, scale: 1 }}
-						exit={{ opacity: 0, scale: 0.95 }}
-						transition={{ duration: 0.2 }}
-						className="bg-[#F0F7FF] rounded-xl shadow-2xl max-w-sm w-full p-5"
-					>
-						<div className="text-center">
-							<div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full text-[#EF4444] mb-1">
-								<AlertCircle size={36} />
-							</div>
-							<h3 className="text-lg text-primary mb-2">Delete Scholarship</h3>
-							<p className="text-sm text-[#6B7280] mb-6">
-								Are you sure you want to delete "
-								<strong>{scholarshipToDelete.name}</strong>"? This action cannot
-								be undone.
-							</p>
-						</div>
-						<div className="flex gap-3">
-							<button
-								onClick={() => {
-									setShowDeleteModal(false);
-									setScholarshipToDelete(null);
-								}}
-								disabled={isDeleting}
-								className={`flex-1 px-4 py-2 cursor-pointer text-sm bg-[#F0F7FF] border border-[#D1D5DB] text-[#374151] rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 ${
-									isDeleting && "opacity-60 cursor-not-allowed"
-								}`}
-							>
-								Cancel
-							</button>
-							<button
-								onClick={confirmDelete}
-								disabled={isDeleting}
-								className={`flex-1 px-4 py-2 cursor-pointer bg-[#EF4444] text-sm text-tertiary rounded-md hover:bg-[#DC2626] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
-									isDeleting && "opacity-60 cursor-not-allowed"
-								}`}
-							>
-								{isDeleting ? (
-									<span className="flex items-center justify-center">
-										<Loader2 className="w-4 h-4 animate-spin" />
-									</span>
-								) : (
-									"Delete"
-								)}
-							</button>
-						</div>
-					</motion.div>
-				</div>
 			)}
 		</div>
 	);
