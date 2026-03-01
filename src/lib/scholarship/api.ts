@@ -36,7 +36,10 @@ async function getMyScholarships(
 	});
 	const result: ApiResponse<Scholarship[]> = await response.json();
 
-	return scholarshipSchema(anySponsorSchema).array().default([]).parse(result.data);
+	return scholarshipSchema(anySponsorSchema)
+		.array()
+		.default([])
+		.parse(result.data);
 }
 
 export const getMyScholarshipsQuery = (
@@ -193,6 +196,30 @@ export async function updateApplication(
 		body: JSON.stringify(data),
 		headers: {
 			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+		credentials: "include",
+	});
+	const result: ApiResponse = await response.json();
+
+	if (!response.ok) {
+		throw new Error(result.message);
+	}
+
+	return result;
+}
+
+export async function deleteScholarship(id: string): Promise<ApiResponse> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	if (!token) {
+		throw new Error("Access token not found.");
+	}
+
+	const url = new URL(`${BACKEND_URL}/scholarships/${id}`);
+
+	const response = await fetch(url.toString(), {
+		method: "DELETE",
+		headers: {
 			Authorization: `Bearer ${token}`,
 		},
 		credentials: "include",
