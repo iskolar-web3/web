@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { usePageTitle } from "@/hooks/usePageTitle"
+import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import Navbar from "@/components/landing/Navbar"
 import AnimatedBackground from "@/components/landing/AnimatedBackground"
 import { Footer } from "@/components/landing/sections/Footer"
@@ -14,6 +15,8 @@ export const Route = createFileRoute('/_landing/about/')({
 
 function About() {
   usePageTitle("About Us")
+
+  useSmoothScroll()
 
   useEffect(() => {
     // Handle hash scrolling on initial load

@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import Navbar from "@/components/landing/Navbar"; 
 import AnimatedBackground from "@/components/landing/AnimatedBackground";
 import { Hero } from "@/components/landing/sections/Hero";
-import { Suspense, lazy, useEffect } from "react";
-import Lenis from "lenis";
+import { Suspense, lazy } from "react";
 
 // Lazy load below-the-fold sections
 const Problem = lazy(() => import("@/components/landing/sections/Problems").then(m => ({ default: m.Problem })));
@@ -21,27 +21,7 @@ export const Route = createFileRoute("/")({
 
 function App() {
 	usePageTitle("");
-
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-    })
-
-    function raf(time: number) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
-    }
-
-    requestAnimationFrame(raf)
-
-    return () => {
-      lenis.destroy()
-    }
-  }, [])
+  useSmoothScroll();
 
 	return (
 		<main className="relative min-h-screen bg-background">
