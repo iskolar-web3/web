@@ -1,5 +1,5 @@
 import { MotionContainer } from "@/components/landing/MotionContainer"
-import { Target, Lightbulb, Globe } from "lucide-react"
+import { Target, Globe, Eye } from "lucide-react"
 
 export default function MissionVisionSection() {
   return (
@@ -11,25 +11,25 @@ export default function MissionVisionSection() {
           </h2>
           
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Mission */}
-            <div className="bg-background backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-md flex flex-col items-center text-center">
-              <div className="w-16 h-16 flex items-center justify-center mb-6">
-                <Target className="w-12 h-12 text-secondary" />
-              </div>
-              <h3 className="text-2xl mb-4 text-secondary">Our Mission</h3>
-              <p className="text-lg text-secondary/80 leading-relaxed">
-                To make education accessible and transparent by connecting students, sponsors, and schools through an AI- and blockchain-powered scholarship system that ensures accountability, trust, and impact.
-              </p>
-            </div>
-
             {/* Vision */}
             <div className="bg-background backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-md flex flex-col items-center text-center">
-              <div className="w-16 h-16 flex items-center justify-center mb-6">
-                <Lightbulb className="w-12 h-12 text-secondary" />
+              <div className="w-16 h-16 flex items-center justify-center mb-4">
+                <Eye className="w-12 h-12 text-secondary" />
               </div>
               <h3 className="text-2xl mb-4 text-secondary">Our Vision</h3>
               <p className="text-lg text-secondary/80 leading-relaxed">
                 A future where every student can pursue their dream education, supported by transparent funding, future-proof opportunities, and a community that invests in the next generation's success.
+              </p>
+            </div>
+
+            {/* Mission */}
+            <div className="bg-background backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-md flex flex-col items-center text-center">
+              <div className="w-16 h-16 flex items-center justify-center mb-4">
+                <Target className="w-12 h-12 text-secondary" />
+              </div>
+              <h3 className="text-2xl mb-4 text-secondary">Our Mission</h3>
+              <p className="text-lg text-secondary/80 leading-relaxed">
+                To make education accessible, fair, and transparent for all by creating a trusted system that connects learners, sponsors, and institutions, ensuring that every individual, regardless of stage or circumstance, receives the opportunity they rightfully deserve to learn, grow, and shape their future.
               </p>
             </div>
           </div>
@@ -37,7 +37,7 @@ export default function MissionVisionSection() {
           {/* SDG Alignment */}
           <div className="mt-12 bg-background backdrop-blur-sm border border-secondary/10 rounded-2xl p-8 shadow-md">
             <div className="flex flex-col items-center text-center mb-8">
-              <div className="w-16 h-16 flex items-center justify-center mb-6">
+              <div className="w-16 h-16 flex items-center justify-center mb-4">
                 <Globe className="w-12 h-12 text-secondary" />
               </div>
               <h3 className="text-2xl mb-4 text-secondary">Contributing to UN Sustainable Development Goals</h3>

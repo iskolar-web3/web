@@ -1,4 +1,4 @@
-import { Facebook, Linkedin, Github, Mail, Instagram } from "lucide-react"
+import { Facebook, Linkedin, Mail, Instagram } from "lucide-react"
 
 const quickLinks = [
   { name: "Home", href: "/#home" },
@@ -19,7 +19,6 @@ const socialLinks = [
   { name: "Facebook", icon: Facebook, href: "https://www.facebook.com/profile.php?id=61575967087555" },
   { name: "LinkedIn", icon: Linkedin, href: "https://www.linkedin.com/company/107364901" },
   { name: "Instagram", icon: Instagram, href: "https://www.instagram.com/iskolar_web3/" },
-  { name: "Github", icon: Github, href: "https://github.com/iskolar-web3" },
 ]
 
 export function Footer() {

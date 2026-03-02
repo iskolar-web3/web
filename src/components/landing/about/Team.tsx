@@ -33,7 +33,7 @@ export default function TeamSection() {
             The dreamers, builders, and students behind iSkolar.
           </p>
           
-          <div className="flex flex-col items-center gap-20">
+          <div className="flex flex-col items-center gap-16">
             {/* Founders */}
             <div className="w-full">
               <h3 className="text-3xl text-center text-secondary mb-7">Founders</h3>
@@ -57,27 +57,34 @@ export default function TeamSection() {
             </div>
 
             {/* Team Members */}
-            <div className="w-full">
-              <div className="flex flex-wrap justify-center gap-8 w-full max-w-5xl mx-auto">
-                <MotionItem>
-                  <Card image="/team/Research-Lead.jpg" name="Cristian Obida" role="Research Lead" link="https://www.linkedin.com/in/cristian-r-obida-96a36b28a/" />  
-                </MotionItem>
+            <div className="flex flex-col items-center gap-20">
+              <div className="w-full">
+                <h3 className="text-3xl text-center text-secondary mb-7">Core Team</h3>
+                <div className="flex flex-wrap justify-center gap-8 w-full max-w-5xl mx-auto">
+                  <MotionItem>
+                    <Card image="/team/Research-Lead.jpg" name="Cristian Obida" role="Research Lead" link="https://www.linkedin.com/in/cristian-r-obida-96a36b28a/" />  
+                  </MotionItem>
 
-                <MotionItem>
-                  <Card image="/team/Tech-Lead.jpg" name="Giordan Nuez" role="Tech Lead" link="https://www.linkedin.com/in/giordan-nuez-b8924838b/" />  
-                </MotionItem>
+                  <MotionItem>
+                    <Card image="/team/Tech-Lead.jpg" name="Giordan Nuez" role="Tech Lead" link="https://www.linkedin.com/in/giordan-nuez-b8924838b/" />  
+                  </MotionItem>
 
-                <MotionItem>
-                  <Card image="/team/Community-Manager.jpg" name="Juliet Tariman" role="Community Manager" link="https://www.linkedin.com/in/juliet-daphne-e-tariman-2022b1236/" />  
-                </MotionItem>
+                  <MotionItem>
+                    <Card image="/team/Community-Manager.jpg" name="Juliet Tariman" role="Community Manager" link="https://www.linkedin.com/in/juliet-daphne-e-tariman-2022b1236/" />  
+                  </MotionItem>
 
-                <MotionItem>
-                  <Card image="/team/Cybersecurity-Lead.jpg" name="Emmanuel Mutas" role="Cybersecurity Lead" link="https://www.linkedin.com/in/manel04/" />  
-                </MotionItem>
+                  <MotionItem>
+                    <Card image="/team/Cybersecurity-Lead.jpg" name="Emmanuel Mutas" role="Cybersecurity Lead" link="https://www.linkedin.com/in/manel04/" />  
+                  </MotionItem>
 
-                <MotionItem>
-                  <Card image="/team/Design-Lead.jpg" name="Arah Mejidana" role="Design Lead" link="https://www.linkedin.com/" />  
-                </MotionItem>
+                  <MotionItem>
+                    <Card image="/team/Design-Lead.jpg" name="Arah Mejidana" role="Design Lead" link="https://www.linkedin.com/" />  
+                  </MotionItem>
+
+                  <MotionItem>
+                    <Card image="/team/AI-Lead.jpg" name="John Richie Campo" role="AI Lead" link="https://www.linkedin.com/in/john-richie-campo/" />  
+                  </MotionItem>
+                </div>
               </div>
             </div>
           </div>
