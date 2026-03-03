@@ -63,7 +63,7 @@ function Home(): JSX.Element {
 				{applicationsQuery.isLoading ? (
 					<div>
 						{Array.from({ length: 4 }).map((_, i) => (
-							<HomeSkeleton index={i} />
+							<HomeSkeleton key={i} index={i} />
 						))}
 					</div>
 				) : !applications || applications.length === 0 ? (
