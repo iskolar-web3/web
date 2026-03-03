@@ -244,3 +244,9 @@ export const selectScholarSchema = z.object({
 	scholars: selectedScholarSchema.array(),
 });
 export type SelectScholarRequest = z.infer<typeof selectScholarSchema>;
+
+export const applicationStatusSchema = z.object({
+	id: z.uuidv4(),
+	status: enumDetailSchema(ScholarshipApplicationStatus),
+});
+export type ApplicationStatus = z.output<typeof applicationStatusSchema>;

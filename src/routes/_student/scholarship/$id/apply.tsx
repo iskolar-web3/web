@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -42,6 +42,7 @@ import {
 } from "@tanstack/react-query";
 import {
 	createApplication,
+	getMyApplicationStatus,
 	getScholarshipByIdQuery,
 } from "@/lib/scholarship/api";
 import { useAuth } from "@/auth";
@@ -52,6 +53,12 @@ import type { Student } from "@/lib/student/model";
 
 export const Route = createFileRoute("/_student/scholarship/$id/apply")({
 	component: ApplyScholarshipPage,
+	beforeLoad: async ({ params }) => {
+		const applicationStatus = await getMyApplicationStatus(params.id);
+		if (applicationStatus !== null) {
+			throw redirect({ to: "/home" });
+		}
+	},
 });
 
 function ApplyScholarshipPage() {
