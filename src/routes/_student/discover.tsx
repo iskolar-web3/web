@@ -9,9 +9,12 @@ import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import ScholarshipDetailsModal from '@/components/student/discover/ScholarshipDetailsDrawer';
 import { usePageTitle } from "@/hooks/usePageTitle"
-import { useScholarships } from '@/hooks/queries/useScholarships';
 import { ScholarshipPurpose, ScholarshipType, type Scholarship } from '@/lib/scholarship/model';
 import { SponsorType } from '@/lib/sponsor/model';
+import { useQuery } from '@tanstack/react-query';
+import type { Student } from '@/lib/student/model';
+import { useAuth } from '@/auth';
+import { getMyScholarshipsQuery } from '@/lib/scholarship/api';
 
 export const Route = createFileRoute('/_student/discover')({
   component: DiscoverScholarship,
@@ -31,13 +34,19 @@ function DiscoverScholarship() {
 
   const { toast, showError } = useToast();
 
-  const { data: scholarships = [], isLoading: loading, error, isError } = useScholarships();
+	const auth = useAuth<Student>();
+	const scholarshipsQuery = useQuery(
+		getMyScholarshipsQuery(auth.sessionToken, {
+            notAppliedBy: auth.profile.id
+		}),
+	);
+    const scholarships = scholarshipsQuery.data || []
   
-  useEffect(() => {
-    if (isError && error) {
-      showError('Error', error.message, 2500);
-    }
-  }, [isError, error, showError]);
+	useEffect(() => {
+		if (scholarshipsQuery.isError) {
+			showError("Error", scholarshipsQuery.error.message, 2500);
+		}
+	}, [scholarshipsQuery.isError, scholarshipsQuery.error, showError]);
 
   const filteredScholarships = useMemo(() => {
     return scholarships.filter((scholarship) => {
@@ -66,7 +75,7 @@ function DiscoverScholarship() {
 
       return matchesType && matchesPurpose && matchesSponsorType && matchesAmount && matchesSlots;
     });
-  }, [scholarships, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
+  }, [scholarshipsQuery, scholarshipType, purpose, sponsorType, amountRange, slotRange]);
 
   return (
     <div className="min-h-screen">
@@ -311,7 +320,7 @@ function DiscoverScholarship() {
         {/* Scholarship Cards */}
         <div className="lg:col-span-3">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
-            {loading ? (
+            {scholarshipsQuery.isLoading ? (
               Array.from({ length: 4 }).map((_, index) => (
                 <ScholarshipCardSkeleton key={`skeleton-${index}`} index={index} />
               ))

@@ -28,6 +28,9 @@ async function getMyScholarships(
 	if (params?.search) {
 		url.searchParams.append("search", params.search);
 	}
+	if (params?.notAppliedBy) {
+		url.searchParams.append("notAppliedBy", params.notAppliedBy);
+	}
 
 	const response = await fetch(url.toString(), {
 		method: "GET",

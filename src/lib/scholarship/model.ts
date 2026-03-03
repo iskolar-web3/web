@@ -121,10 +121,7 @@ export const createScholarshipRequestSchema = z.object({
 		.string()
 		.array()
 		.min(1, "Add at least one eligibility criterion"),
-	requirements: z
-		.string()
-		.array()
-		.min(1, "Add at least one required document"),
+	requirements: z.string().array().min(1, "Add at least one required document"),
 	sponsorId: z.uuidv4(),
 	formFields: createFormFieldRequestSchema
 		.array()
@@ -174,6 +171,7 @@ export const getScholarshipQueryParamSchema = z
 	.object({
 		sponsorId: z.uuidv4(),
 		search: z.string(),
+		notAppliedBy: z.uuidv4(),
 	})
 	.partial();
 
