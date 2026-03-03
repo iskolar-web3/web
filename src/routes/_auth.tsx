@@ -50,14 +50,14 @@ function AuthLayout(): JSX.Element {
 				backgroundRepeat: "no-repeat",
 			}}
 		>
-			<div className="w-full max-w-sm">
+			<div className="w-full max-w-sm lg:max-w-[26rem]">
 				<div className="relative z-10">
 					{/* Top navigation tabs */}
 					<div className="flex justify-end mb-6">
-						<div className="inline-flex rounded-full p-1 bg-[#3A52A6]">
+						<div className="inline-flex rounded-full p-1 xl:p-1.5 bg-[#3A52A6]">
 							<Link
 								to="/login"
-								className={`px-4 py-1.5 rounded-full text-xs text-[#F0F7FF] transition-all ${
+								className={`px-4 py-1.5 rounded-full text-xs sm:text-sm text-[#F0F7FF] transition-all ${
 									isLoginPage ? "bg-[#607EF2]" : "opacity-50"
 								}`}
 							>
@@ -65,7 +65,7 @@ function AuthLayout(): JSX.Element {
 							</Link>
 							<Link
 								to="/register"
-								className={`px-4 py-1.5 rounded-full text-xs text-[#F0F7FF] transition-all ${
+								className={`px-4 py-1.5 rounded-full text-xs sm:text-sm text-[#F0F7FF] transition-all ${
 									isRegisterPage ? "bg-[#607EF2]" : "opacity-50"
 								}`}
 							>
