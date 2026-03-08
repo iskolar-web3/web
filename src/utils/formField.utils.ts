@@ -1,3 +1,4 @@
+import React from "react";
 import {
 	Type as TypeIcon,
 	AlignLeft,
@@ -13,12 +14,6 @@ import { FormFieldType } from "@/lib/scholarship/model";
 
 const DEFAULT_ICON_PROPS = { size: 18, className: "text-secondary" } as const;
 
-/**
- * Renders the appropriate icon for a given scholarship form field type.
- * @param fieldType - The form field type (FormFieldType enum value)
- * @param iconProps - Optional overrides for size and className (default: size 18, text-secondary)
- * @returns Icon component for the field type
- */
 export function renderFieldTypeIcon(
 	fieldType: FormFieldType,
 	iconProps: { size?: number; className?: string } = DEFAULT_ICON_PROPS
@@ -27,26 +22,26 @@ export function renderFieldTypeIcon(
 
 	switch (fieldType) {
 		case FormFieldType.ShortAnswer:
-			return <TypeIcon {...props} />;
+			return React.createElement(TypeIcon, props);
 		case FormFieldType.Paragraph:
-			return <AlignLeft {...props} />;
+			return React.createElement(AlignLeft, props);
 		case FormFieldType.Dropdown:
 		case FormFieldType.MultipleChoice:
-			return <ListChecks {...props} />;
+			return React.createElement(ListChecks, props);
 		case FormFieldType.Checkbox:
-			return <CheckSquare {...props} />;
+			return React.createElement(CheckSquare, props);
 		case FormFieldType.Number:
-			return <Hash {...props} />;
+			return React.createElement(Hash, props);
 		case FormFieldType.Date:
-			return <CalendarIcon {...props} />;
+			return React.createElement(CalendarIcon, props);
 		case FormFieldType.Email:
-			return <Mail {...props} />;
+			return React.createElement(Mail, props);
 		case FormFieldType.Phone:
-			return <Phone {...props} />;
+			return React.createElement(Phone, props);
 		case FormFieldType.File:
-			return <Paperclip {...props} />;
+			return React.createElement(Paperclip, props);
 		default:
-			return <TypeIcon {...props} />;
+			return React.createElement(TypeIcon, props);
 	}
 }
 
