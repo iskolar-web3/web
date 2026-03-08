@@ -64,8 +64,6 @@ export const Route = createFileRoute("/_student/scholarship/$id/apply")({
 function ApplyScholarshipPage() {
 	usePageTitle("Apply");
 
-	const [_, setLoading] = useState(true);
-	const [submitting, setSubmitting] = useState(false);
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [pendingData, setPendingData] = useState<CreateApplicationRequest>();
 	const [customFiles, setCustomFiles] = useState<Record<string, File[]>>({});
@@ -214,38 +212,6 @@ function ApplyScholarshipPage() {
 	// };
 
 	const onSubmit = (data: CreateApplicationRequest) => {
-		// customFields.forEach(field => {
-		//   const value = normalizedData[field.label];
-		//
-		//   if (!value || (typeof value === 'string' && value.trim() === '')) return;
-		//
-		//   // Normalize based on field type
-		//   switch (field.fieldType.code) {
-		//     case FormFieldType.ShortAnswer:
-		//     case FormFieldType.Paragraph:
-		//       normalizedData[field.label] = normalizeText(value);
-		//       break;
-		//
-		//     case FormFieldType.Email:
-		//       normalizedData[field.label] = normalizeEmail(value);
-		//       break;
-		//
-		//     case FormFieldType.Phone:
-		//       normalizedData[field.label] = normalizePhone(value);
-		//       break;
-		//
-		//     case FormFieldType.Number:
-		//       normalizedData[field.label] = normalizeNumber(value);
-		//       break;
-		//
-		//     case FormFieldType.Checkbox:
-		//       if (Array.isArray(value)) {
-		//         normalizedData[field.label] = value.map(v => normalizeText(v));
-		//       }
-		//       break;
-		//   }
-		// });
-
 		const fileErrors: string[] = [];
 		customFields.forEach((field) => {
 			if (field.fieldType.code === FormFieldType.File && field.isRequired) {
@@ -289,7 +255,6 @@ function ApplyScholarshipPage() {
 		onSuccess: async (res) => {
 			console.log(res);
 			showSuccess(`Success`, res.message, 1250);
-			setLoading(false);
 			await queryClient.invalidateQueries({
 				queryKey: ["scholarships", "applications"],
 				refetchType: "all",
@@ -305,7 +270,6 @@ function ApplyScholarshipPage() {
 	const processSubmission = async () => {
 		if (!pendingData) return;
 
-		setSubmitting(true);
 		setShowConfirmation(false);
 
 		try {
@@ -348,8 +312,6 @@ function ApplyScholarshipPage() {
 			const handled = handleError(error, "Failed to submit application.");
 			logger.error("Submission error:", handled.raw);
 			showError(`Error ${handled.code}`, handled.message, 2500);
-		} finally {
-			setSubmitting(false);
 		}
 	};
 
@@ -780,15 +742,13 @@ function ApplyScholarshipPage() {
 				{/* Submit Button */}
 				<button
 					onClick={handleSubmit(onSubmit)}
-					disabled={submitting}
+					disabled={mutation.isPending}
 					className={`w-full py-3 cursor-pointer text-sm bg-[#EFA508] text-tertiary rounded-md hover:bg-[#D89407] transition-colors flex items-center justify-center gap-2 ${
-						submitting && "opacity-60 cursor-not-allowed"
+						mutation.isPending && "opacity-60 cursor-not-allowed"
 					}`}
 				>
-					{submitting ? (
-						<>
-							<Loader2 className="w-5 h-5 animate-spin" />
-						</>
+					{mutation.isPending ? (
+						<Loader2 className="w-5 h-5 animate-spin" />
 					) : (
 						<span>Submit Application</span>
 					)}
@@ -811,7 +771,7 @@ function ApplyScholarshipPage() {
 							<button
 								onClick={() => setShowConfirmation(false)}
 								className={`flex-1 py-2.5 text-sm cursor-pointer bg-[#CACDD2] text-[#4B5563] rounded-md hover:bg-[#B8BCC2] transition-colors ${
-									submitting && "opacity-60 cursor-not-allowed"
+									mutation.isPending && "opacity-60 cursor-not-allowed"
 								}`}
 							>
 								Review
@@ -819,13 +779,11 @@ function ApplyScholarshipPage() {
 							<button
 								onClick={processSubmission}
 								className={`flex-1 py-2.5 text-sm cursor-pointer bg-[#EFA508] text-tertiary rounded-md hover:bg-[#D89407] transition-colors ${
-									submitting && "opacity-60 cursor-not-allowed"
+									mutation.isPending && "opacity-60 cursor-not-allowed"
 								}`}
 							>
-								{submitting ? (
-									<>
-										<Loader2 className="w-5 h-5 animate-spin" />
-									</>
+								{mutation.isPending ? (
+									<Loader2 className="w-5 h-5 animate-spin" />
 								) : (
 									<span>Submit</span>
 								)}
