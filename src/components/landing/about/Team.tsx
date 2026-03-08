@@ -47,7 +47,7 @@ export default function TeamSection() {
                 </MotionItem>
                 
                 <MotionItem>
-                  <Card image="/team/COO.jpg" name="Adam Ruadilla" role="COO" link="https://www.linkedin.com/in/adam-r-35946332a/" />
+                  <Card image="/team/COO.jpg" name="Adam Ruadilla" role="COO" link="https://www.linkedin.com/in/kyle-adam-r-35946332a/" />
                 </MotionItem>
 
                 <MotionItem>
@@ -78,7 +78,7 @@ export default function TeamSection() {
                   </MotionItem>
 
                   <MotionItem>
-                    <Card image="/team/Design-Lead.jpg" name="Arah Mejidana" role="Design Lead" link="https://www.linkedin.com/" />  
+                    <Card image="/team/Design-Lead.jpg" name="Arah Mejidana" role="Design Lead" link="https://www.linkedin.com/in/arah-mejidana-a12945398/" />  
                   </MotionItem>
 
                   <MotionItem>
