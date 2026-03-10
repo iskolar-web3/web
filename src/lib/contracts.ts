@@ -1274,7 +1274,7 @@ export const NFT_CREDENTIAL_ADDRESSES = {
   // Amoy testnet (chain ID: 80002)
   amoy: '0xf5f0c060074170920da24113786b4b57421402D7' as `0x${string}`,
   // Polygon mainnet (chain ID: 137)
-  polygon: '0x3d3406DE5671421c097f7135B02e967517F92D3A' as `0x${string}`,
+  polygon: '0x72410B3BF699d9F9d8da06CdB077FE93e13c682F' as `0x${string}`,
   // BSC testnet (chain ID: 97)
   bscTestnet: '0x06e4D1bdFd3c5bc20D3770014de5e3a03084f5Da' as `0x${string}`,
 } as const;
