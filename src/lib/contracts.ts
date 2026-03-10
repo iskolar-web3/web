@@ -1277,6 +1277,8 @@ export const NFT_CREDENTIAL_ADDRESSES = {
   polygon: '0x72410B3BF699d9F9d8da06CdB077FE93e13c682F' as `0x${string}`,
   // BSC testnet (chain ID: 97)
   bscTestnet: '0x06e4D1bdFd3c5bc20D3770014de5e3a03084f5Da' as `0x${string}`,
+  // Base Sepolia (chain ID: 84532)
+  baseSepolia: '0x1268fa76D96aA243E3Ad1eaE66e1338A40dBfe34' as `0x${string}`,
 } as const;
 
 /**
@@ -1309,6 +1311,8 @@ export function getContractAddress(chainId: number): `0x${string}` | undefined {
       return NFT_CREDENTIAL_ADDRESSES.polygon;
     case 97: // BSC testnet
       return NFT_CREDENTIAL_ADDRESSES.bscTestnet;
+    case 84532: // Base Sepolia
+      return NFT_CREDENTIAL_ADDRESSES.baseSepolia;
     default:
       return undefined;
   }
