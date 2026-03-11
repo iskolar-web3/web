@@ -60,6 +60,10 @@ export function getNetworkName(chainId: number): string {
       return 'Polygon Amoy';
     case 137:
       return 'Polygon';
+    case 97:
+      return 'BSC Testnet';
+    case 84532:
+      return 'Base Sepolia';
     default:
       return `Chain ${chainId}`;
   }
@@ -80,6 +84,10 @@ export function getExplorerTxUrl(chainId: number, txHash: `0x${string}`): string
       return `https://amoy.polygonscan.com/tx/${txHash}`;
     case 137: // Polygon Mainnet
       return `https://polygonscan.com/tx/${txHash}`;
+    case 97: // BSC testnet
+      return `https://testnet.bscscan.com/tx/${txHash}`;
+    case 84532: // Base Sepolia
+      return `https://sepolia.basescan.org/tx/${txHash}`;
     default:
       return null;
   }

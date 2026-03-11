@@ -4,9 +4,11 @@ import { anySponsorSchema } from "../sponsor/model";
 import {
 	applicantSchema,
 	applicationSchema,
+	applicationStatusSchema,
 	scholarshipSchema,
 	type Applicant,
 	type Application,
+	type ApplicationStatus,
 	type CreateApplicationRequest,
 	type EditScholarshipFormData,
 	type GetApplicationsQueryParam,
@@ -27,6 +29,9 @@ async function getMyScholarships(
 	}
 	if (params?.search) {
 		url.searchParams.append("search", params.search);
+	}
+	if (params?.notAppliedBy) {
+		url.searchParams.append("notAppliedBy", params.notAppliedBy);
 	}
 
 	const response = await fetch(url.toString(), {
@@ -231,4 +236,25 @@ export async function deleteScholarship(id: string): Promise<ApiResponse> {
 	}
 
 	return result;
+}
+
+export async function getMyApplicationStatus(
+	scholarshipId: string,
+): Promise<ApplicationStatus | null> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	if (!token) {
+		throw new Error("Access token not found.");
+	}
+	const url = new URL(
+		`${BACKEND_URL}/students/me/scholarships/${scholarshipId}`,
+	);
+
+	const response = await fetch(url.toString(), {
+		method: "GET",
+		headers: { Authorization: `Bearer ${token}` },
+		credentials: "include",
+	});
+	const result: ApiResponse<ApplicationStatus> = await response.json();
+
+	return applicationStatusSchema.nullable().parse(result.data);
 }

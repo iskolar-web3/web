@@ -1270,11 +1270,15 @@ export const NFT_CREDENTIAL_ADDRESSES = {
   // Hardhat localhost network (chain ID: 31337)
   hardhat: '0x5FbDB2315678afecb367f032d93F642f64180aa3' as `0x${string}`,
   // Sepolia testnet (chain ID: 11155111)
-  sepolia: '0xe117Bb3BF3a96880ac21722733EFB5c55C295460' as `0x${string}`,
+  sepolia: '0x5ae614769935A9394d86f0c38E9C67F68B659016' as `0x${string}`,
   // Amoy testnet (chain ID: 80002)
-  amoy: '0x048c39a7f1dcD4589d5359ebD010A0dEEBBe08f0' as `0x${string}`,
+  amoy: '0xf5f0c060074170920da24113786b4b57421402D7' as `0x${string}`,
   // Polygon mainnet (chain ID: 137)
-  polygon: '0xd658c7e9db8629e0144DB043590ce838FB3A502d' as `0x${string}`,
+  polygon: '0x72410B3BF699d9F9d8da06CdB077FE93e13c682F' as `0x${string}`,
+  // BSC testnet (chain ID: 97)
+  bscTestnet: '0x06e4D1bdFd3c5bc20D3770014de5e3a03084f5Da' as `0x${string}`,
+  // Base Sepolia (chain ID: 84532)
+  baseSepolia: '0x1268fa76D96aA243E3Ad1eaE66e1338A40dBfe34' as `0x${string}`,
 } as const;
 
 /**
@@ -1305,6 +1309,10 @@ export function getContractAddress(chainId: number): `0x${string}` | undefined {
       return NFT_CREDENTIAL_ADDRESSES.amoy;
     case 137: // Polygon
       return NFT_CREDENTIAL_ADDRESSES.polygon;
+    case 97: // BSC testnet
+      return NFT_CREDENTIAL_ADDRESSES.bscTestnet;
+    case 84532: // Base Sepolia
+      return NFT_CREDENTIAL_ADDRESSES.baseSepolia;
     default:
       return undefined;
   }
