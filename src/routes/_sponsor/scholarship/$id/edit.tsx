@@ -51,7 +51,6 @@ import {
 	getScholarshipByIdQuery,
 	updateScholarship,
 } from "@/lib/scholarship/api";
-import { useAuth } from "@/auth";
 
 export const Route = createFileRoute("/_sponsor/scholarship/$id/edit")({
 	// params: {
