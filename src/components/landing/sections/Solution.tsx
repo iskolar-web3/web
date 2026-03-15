@@ -137,7 +137,7 @@ export function Solution() {
         <MotionItem className="text-center mt-34">
           <div className="inline-flex items-center gap-3 text-tertiary/65 text-base">
             <div className="h-px w-14 bg-gradient-to-r from-transparent to-tertiary/20" />
-            <span>Experience the future of scholarship management</span>
+            <span>Scholarships that find you, so you don’t have to.</span>
             <div className="h-px w-14 bg-gradient-to-l from-transparent to-tertiary/20" />
           </div>
         </MotionItem>
