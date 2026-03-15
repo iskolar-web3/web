@@ -5,7 +5,6 @@ import { Calendar, Users, Coins, ChevronsRight, LockKeyhole, UserIcon } from 'lu
 import Toast from '@/components/Toast';
 import { useToast } from '@/hooks/useToast';
 import { calculateAmountPerScholar, formatCurrency, formatDate } from '@/utils/formatting.utils';
-import { scholarshipApplicationService } from '@/services/scholarshipApplication.service';
 import { ScholarshipStatus, type Scholarship } from '@/lib/scholarship/model';
 import { getSponsorName } from '@/lib/sponsor/api';
 
@@ -21,7 +20,7 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
   const navigate = useNavigate();
 
   const [isExiting, setIsExiting] = useState(false);
-  const { toast, showError } = useToast();
+  const { toast } = useToast();
 
   const amountPerScholar = calculateAmountPerScholar(scholarship.totalAmount, scholarship.totalSlots);
 
@@ -45,24 +44,10 @@ export default function ScholarshipDetailsModal({ scholarship, onClose }: { scho
    * Handles scholarship application
    * Checks if user has already applied and navigates to application form
    */
-  const handleApply = useCallback(async () => {
-    const response = await scholarshipApplicationService.checkApplicationExists(scholarship.id);
-
-    if (response.success) {
-      showError('Already Applied', response.message, 2500);
-      return;
-    }
-
-    if (isClosed()) {
-      showError('Scholarship Closed', response.message, 2500);
-      return;
-    }
-
-    navigate({ 
+  const handleApply = () => navigate({ 
       to: '/scholarship/$id/apply', 
       params: { id: scholarship.id }
     });
-  }, [scholarship, isClosed, navigate]);
 
   return (
     <AnimatePresence>

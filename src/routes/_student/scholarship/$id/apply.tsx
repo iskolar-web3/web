@@ -71,9 +71,7 @@ function ApplyScholarshipPage() {
 
 	const auth = useAuth<Student>();
 	const params = Route.useParams();
-	const scholarshipQuery = useSuspenseQuery(
-		getScholarshipByIdQuery(auth.sessionToken, params.id),
-	);
+	const scholarshipQuery = useSuspenseQuery(getScholarshipByIdQuery(params.id));
 	const scholarship = scholarshipQuery.data;
 
 	const customFields = scholarship?.formFields || [];

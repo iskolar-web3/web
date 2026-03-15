@@ -56,10 +56,12 @@ export const getMyScholarshipsQuery = (
 		queryFn: () => getMyScholarships(token, params),
 	});
 
-async function getScholarshipById(
-	token: string,
-	id: string,
-): Promise<Scholarship> {
+async function getScholarshipById(id: string): Promise<Scholarship> {
+	const token = getCookie(ACCESS_TOKEN_KEY);
+	if (!token) {
+		throw new Error("Access token not found.");
+	}
+
 	const url = new URL(`${BACKEND_URL}/scholarships/${id}`);
 
 	const response = await fetch(url.toString(), {
@@ -74,10 +76,10 @@ async function getScholarshipById(
 	return scholarshipSchema(anySponsorSchema).parse(result.data);
 }
 
-export const getScholarshipByIdQuery = (token: string, id: string) =>
+export const getScholarshipByIdQuery = (id: string) =>
 	queryOptions({
 		queryKey: ["scholarships", id],
-		queryFn: () => getScholarshipById(token, id),
+		queryFn: () => getScholarshipById(id),
 	});
 
 export async function updateScholarship(
