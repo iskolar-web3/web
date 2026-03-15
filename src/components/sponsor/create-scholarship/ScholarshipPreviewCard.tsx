@@ -1,13 +1,16 @@
 import { Calendar, Users, Coins, Images, UserIcon } from 'lucide-react';
-import type { ScholarshipOld } from '@/types/scholarship.types';
 import { calculateAmountPerScholar, formatCurrency, formatDeadline } from '@/utils/formatting.utils';
+import { ScholarshipPurpose, ScholarshipType, type ScholarshipFormData } from '@/lib/scholarship/model';
+import { useAuth } from '@/auth';
+import type { AnySponsor } from '@/lib/sponsor/model';
+import { getSponsorName } from '@/lib/sponsor/api';
 
 /**
  * Props for the ScholarshipPreviewCard component
  */
 interface ScholarshipPreviewCardProps {
   /** Partial scholarship data to display in preview */
-  scholarship: Partial<ScholarshipOld>;
+  scholarship: Partial<ScholarshipFormData>;
   /** Optional callback when card is clicked */
   onClick?: () => void;
 }
@@ -19,7 +22,8 @@ interface ScholarshipPreviewCardProps {
  * @returns Preview card component with scholarship details
  */
 export default function ScholarshipPreviewCard({ scholarship, onClick }: ScholarshipPreviewCardProps) {
-  const amountPerScholar = calculateAmountPerScholar(scholarship.total_amount, scholarship.total_slot);
+  const amountPerScholar = calculateAmountPerScholar(scholarship.totalAmount, scholarship.totalSlots);
+  const auth = useAuth<AnySponsor>()
 
   return (
     <div
@@ -29,10 +33,10 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
       <div className="bg-[#3A52A6]">
         <div className="flex">
           {/* Image Section */}
-          <div className="relative w-32 h-32 flex-shrink-0">
-            {scholarship.image_url ? (
+          <div className="relative w-32 h-32 shrink-0">
+            {scholarship.imageUrl ? (
               <img
-                src={scholarship.image_url}
+                src={scholarship.imageUrl}
                 alt="Preview"
                 className="w-full h-full object-cover"
               />
@@ -46,43 +50,43 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
           {/* Info */}
           <div className="flex-1 text-tertiary px-4 py-2">
             <h3 className="text-xl mb-1 line-clamp-1">
-              {scholarship.title || 'Scholarship Title'}
+              {scholarship.name || 'Scholarship Title'}
             </h3>
 
-            {(scholarship.type || scholarship.purpose) && (
+            {(scholarship.scholarshipType || scholarship.purpose) && (
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                {scholarship.type && (
+                {scholarship.scholarshipType && (
                   <span className="px-2 py-0.5 bg-white/90 text-secondary text-[11px] rounded">
-                    {scholarship.type === 'merit_based' ? 'Merit-Based' : 'Skill-Based'}
+                    {scholarship.scholarshipType === ScholarshipType.MeritBased ? 'Merit-Based' : 'Skill-Based'}
                   </span>
                 )}
                 {scholarship.purpose && (
                   <span className="px-2 py-0.5 bg-white/90 text-secondary text-[11px] rounded">
-                    {scholarship.purpose === 'allowance' ? 'Allowance' : 'Tuition'}
+                    {scholarship.purpose === ScholarshipPurpose.Allowance ? 'Allowance' : 'Tuition'}
                   </span>
                 )}
               </div>
             )}
 
             <div className="flex items-center gap-2 text-xs mb-1.5">
-              <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0">
-                {scholarship?.sponsor?.profile_url ? (
+              <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0">
+                {auth.profile.avatarUrl ? (
                   <img
-                    src={scholarship?.sponsor?.profile_url}
-                    alt={scholarship.sponsor.name}
+                    src={auth.profile.avatarUrl}
+                    alt={getSponsorName(auth.profile)}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
                   <UserIcon className="w-full h-full" />
                 )}
               </div>
-              <span>{scholarship.sponsor?.name || 'iSkolar'}</span>
+              <span>{getSponsorName(auth.profile) || 'iSkolar'}</span>
             </div>
 
             <div className="flex items-center gap-2 text-xs">
               <Calendar size={16} />
               <span>
-                {formatDeadline(scholarship.application_deadline)}
+                {formatDeadline(scholarship.applicationDeadline)}
               </span>
             </div>
           </div>
@@ -104,8 +108,8 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
                     maximumFractionDigits: 2,
                     showSpace: true,
                   })
-                : scholarship.total_amount
-                ? formatCurrency(scholarship.total_amount, {
+                : scholarship.totalAmount
+                ? formatCurrency(scholarship.totalAmount, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })
@@ -119,7 +123,7 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
               <Users size={16} />
               <span>Slots</span>
             </div>
-            <p className="text-base text-primary">{scholarship.total_slot || '0'}</p>
+            <p className="text-base text-primary">{scholarship.totalSlots || '0'}</p>
             <p className="text-xs text-[#6B7280]">scholars</p>
           </div>
         </div>
@@ -128,9 +132,9 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
         <div className="mt-2 grid grid-cols-2 gap-8 text-sm">
           <div>
             <h4 className="text-[#4B5563] text-xs tracking-wider mb-2">Criteria</h4>
-            {scholarship.criteria && scholarship.criteria.length > 0 ? (
+            {scholarship.criterias && scholarship.criterias.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {scholarship.criteria.slice(0, 2).map((c, i) => (
+                {scholarship.criterias.slice(0, 2).map((c, i) => (
                   <span
                     key={i}
                     className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-border"
@@ -138,9 +142,9 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
                     {c}
                   </span>
                 ))}
-                {scholarship.criteria.length > 2 && (
+                {scholarship.criterias.length > 2 && (
                   <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-border">
-                    +{scholarship.criteria.length - 2} more
+                    +{scholarship.criterias.length - 2} more
                   </span>
                 )}
               </div>
@@ -151,9 +155,9 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
 
           <div>
             <h4 className="text-[#4B5563] text-xs tracking-wider mb-2">Required Documents</h4>
-            {scholarship.required_documents && scholarship.required_documents.length > 0 ? (
+            {scholarship.requirements && scholarship.requirements.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {scholarship.required_documents.slice(0, 2).map((d, i) => (
+                {scholarship.requirements.slice(0, 2).map((d, i) => (
                   <span
                     key={i}
                     className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-border"
@@ -161,9 +165,9 @@ export default function ScholarshipPreviewCard({ scholarship, onClick }: Scholar
                     {d}
                   </span>
                 ))}
-                {scholarship.required_documents.length > 2 && (
+                {scholarship.requirements.length > 2 && (
                   <span className="px-2.5 py-1 bg-[#F9FAFB] text-[#374151] text-[11px] rounded border border-border">
-                    +{scholarship.required_documents.length - 2} more
+                    +{scholarship.requirements.length - 2} more
                   </span>
                 )}
               </div>
