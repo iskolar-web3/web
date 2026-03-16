@@ -615,7 +615,7 @@ function ProfileSetup() {
 												placeholder="First name"
 											/>
 											{studentForm.formState.errors.firstName && (
-												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												<p className="mt-1 text-xs text-[#EF4444]">
 													{studentForm.formState.errors.firstName.message}
 												</p>
 											)}
@@ -633,7 +633,7 @@ function ProfileSetup() {
 												placeholder="Middle name"
 											/>
 											{studentForm.formState.errors.middleName && (
-												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												<p className="mt-1 text-xs text-[#EF4444]">
 													{studentForm.formState.errors.middleName.message}
 												</p>
 											)}
@@ -651,7 +651,7 @@ function ProfileSetup() {
 												placeholder="Last name"
 											/>
 											{studentForm.formState.errors.lastName && (
-												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												<p className="mt-1 text-xs text-[#EF4444]">
 													{studentForm.formState.errors.lastName.message}
 												</p>
 											)}
@@ -682,7 +682,7 @@ function ProfileSetup() {
 											</SelectContent>
 										</Select>
 										{studentForm.formState.errors.gender && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{studentForm.formState.errors.gender.message}
 											</p>
 										)}
@@ -735,7 +735,7 @@ function ProfileSetup() {
 											</PopoverContent>
 										</Popover>
 										{studentForm.formState.errors.birthDate && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{studentForm.formState.errors.birthDate.message}
 											</p>
 										)}
@@ -760,7 +760,7 @@ function ProfileSetup() {
 											}}
 										/>
 										{studentForm.formState.errors.contact?.value && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{studentForm.formState.errors.contact?.value?.message}
 											</p>
 										)}
@@ -808,7 +808,7 @@ function ProfileSetup() {
 												placeholder="First name"
 											/>
 											{individualSponsorForm.formState.errors.firstName && (
-												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												<p className="mt-1 text-xs text-[#EF4444]">
 													{
 														individualSponsorForm.formState.errors.firstName
 															.message
@@ -830,7 +830,7 @@ function ProfileSetup() {
 												placeholder="Middle name"
 											/>
 											{individualSponsorForm.formState.errors.middleName && (
-												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												<p className="mt-1 text-xs text-[#EF4444]">
 													{
 														individualSponsorForm.formState.errors.middleName
 															.message
@@ -852,7 +852,7 @@ function ProfileSetup() {
 												placeholder="Last name"
 											/>
 											{individualSponsorForm.formState.errors.lastName && (
-												<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+												<p className="mt-1 text-xs text-[#EF4444]">
 													{
 														individualSponsorForm.formState.errors.lastName
 															.message
@@ -900,7 +900,7 @@ function ProfileSetup() {
 											</SelectContent>
 										</Select>
 										{individualSponsorForm.formState.errors.employmentType && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{
 													individualSponsorForm.formState.errors.employmentType
 														.message
@@ -958,7 +958,7 @@ function ProfileSetup() {
 											</PopoverContent>
 										</Popover>
 										{individualSponsorForm.formState.errors.birthDate && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{
 													individualSponsorForm.formState.errors.birthDate
 														.message
@@ -989,7 +989,7 @@ function ProfileSetup() {
 											}}
 										/>
 										{individualSponsorForm.formState.errors.contact?.value && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{
 													individualSponsorForm.formState.errors.contact?.value
 														.message
@@ -1039,7 +1039,7 @@ function ProfileSetup() {
 											placeholder="What's your organization name?"
 										/>
 										{organizationSponsorForm.formState.errors.name && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{organizationSponsorForm.formState.errors.name.message}
 											</p>
 										)}
@@ -1081,7 +1081,7 @@ function ProfileSetup() {
 										</Select>
 										{organizationSponsorForm.formState.errors
 											.organizationType && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{
 													organizationSponsorForm.formState.errors
 														.organizationType.message
@@ -1113,7 +1113,7 @@ function ProfileSetup() {
 										/>
 										{organizationSponsorForm.formState.errors.contact
 											?.value && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{
 													organizationSponsorForm.formState.errors.contact.value
 														.message
@@ -1163,7 +1163,7 @@ function ProfileSetup() {
 											placeholder="What's your agency name?"
 										/>
 										{governmentSponsorForm.formState.errors.name && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{governmentSponsorForm.formState.errors.name.message}
 											</p>
 										)}
@@ -1203,7 +1203,7 @@ function ProfileSetup() {
 											</SelectContent>
 										</Select>
 										{governmentSponsorForm.formState.errors.agencyType && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{
 													governmentSponsorForm.formState.errors.agencyType
 														.message
@@ -1234,7 +1234,7 @@ function ProfileSetup() {
 											}}
 										/>
 										{governmentSponsorForm.formState.errors.contact?.value && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{
 													governmentSponsorForm.formState.errors.contact.value
 														.message
@@ -1284,7 +1284,7 @@ function ProfileSetup() {
 											placeholder="What's your school name?"
 										/>
 										{schoolForm.formState.errors.schoolName && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{schoolForm.formState.errors.schoolName.message}
 											</p>
 										)}
@@ -1320,7 +1320,7 @@ function ProfileSetup() {
 											</SelectContent>
 										</Select>
 										{schoolForm.formState.errors.schoolType && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{schoolForm.formState.errors.schoolType.message}
 											</p>
 										)}
@@ -1346,7 +1346,7 @@ function ProfileSetup() {
 											}}
 										/>
 										{schoolForm.formState.errors.contactNumber && (
-											<p className="mt-1 text-[10px] sm:text-[9px] text-[#EF4444]">
+											<p className="mt-1 text-xs text-[#EF4444]">
 												{schoolForm.formState.errors.contactNumber.message}
 											</p>
 										)}
