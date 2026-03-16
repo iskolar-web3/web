@@ -13,11 +13,6 @@ import EditHeader from "@/components/profile/EditHeader";
 import IndividualSponsorProfileForm, {} from "@/components/sponsor/profile/IndividualProfileForm";
 import OrganizationSponsorProfileForm, {} from "@/components/sponsor/profile/OrganizationProfileForm";
 import GovernmentSponsorProfileForm, {} from "@/components/sponsor/profile/GovernmentProfileForm";
-import type {
-	IndividualSponsorProfile,
-	OrganizationSponsorProfile,
-	GovernmentSponsorProfile,
-} from "@/types/profile.types";
 import { useAuth } from "@/auth";
 import {
 	SponsorType,
@@ -44,11 +39,6 @@ import { uploadFile } from "@/lib/api";
 export const Route = createFileRoute("/_sponsor/profile/sponsor/$sponsorId")({
 	component: SponsorProfile,
 });
-
-type SponsorProfile =
-	| IndividualSponsorProfile
-	| OrganizationSponsorProfile
-	| GovernmentSponsorProfile;
 
 function SponsorProfile() {
 	usePageTitle("Profile");
@@ -160,7 +150,7 @@ function SponsorProfile() {
 	return (
 		<div className="min-h-screen">
 			{toast && <Toast {...toast} />}
-			<div className="max-w-[44rem] mx-auto space-y-6">
+			<div className="max-w-176 mx-auto space-y-6">
 				{/* Profile Header */}
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}

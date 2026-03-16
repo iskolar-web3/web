@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, createElement } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -32,32 +32,19 @@ import {
 import Toast from "@/components/Toast";
 import { useToast } from "@/hooks/useToast";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import type { ScholarshipApplication } from "@/services/scholarshipApplication.service";
 import { handleError } from "@/lib/errorHandler";
 import { logger } from "@/lib/logger";
 import { formatDateTime } from "@/utils/formatting.utils";
-import { scholarshipApplicationService } from "@/services/scholarshipApplication.service";
-import { mockBulkUpdateApplicationStatus } from "@/mocks/scholarshipApplicants.mock";
-import { useScholarshipApplicants } from "@/hooks/queries/useScholarshipApplicants";
 import {
 	ScholarshipApplicationStatus,
 	type Applicant,
 } from "@/lib/scholarship/model";
-import { updateApplication } from "@/lib/scholarship/api";
+import {
+	getApplicantsQuery,
+	getScholarshipByIdQuery,
+	updateApplication,
+} from "@/lib/scholarship/api";
 
-const USE_MOCK_DATA = true;
-
-interface ApplicantOld extends ScholarshipApplication {
-	rank?: number;
-	score?: number;
-	evaluationDetails?: {
-		criteriaMatches: number;
-		criteriaTotal: number;
-		formCompleteness: number;
-		bonusPoints: number;
-		explanation: string[];
-	};
-}
 type FilterStatus = ScholarshipApplicationStatus | "all";
 
 export const Route = createFileRoute("/_sponsor/scholarship/$id/applicants")({
@@ -81,10 +68,9 @@ function ApplicantsListPage() {
 	const params = Route.useParams();
 	const queryClient = useQueryClient();
 
-	// Query Hooks
-	const { applicantsQuery, scholarshipQuery } = useScholarshipApplicants(
-		params.id || "",
-	);
+	const applicantsQuery = useQuery(getApplicantsQuery(params.id));
+	const scholarshipQuery = useQuery(getScholarshipByIdQuery(params.id));
+
 	const {
 		data: applicants = [],
 		isLoading: applicantsLoading,
@@ -181,66 +167,31 @@ function ApplicantsListPage() {
 		try {
 			setIsBulkUpdating(true);
 
-			if (USE_MOCK_DATA) {
-				// Use mock bulk update
-				const response = await mockBulkUpdateApplicationStatus(
-					Array.from(selectedApplicantIds),
-					bulkAction,
-					bulkRemarks.trim() || undefined,
-				);
-
-				if (response.success) {
-					// Update Cache
-					queryClient.setQueryData(
-						["scholarship-applicants", params.id],
-						(oldData: ApplicantOld[] | undefined) => {
-							if (!oldData) return [];
-							return oldData.map((app) =>
-								selectedApplicantIds.has(app.scholarship_application_id)
-									? {
-											...app,
-											status: bulkAction,
-											remarks: bulkRemarks.trim() || undefined,
-											updated_at: new Date().toISOString(),
-										}
-									: app,
-							);
-						},
-					);
-
-					showSuccess("Success", response.message, 2000);
-					setBulkActionModal(false);
-					setBulkRemarks("");
-					setSelectedApplicantIds(new Set());
-					setBulkMode(false);
-				} else {
-					showError(`Error`, response.message, 2500);
-				}
-			} else {
-				const response =
-					await scholarshipApplicationService.bulkUpdateApplicationStatus(
-						Array.from(selectedApplicantIds),
-						bulkAction,
-						bulkRemarks.trim() || undefined,
-					);
-
-				if (response.success) {
-					showSuccess(
-						"Success",
-						`${selectedApplicantIds.size} application(s) ${bulkAction}`,
-						2000,
-					);
-					setBulkActionModal(false);
-					setBulkRemarks("");
-					setSelectedApplicantIds(new Set());
-					setBulkMode(false);
-					queryClient.invalidateQueries({
-						queryKey: ["scholarship-applicants", params.id],
-					});
-				} else {
-					showError("Error", response.message, 2500);
-				}
-			}
+			// TODO: Handle bulk updates
+			//
+			// const response =
+			// 	await scholarshipApplicationService.bulkUpdateApplicationStatus(
+			// 		Array.from(selectedApplicantIds),
+			// 		bulkAction,
+			// 		bulkRemarks.trim() || undefined,
+			// 	);
+			//
+			// if (response.success) {
+			// 	showSuccess(
+			// 		"Success",
+			// 		`${selectedApplicantIds.size} application(s) ${bulkAction}`,
+			// 		2000,
+			// 	);
+			// 	setBulkActionModal(false);
+			// 	setBulkRemarks("");
+			// 	setSelectedApplicantIds(new Set());
+			// 	setBulkMode(false);
+			// 	queryClient.invalidateQueries({
+			// 		queryKey: ["scholarship-applicants", params.id],
+			// 	});
+			// } else {
+			// 	showError("Error", response.message, 2500);
+			// }
 		} catch (error) {
 			const handled = handleError(error, "Failed to update applications");
 			logger.error("Bulk update error:", handled.raw);
@@ -269,87 +220,21 @@ function ApplicantsListPage() {
 	) => {
 		if (isUpdatingStatus) return;
 
-		try {
-			setIsUpdatingStatus(true);
-			const payload = {
-				scholarshipId: params.id,
-				scholars: [
-					{
-						applicationId: applicationId,
-						status: newStatus,
-						remarks: remarks,
-					},
-				],
-			};
+		setIsUpdatingStatus(true);
+		const payload = {
+			scholarshipId: params.id,
+			scholars: [
+				{
+					applicationId: applicationId,
+					status: newStatus,
+					remarks: remarks,
+				},
+			],
+		};
 
-			console.log("Updating status", payload);
-			mutation.mutate(payload);
-
-			// if (USE_MOCK_DATA) {
-			//   // Use mock update
-			//   const response = await mockUpdateApplicationStatus(
-			//     applicationId,
-			//     newStatus,
-			//     remarks
-			//   );
-			//
-			//   if (response.success) {
-			//     queryClient.setQueryData(['scholarship-applicants', id], (oldData: ApplicantOld[] | undefined) => {
-			//       if (!oldData) return [];
-			//       return oldData.map((app) =>
-			//         app.scholarship_application_id === applicationId
-			//           ? {
-			//               ...app,
-			//               status: newStatus,
-			//               remarks: remarks || undefined,
-			//               updated_at: new Date().toISOString(),
-			//             }
-			//           : app
-			//       );
-			//     });
-			//
-			//
-			//     if (selectedApplicant && selectedApplicant.scholarship_application_id === applicationId) {
-			//       setSelectedApplicant({
-			//         ...selectedApplicant,
-			//         status: newStatus,
-			//         remarks: remarks || undefined,
-			//         updated_at: new Date().toISOString(),
-			//       });
-			//     }
-			//
-			//     showSuccess('Success', response.message, 2000);
-			//     handleCloseModal();
-			//     setConfirmationModal(false);
-			//     setDenialRemarks('');
-			//   } else {
-			//     showError(`Error`, response.message, 2500);
-			//   }
-			// } else {
-			//   const response = await scholarshipApplicationService.updateApplicationStatus(
-			//     applicationId,
-			//     newStatus,
-			//     remarks
-			//   );
-			//
-			//   if (response.success) {
-			//     showSuccess('Success', `Applicant ${newStatus}`, 2000);
-			//     setModalVisible(false);
-			//     setConfirmationModal(false);
-			//     setDenialRemarks('');
-			//     queryClient.invalidateQueries({ queryKey: ['scholarship-applicants', id] });
-			//
-			//   } else {
-			//     showError('Error', response.message, 2500);
-			//   }
-			// }
-		} catch (error) {
-			const handled = handleError(error, "Failed to update application status");
-			logger.error("Update application status error:", handled.raw);
-			showError(`Error ${handled.code}`, handled.message, 2500);
-		} finally {
-			setIsUpdatingStatus(false);
-		}
+		console.log("Updating status", payload);
+		mutation.mutate(payload);
+		setIsUpdatingStatus(false);
 	};
 
 	const getStatusColor = (status: ScholarshipApplicationStatus) => {

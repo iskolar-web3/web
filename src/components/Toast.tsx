@@ -35,24 +35,24 @@ export default function Toast({ visible, type, title, message }: ToastProps): JS
             stiffness: 800,
             damping: 28,
           }}
-          className="fixed top-4 md:top-6 right-4 z-[1000] w-[350px] h-[55px] rounded-lg flex items-center justify-end shadow-lg"
+          className="fixed top-4 md:top-6 right-4 z-[1000] w-[350px] h-[50px] md:w-[360px] md:h-[60px] rounded-lg flex items-center justify-end shadow-lg"
           style={{
             backgroundColor: type === "success" ? "#31D0AA" : "#EF4444",
           }}
         >
-          <div className="flex items-center w-[345px] h-[55px] bg-[#F0F7FF] rounded-lg px-3 py-2 gap-3 opacity-80">
+          <div className="flex items-center w-[345px] h-[50px] md:w-[355px] md:h-[60px] bg-[#F0F7FF] rounded-lg px-3 py-2 gap-3 opacity-80">
             <div className="flex items-center justify-center">
               {type === "success" ? (
-                <HiCheckCircle size={30} className="text-[#31D0AA]" />
+                <HiCheckCircle className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 text-[#31D0AA]" />
               ) : (
-                <HiXCircle size={30} className="text-[#EF4444]" />
+                <HiXCircle className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 text-[#EF4444]" />
               )}
             </div>
             <div className="flex-1 text-left">
-              <p className="text-sm text-primary leading-tight">
+              <p className="text-sm md:text-base text-primary leading-tight">
                 {title}
               </p>
-              <p className="text-xs text-primary opacity-85 leading-tight">
+              <p className="text-xs md:text-sm text-primary opacity-85 leading-tight">
                 {message}
               </p>
             </div>

@@ -42,13 +42,15 @@ import {
 	type EditScholarshipFormData,
 	type Scholarship,
 } from "@/lib/scholarship/model";
-import { getFieldTypeLabel, renderFieldTypeIcon } from "@/utils/formField.utils";
+import {
+	getFieldTypeLabel,
+	renderFieldTypeIcon,
+} from "@/utils/formField.utils";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import {
 	getScholarshipByIdQuery,
 	updateScholarship,
 } from "@/lib/scholarship/api";
-import { useAuth } from "@/auth";
 
 export const Route = createFileRoute("/_sponsor/scholarship/$id/edit")({
 	// params: {
@@ -99,10 +101,7 @@ function EditScholarshipPage() {
 
 	const params = Route.useParams();
 
-	const auth = useAuth();
-	const scholarshipQuery = useSuspenseQuery(
-		getScholarshipByIdQuery(auth.sessionToken, params.id),
-	);
+	const scholarshipQuery = useSuspenseQuery(getScholarshipByIdQuery(params.id));
 	const scholarship = scholarshipQuery.data;
 
 	const form = useForm<EditScholarshipFormData>({

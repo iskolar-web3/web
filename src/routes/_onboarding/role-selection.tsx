@@ -126,6 +126,10 @@ function RoleSelection() {
   ];
 
   const handleRoleSelect = (role: Role) => {
+    if (role === 'school') {
+      showError('Unavailable', 'The school role is not available yet.', 2450);
+      return;
+    }
     if (role === 'sponsor') {
       setSelectedRole(role);
       setShowSponsorTypes(true);

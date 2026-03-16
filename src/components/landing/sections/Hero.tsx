@@ -1,6 +1,44 @@
 import { MotionContainer, MotionItem } from "@/components/landing/MotionContainer"
 import { motion } from "framer-motion"
 import { GraduationCapBg, GraduationCap3D } from "@/components/landing/graphics/GraduationCap"
+import { useEffect, useState } from "react"
+
+const TAGLINE = "Built For Students, Built By Students."
+
+function TypewriterTagline() {
+  const [displayed, setDisplayed] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  useEffect(() => {
+    const currentLength = displayed.length
+
+    if (!isDeleting && currentLength === TAGLINE.length) {
+      const timeout = setTimeout(() => setIsDeleting(true), 2800)
+      return () => clearTimeout(timeout)
+    }
+
+    if (isDeleting && currentLength === 0) {
+      const timeout = setTimeout(() => setIsDeleting(false), 600)
+      return () => clearTimeout(timeout)
+    }
+
+    const timeout = setTimeout(
+      () =>
+        setDisplayed(
+          isDeleting ? TAGLINE.slice(0, currentLength - 1) : TAGLINE.slice(0, currentLength + 1),
+        ),
+      isDeleting ? 28 : 55,
+    )
+    return () => clearTimeout(timeout)
+  }, [displayed, isDeleting])
+
+  return (
+    <span className="font-mono text-sm sm:text-base tracking-widest text-[#6073F2]/70 uppercase">
+      {displayed}
+      <span className="ml-0.5 inline-block w-0.5 h-4 bg-[#6073F2]/60 align-middle animate-pulse" />
+    </span>
+  )
+}
 
 export function Hero() {
   return (
@@ -47,14 +85,20 @@ export function Hero() {
         staggerDelay={0.2}
       >
         <MotionItem>
+          <div className="mb-6 h-6 flex items-center justify-center">
+            <TypewriterTagline />
+          </div>
+        </MotionItem>
+
+        <MotionItem>
           <strong className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-secondary leading-tight text-balance block">
             Discover, Apply, and Receive Scholarships
-            <span className="text-[#6073F2] block mt-2">All in One Place</span>
+            <span className="text-[#6073F2] block mt-1">All in One Place</span>
           </strong>
         </MotionItem>
 
         <MotionItem>
-          <p className="text-lg sm:text-xl text-secondary/80 max-w-2xl mx-auto mt-12 mb-10 text-pretty leading-relaxed">
+          <p className="text-lg sm:text-xl text-secondary/80 max-w-2xl mx-auto mt-13 mb-10 text-pretty leading-relaxed">
             A centralized platform connecting students with scholarship providers — making education
             accessible and transparent.
           </p>
@@ -65,7 +109,7 @@ export function Hero() {
            hidden: { opacity: 0, y: -20 },
            visible: { opacity: 1, y: 0, transition: { delay: 1, duration: 0.5 } }
         }}>
-          <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 animate-bounce">
             <div className="w-6 h-10 border-2 border-secondary/50 rounded-full flex justify-center pt-2">
               <div className="w-1.5 h-3 bg-secondary rounded-full animate-pulse" />
             </div>
