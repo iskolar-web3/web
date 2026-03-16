@@ -284,7 +284,7 @@ function LoginPage(): JSX.Element {
           {/* Google sign in button */}
           <div className="flex justify-center">
             <button
-              onClick={() => showSuccess("Success", "Login successful", 1250)}
+              onClick={handleGoogleSignIn}
               type="button"
               className="w-12 h-12 lg:w-14 lg:h-14 flex items-center justify-center rounded-full hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.25)] transition-all bg-[#F0F7FF] shadow-[0_2px_4px_0_rgba(0,0,0,0.25)] cursor-pointer"
             >
