@@ -1,4 +1,5 @@
 import { enumDetailSchema } from "@/lib/api";
+import { philippinePhoneSchema } from "@/utils/phoneSchema";
 import z from "zod";
 
 export enum UserRole {
@@ -44,10 +45,6 @@ export const contactDetailSchema = z.object({
 export type ContactDetail = z.infer<typeof contactDetailSchema>;
 
 export const createContactRequestSchema = z.object({
-	value: z
-		.string()
-		.nonempty({ error: "Contact number is required" })
-		.regex(/^\d+$/, "Contact number must contain only numbers")
-		.min(11, "Contact number must be at least 11 digits"),
+	value: philippinePhoneSchema,
 	contactType: z.enum(ContactType),
 });

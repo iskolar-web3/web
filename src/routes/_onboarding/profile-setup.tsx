@@ -26,6 +26,7 @@ import { CalendarIcon } from "lucide-react";
 import { handleError } from "@/lib/errorHandler";
 import { logger } from "@/lib/logger";
 import { BACKEND_URL, getDefaultPathOfRole, type ApiResponse } from "@/lib/api";
+import { philippinePhoneSchema } from "@/utils/phoneSchema";
 import { useMutation } from "@tanstack/react-query";
 import { ContactType } from "@/lib/user/model";
 import { useAuth } from "@/auth";
@@ -68,11 +69,7 @@ const VALID_ROLES: Role[] = [
 ];
 
 const createContactRequestSchema = z.object({
-	value: z
-		.string()
-		.nonempty({ error: "Contact number is required" })
-		.regex(/^\d+$/, "Contact number must contain only numbers")
-		.min(11, "Contact number must be at least 11 digits"),
+	value: philippinePhoneSchema,
 	contactType: z.enum(ContactType),
 });
 
